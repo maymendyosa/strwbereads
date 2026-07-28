@@ -104,7 +104,6 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
 }
 .mini-stat.green{background:var(--green-pale)}
 .mini-stat .num{font-family:"Fredoka";font-weight:600;font-size:1.1rem;color:var(--pink-dark);display:flex;align-items:center;justify-content:center;gap:5px}
-.mini-stat .num .ti{stroke:var(--pink-dark)}
 .mini-stat.green .num{color:var(--green-dark)}
 .mini-stat .lbl{font-size:.78rem;color:var(--muted)}
 
@@ -130,13 +129,26 @@ button:active{transform:scale(.97)}
 .danger{background:#D96B6B;color:#fff;width:100%}
 .danger.small{padding:9px 12px;font-size:.85rem;width:auto;flex:1}
 
-/* ---------- current book ---------- */
+/* ---------- current book(s) ---------- */
 .book-title{font-family:"Fredoka";font-weight:600;font-size:1.25rem;margin:0 0 10px}
 .book-empty{color:var(--muted);font-size:.95rem;text-align:center;padding:10px 0}
 .progress{width:100%;height:16px;background:var(--empty-cell);border-radius:999px;overflow:hidden}
 .bar{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--pink) 0%,var(--pink-dark) 100%);transition:width .4s ease}
 .book-bar{background:linear-gradient(90deg,#CFE2B3 0%,var(--green-dark) 100%)}
 .book-progress{margin-top:8px;color:var(--muted);font-size:.92rem;display:flex;justify-content:space-between}
+
+.book-card{position:relative;background:var(--pink-pale);border-radius:18px;padding:14px 16px;margin-bottom:12px}
+.book-card:last-child{margin-bottom:0}
+.book-card .book-title{font-size:1.1rem;margin:0 22px 8px 0;cursor:pointer}
+.book-card .progress{cursor:pointer}
+.book-card .book-progress{cursor:pointer}
+.book-remove{
+  position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;
+  background:#fff;color:var(--muted);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;line-height:1;cursor:pointer;padding:0;
+}
+.book-remove:hover{background:var(--pink-dark);color:#fff}
 
 label{display:block;margin-top:12px;margin-bottom:6px;font-weight:700;font-size:.95rem}
 input{
@@ -165,11 +177,11 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
 .cal-dow{font-size:.72rem;color:var(--muted);font-weight:700}
 .cal-cell{
-  aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:10px;
-  font-size:1rem;cursor:pointer;background:var(--empty-cell);color:var(--muted);border:none;
-  position:relative;
+  width:100%;height:38px;display:flex;align-items:center;justify-content:center;border-radius:10px;
+  font-size:1rem;line-height:1;cursor:pointer;background:var(--empty-cell);color:var(--muted);border:none;
+  position:relative;overflow:hidden;padding:0;margin:0;
 }
-.cal-cell.read{background:var(--pink-pale)}
+.cal-cell.read{background:var(--pink-pale);font-size:.9rem}
 .cal-cell.faded{opacity:0}
 .cal-cell.today{box-shadow:0 0 0 2px var(--pink-dark) inset}
 .cal-cell.selected{box-shadow:0 0 0 2px var(--green-dark) inset}
@@ -178,7 +190,6 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 /* ---------- streak / stats ---------- */
 .streak-grid{display:flex;gap:12px}
 .streak-card{flex:1;text-align:center;padding:16px 10px;border-radius:18px;background:linear-gradient(160deg,#FFF3E0,#FFE7D1)}
-.streak-icon{width:26px;height:26px;margin:0 auto;display:block;fill:none;stroke:#C97A2B;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .streak-num{font-family:"Fredoka";font-weight:600;font-size:1.4rem;color:#C97A2B}
 .streak-lbl{font-size:.82rem;color:var(--muted)}
 
@@ -303,12 +314,12 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 
       <div class="mini-row">
         <div class="mini-stat">
-          <div class="num"><svg class="ti" viewBox="0 0 24 24"><path d="M12 8c3.5 0 6.5 2.3 7 6.2.5 4-2.5 7.3-7 7.3s-7.5-3.3-7-7.3C5.5 10.3 8.5 8 12 8z"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3"/></svg><span id="homeStreak">0</span></div>
+          <div class="num"><svg class="berry-icon" width="16" height="16" viewBox="0 0 24 24"><path d="M12 22C12 22 5 14 5 9A7 7 0 0 1 19 9C19 14 12 22 12 22Z" fill="#E8879E"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3" fill="none" stroke="#7FA66A" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="14.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="12" cy="16" r="0.6" fill="#FFF3B0"/></svg><span id="homeStreak">0</span></div>
           <div class="lbl">day streak</div>
         </div>
         <div class="mini-stat green">
-          <div class="num" id="homeBookPct">—</div>
-          <div class="lbl" id="homeBookLbl">no book yet</div>
+          <div class="num" id="homeBookCount">0</div>
+          <div class="lbl">books in progress</div>
         </div>
       </div>
 
@@ -323,11 +334,8 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <div class="card">
       <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z"/><path d="M12 6v13"/></svg>Currently Reading</div>
       <div id="bookBlock"></div>
-      <div class="row-buttons">
-        <button class="ghost small" onclick="openNewBookModal()">New Book</button>
-        <button class="ghost small" onclick="finishBook()">Finish Book</button>
-      </div>
-      <button class="primary" style="margin-top:12px" onclick="openLogModal()">Log Reading</button>
+      <button class="ghost small" style="width:100%;margin-top:10px" onclick="openNewBookModal()">New Book</button>
+      <button class="primary" style="margin-top:10px" onclick="openLogModal()">Log Reading</button>
     </div>
 
     <div class="card">
@@ -363,15 +371,15 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <!-- ============ PROGRESS (streak / stats / achievements / backup) ============ -->
   <div id="view-progress" class="view">
     <div class="card">
-      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M12 8c3.5 0 6.5 2.3 7 6.2.5 4-2.5 7.3-7 7.3s-7.5-3.3-7-7.3C5.5 10.3 8.5 8 12 8z"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3"/></svg>Reading Streak</div>
+      <div class="section-title"><svg class="berry-icon" width="20" height="20" viewBox="0 0 24 24"><path d="M12 22C12 22 5 14 5 9A7 7 0 0 1 19 9C19 14 12 22 12 22Z" fill="#E8879E"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3" fill="none" stroke="#7FA66A" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="14.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="12" cy="16" r="0.6" fill="#FFF3B0"/></svg>Reading Streak</div>
       <div class="streak-grid">
         <div class="streak-card">
-          <svg class="streak-icon" viewBox="0 0 24 24"><path d="M12 8c3.5 0 6.5 2.3 7 6.2.5 4-2.5 7.3-7 7.3s-7.5-3.3-7-7.3C5.5 10.3 8.5 8 12 8z"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3"/></svg>
+          <svg class="berry-icon" width="28" height="28" viewBox="0 0 24 24" style="margin:0 auto;display:block"><path d="M12 22C12 22 5 14 5 9A7 7 0 0 1 19 9C19 14 12 22 12 22Z" fill="#E8879E"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3" fill="none" stroke="#7FA66A" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.5" cy="12" r="0.7" fill="#FFF3B0"/><circle cx="14.5" cy="12" r="0.7" fill="#FFF3B0"/><circle cx="12" cy="16" r="0.7" fill="#FFF3B0"/></svg>
           <div class="streak-num" id="curStreak">0 days</div>
           <div class="streak-lbl">Current</div>
         </div>
         <div class="streak-card">
-          <svg class="streak-icon" viewBox="0 0 24 24"><path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 17l-5.6 3.1 1.4-6.3-4.8-4.3 6.4-.6z"/></svg>
+          <svg class="berry-icon" width="28" height="28" viewBox="0 0 24 24" style="margin:0 auto;display:block"><path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 17l-5.6 3.1 1.4-6.3-4.8-4.3 6.4-.6z" fill="#F0C05A"/></svg>
           <div class="streak-num" id="longStreak">0 days</div>
           <div class="streak-lbl">Longest</div>
         </div>
@@ -401,7 +409,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
       </div>
       <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
       <button class="danger" style="margin-top:12px" onclick="clearAllData()">Clear All Data</button>
-      <div class="footer-note" style="margin-top:6px">Wipes your book, journal, streaks, stats, and achievements. Export a backup first if you might want it back.</div>
+      <div class="footer-note" style="margin-top:6px">Wipes your books, journal, streaks, stats, and achievements. Export a backup first if you might want it back.</div>
     </div>
 
     <div class="footer-note">made for the love of 🍓🍵📜<br>｡𖦹°‧strwberi_i ｡𖦹°‧</div>
@@ -452,6 +460,43 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 <div id="toast"></div>
 <div id="celebrate-layer"></div>
 
+<!-- ============ CHANGE GOAL MODAL ============ -->
+<div class="modal-backdrop" id="goalModal">
+  <div class="modal">
+    <h3>Daily Reading Goal</h3>
+    <div class="sub">How many pages would you like to read per day?</div>
+    <label for="goalInput">Pages per day</label>
+    <input id="goalInput" type="number" inputmode="numeric" placeholder="100">
+    <div class="row-buttons" style="margin-top:14px">
+      <button class="ghost small" onclick="closeModal('goalModal')">Cancel</button>
+      <button class="primary" style="flex:1" onclick="submitGoal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BOOK PICKER MODAL (multi-book logging) ============ -->
+<div class="modal-backdrop" id="pickerModal">
+  <div class="modal">
+    <h3>Which Book?</h3>
+    <div class="sub">Choose a book to log reading for</div>
+    <div class="buttons" id="pickerList"></div>
+    <button class="ghost small" style="width:100%;margin-top:10px" onclick="closeModal('pickerModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- ============ REMOVE / FINISH BOOK MODAL ============ -->
+<div class="modal-backdrop" id="removeBookModal">
+  <div class="modal">
+    <h3 id="removeBookTitle">Remove Book</h3>
+    <div class="sub">What would you like to do with this book?</div>
+    <div class="buttons">
+      <button class="secondary" onclick="finishBookConfirm()">Mark as Finished</button>
+      <button class="ghost" onclick="removeBookConfirm()">Remove (no credit)</button>
+      <button class="ghost" onclick="closeModal('removeBookModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    STATE
@@ -465,9 +510,9 @@ function dayDiff(a,b){ return Math.round((new Date(b+"T00:00:00") - new Date(a+"
 function defaultState(){
   return {
     goal: GOAL,
-    book: null,                       // {title,total,lastPage}
+    books: [],                        // [{id,title,total,lastPage}]
     today: { date: todayStr(), log: [], startSnapshot: null },
-    journal: {},                      // "YYYY-MM-DD" -> [{time,from,to,read}]
+    journal: {},                      // "YYYY-MM-DD" -> [{time,from,to,read,book}]
     streak: { current:0, longest:0, lastActiveDate:null },
     stats: { totalPagesAllTime:0, sessionsCount:0, booksFinished:0 },
     achievements: {},                 // id -> {date}
@@ -475,13 +520,15 @@ function defaultState(){
   };
 }
 
+function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
 function migrateFromV2(){
   try{
     const old = JSON.parse(localStorage.getItem("reading") || "null");
     if(!old) return null;
     const s = defaultState();
     if(old.book || old.total){
-      s.book = { title: old.book || "", total: old.total || 0, lastPage: old.lastPage || 1 };
+      s.books = [{ id: genId(), title: old.book || "", total: old.total || 0, lastPage: old.lastPage || 1 }];
     }
     return s;
   }catch(e){ return null; }
@@ -495,6 +542,17 @@ let s = (function(){
   return migrateFromV2() || defaultState();
 })();
 
+// migrate a single-book (v3) save into the multi-book (v3.1) shape
+if(s.book !== undefined){
+  if(s.book){
+    s.books = [{ id: genId(), title: s.book.title, total: s.book.total, lastPage: s.book.lastPage }];
+  } else if(!s.books){
+    s.books = [];
+  }
+  delete s.book;
+}
+if(!s.books) s.books = [];
+
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
 
 /* ============================================================
@@ -504,7 +562,7 @@ function todayTotal(){ return (s.today.log||[]).reduce((a,x)=>a+x.read,0); }
 
 function makeSnapshot(){
   return {
-    lastPage: s.book ? s.book.lastPage : null,
+    books: JSON.parse(JSON.stringify(s.books)),
     streakCurrent: s.streak.current,
     streakLastActiveDate: s.streak.lastActiveDate
   };
@@ -562,7 +620,7 @@ function resetToday(){
   if(!confirm("Clear today's log? This resets today's pages logged and today's page changes, but won't touch past days.")) return;
   const snap = s.today.startSnapshot;
   if(snap){
-    if(s.book && snap.lastPage != null) s.book.lastPage = snap.lastPage;
+    s.books = JSON.parse(JSON.stringify(snap.books));
     s.streak.current = snap.streakCurrent;
     s.streak.lastActiveDate = snap.streakLastActiveDate;
   }
@@ -570,12 +628,12 @@ function resetToday(){
   s.today.startSnapshot = makeSnapshot();
   s.undo = null;
   save();
-  toast("🧹 Today's log cleared");
+  toast("Today's log cleared");
   renderAll();
 }
 
 function clearAllData(){
-  if(!confirm("Clear ALL data? This deletes your book, journal history, streaks, stats, and achievements. This cannot be undone.")) return;
+  if(!confirm("Clear ALL data? This deletes your books, journal history, streaks, stats, and achievements. This cannot be undone.")) return;
   if(!confirm("Are you absolutely sure? Consider exporting a backup first.")) return;
   s = defaultState();
   save();
@@ -612,6 +670,9 @@ function checkAchievements(hourOfLog){
 /* ============================================================
    ACTIONS
    ============================================================ */
+let activeLogBookId = null;
+let pendingRemoveId = null;
+
 function openNewBookModal(){
   document.getElementById("nbTitle").value = "";
   document.getElementById("nbTotal").value = "";
@@ -623,33 +684,68 @@ function submitNewBook(){
   const title = document.getElementById("nbTitle").value.trim();
   const total = parseInt(document.getElementById("nbTotal").value) || 0;
   const start = parseInt(document.getElementById("nbStart").value) || 1;
-  if(!title){ toast("Give your book a title 🍓"); return; }
-  s.book = { title, total, lastPage: start };
+  if(!title){ toast("Give your book a title"); return; }
+  s.books.push({ id: genId(), title, total, lastPage: start });
   save();
   closeModal("bookModal");
-  toast("🍵 New book started!");
+  toast("New book started!");
   renderAll();
 }
 
-function finishBook(){
-  if(!s.book){ toast("No book to finish yet 📚"); return; }
-  if(!confirm(`Mark "${s.book.title}" as finished?`)) return;
+function openRemoveBookModal(id){
+  const book = s.books.find(b=>b.id===id);
+  if(!book) return;
+  pendingRemoveId = id;
+  document.getElementById("removeBookTitle").textContent = book.title || "Remove Book";
+  openModal("removeBookModal");
+}
+
+function finishBookConfirm(){
+  const book = s.books.find(b=>b.id===pendingRemoveId);
+  if(!book){ closeModal("removeBookModal"); return; }
   s.stats.booksFinished += 1;
-  s.book = null;
+  s.books = s.books.filter(b=>b.id!==pendingRemoveId);
   checkAchievements();
   save();
-  toast("🎉 Book finished — nice work!");
+  closeModal("removeBookModal");
+  toast("Book finished — nice work!");
   renderAll();
 }
 
-function openLogModal(){
-  if(!s.book){
-    toast("Start a book first 📚");
+function removeBookConfirm(){
+  s.books = s.books.filter(b=>b.id!==pendingRemoveId);
+  save();
+  closeModal("removeBookModal");
+  toast("Book removed");
+  renderAll();
+}
+
+function openBookPicker(){
+  const list = document.getElementById("pickerList");
+  list.innerHTML = s.books.map(b => `
+    <button class="secondary" onclick="closeModal('pickerModal');openLogModal('${b.id}')">${escapeHtml(b.title || "Untitled")}</button>
+  `).join("");
+  openModal("pickerModal");
+}
+
+function openLogModal(bookId){
+  if(!s.books.length){
+    toast("Start a book first");
     switchTab("journal");
     openNewBookModal();
     return;
   }
-  document.getElementById("logModalSub").textContent = `Currently on page ${s.book.lastPage} of ${s.book.total || "?"}`;
+  if(bookId){
+    activeLogBookId = bookId;
+  } else if(s.books.length === 1){
+    activeLogBookId = s.books[0].id;
+  } else {
+    openBookPicker();
+    return;
+  }
+  const book = s.books.find(b=>b.id===activeLogBookId);
+  if(!book) return;
+  document.getElementById("logModalSub").textContent = `${book.title} — currently on page ${book.lastPage} of ${book.total || "?"}`;
   document.getElementById("logPageInput").value = "";
   openModal("logModal");
   setTimeout(()=>document.getElementById("logPageInput").focus(), 50);
@@ -657,27 +753,29 @@ function openLogModal(){
 
 function submitLog(){
   ensureRollover();
+  const book = s.books.find(b=>b.id===activeLogBookId);
+  if(!book){ toast("Pick a book first"); closeModal("logModal"); return; }
   const p = parseInt(document.getElementById("logPageInput").value);
-  if(isNaN(p)){ toast("Enter a page number 📖"); return; }
+  if(isNaN(p)){ toast("Enter a page number"); return; }
 
   s.undo = {
-    book: { ...s.book },
+    books: JSON.parse(JSON.stringify(s.books)),
     today: JSON.parse(JSON.stringify(s.today)),
     streak: { ...s.streak },
     stats: { ...s.stats },
     achievements: JSON.parse(JSON.stringify(s.achievements))
   };
 
-  const from = s.book.lastPage || 1;
+  const from = book.lastPage || 1;
   const read = Math.max(0, p - from);
   const now = new Date();
   const wasComplete = todayTotal() >= s.goal;
 
-  s.book.lastPage = p;
+  book.lastPage = p;
   s.today.log = s.today.log || [];
   s.today.log.push({
     time: now.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}),
-    from, to:p, read
+    from, to:p, read, book: book.title
   });
   s.stats.sessionsCount += 1;
   s.stats.totalPagesAllTime += read;
@@ -694,20 +792,36 @@ function submitLog(){
   if(!wasComplete && nowComplete){
     celebrate();
   } else {
-    toast(`📖 +${read} page${read===1?"":"s"} logged`);
+    toast(`+${read} page${read===1?"":"s"} logged`);
   }
 }
 
 function undo(){
   if(!s.undo){ toast("Nothing to undo"); return; }
-  s.book = s.undo.book;
+  s.books = s.undo.books;
   s.today = s.undo.today;
   s.streak = s.undo.streak;
   s.stats = s.undo.stats;
   s.achievements = s.undo.achievements;
   s.undo = null;
   save();
-  toast("↩️ Last log undone");
+  toast("Last log undone");
+  renderAll();
+}
+
+function openGoalModal(){
+  document.getElementById("goalInput").value = s.goal;
+  openModal("goalModal");
+  setTimeout(()=>document.getElementById("goalInput").focus(), 50);
+}
+
+function submitGoal(){
+  const g = parseInt(document.getElementById("goalInput").value);
+  if(isNaN(g) || g <= 0){ toast("Enter a page goal above 0"); return; }
+  s.goal = g;
+  save();
+  closeModal("goalModal");
+  toast(`Daily goal set to ${g} pages`);
   renderAll();
 }
 
@@ -844,18 +958,7 @@ function renderHome(){
   document.getElementById("ringLabel").className = "ring-label" + (total >= s.goal ? " ring-goal-complete" : "");
 
   document.getElementById("homeStreak").textContent = s.streak.current;
-
-  if(s.book && s.book.total){
-    const bpct = Math.min(Math.round((s.book.lastPage / s.book.total) * 100), 100);
-    document.getElementById("homeBookPct").textContent = bpct + "%";
-    document.getElementById("homeBookLbl").textContent = s.book.title || "current book";
-  } else if(s.book){
-    document.getElementById("homeBookPct").textContent = "📖";
-    document.getElementById("homeBookLbl").textContent = s.book.title || "current book";
-  } else {
-    document.getElementById("homeBookPct").textContent = "—";
-    document.getElementById("homeBookLbl").textContent = "no book yet";
-  }
+  document.getElementById("homeBookCount").textContent = s.books.length;
 
   document.getElementById("quoteBox").textContent = "🍓 " + QUOTES[dayOfYear() % QUOTES.length];
 }
@@ -863,29 +966,36 @@ function renderHome(){
 /* ============================================================
    RENDER: JOURNAL
    ============================================================ */
-function renderBookBlock(){
+function renderBooks(){
   const el = document.getElementById("bookBlock");
-  if(!s.book){
-    el.innerHTML = `<div class="book-empty">No book yet — start one to begin your journal 📚</div>`;
+  if(!s.books.length){
+    el.innerHTML = `<div class="book-empty">No book yet — start one to begin your journal</div>`;
     return;
   }
-  const total = s.book.total || 0;
-  const pct = total ? Math.min(Math.round((s.book.lastPage/total)*100),100) : 0;
-  el.innerHTML = `
-    <div class="book-title">${escapeHtml(s.book.title || "Untitled")}</div>
-    <div class="progress"><div class="bar book-bar" style="width:${pct}%"></div></div>
-    <div class="book-progress">
-      <span>Page ${s.book.lastPage} ${total ? "/ " + total : ""}</span>
-      <span>${total ? pct + "%" : ""}</span>
-    </div>
-  `;
+  el.innerHTML = s.books.map(b => {
+    const total = b.total || 0;
+    const pct = total ? Math.min(Math.round((b.lastPage/total)*100),100) : 0;
+    return `
+      <div class="book-card">
+        <button class="book-remove" onclick="event.stopPropagation();openRemoveBookModal('${b.id}')" aria-label="Remove book">×</button>
+        <div onclick="openLogModal('${b.id}')">
+          <div class="book-title">${escapeHtml(b.title || "Untitled")}</div>
+          <div class="progress"><div class="bar book-bar" style="width:${pct}%"></div></div>
+          <div class="book-progress">
+            <span>Page ${b.lastPage} ${total ? "/ " + total : ""}</span>
+            <span>${total ? pct + "%" : ""}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 
 function logListHtml(log){
   if(!log || !log.length) return `<div class="empty">No reading logged.</div>`;
   return log.slice().reverse().map(x => `
     <div class="history-item">
-      <div>${x.time} • Page ${x.from} → ${x.to}</div>
+      <div>${x.time}${x.book ? " • " + escapeHtml(x.book) : ""} • Page ${x.from} → ${x.to}</div>
       <div class="badge">+${x.read}</div>
     </div>
   `).join("");
@@ -893,7 +1003,7 @@ function logListHtml(log){
 
 function renderJournal(){
   ensureRollover();
-  renderBookBlock();
+  renderBooks();
 
   document.getElementById("journalToday").innerHTML = `
     <div class="journal-day-title">🍓 Today</div>
