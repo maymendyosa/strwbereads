@@ -34,7 +34,7 @@
 html,body{height:100%}
 body{
   margin:0;
-  background:linear-gradient(180deg,#FFF9F5 0%,#FFF4F7 100%);
+  background:#EDF2E4;
   font-family:"Patrick Hand",-apple-system,BlinkMacSystemFont,sans-serif;
   color:var(--text);
   padding:16px 16px 88px;
@@ -61,6 +61,11 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
   font-size:1.05rem;
   font-weight:600;
 }
+.ti{
+  width:20px;height:20px;flex:0 0 auto;
+  fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;
+}
 
 /* ---------- home header ---------- */
 .header{display:flex;align-items:center;justify-content:center;gap:12px;position:relative}
@@ -74,10 +79,15 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
 
 /* ---------- progress ring ---------- */
 .ring-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 0 4px}
-.ring-svg{width:180px;height:180px}
+.ring-stack{position:relative;width:180px;height:180px}
+.ring-svg{width:180px;height:180px;display:block}
 .ring-bg{fill:none;stroke:var(--empty-cell);stroke-width:14}
 .ring-fg{fill:none;stroke:url(#ringGrad);stroke-width:14;stroke-linecap:round;transform:rotate(-90deg);transform-origin:60px 60px;transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1)}
-.ring-center{position:relative;margin-top:-132px;margin-bottom:24px;text-align:center;pointer-events:none}
+.ring-center{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;pointer-events:none;
+  padding:0 20px;
+}
 .ring-num{font-family:"Fredoka";font-size:1.9rem;font-weight:600;color:var(--pink-dark)}
 .ring-label{font-size:.85rem;color:var(--muted)}
 .ring-goal-complete{color:var(--green-dark)}
@@ -88,7 +98,8 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
   text-align:center;
 }
 .mini-stat.green{background:var(--green-pale)}
-.mini-stat .num{font-family:"Fredoka";font-weight:600;font-size:1.1rem;color:var(--pink-dark)}
+.mini-stat .num{font-family:"Fredoka";font-weight:600;font-size:1.1rem;color:var(--pink-dark);display:flex;align-items:center;justify-content:center;gap:5px}
+.mini-stat .num .ti{stroke:var(--pink-dark)}
 .mini-stat.green .num{color:var(--green-dark)}
 .mini-stat .lbl{font-size:.78rem;color:var(--muted)}
 
@@ -107,11 +118,11 @@ button{
   font-family:"Fredoka",sans-serif;cursor:pointer;transition:transform .08s ease,opacity .2s ease;
 }
 button:active{transform:scale(.97)}
-.primary{background:linear-gradient(180deg,var(--pink) 0%,var(--pink-dark) 100%);color:#fff;width:100%}
-.secondary{background:linear-gradient(180deg,var(--green) 0%,var(--green-dark) 100%);color:#fff}
+.primary{background:var(--pink-dark);color:#fff;width:100%}
+.secondary{background:var(--green-dark);color:#fff}
 .ghost{background:#F5EEE9;color:#7B6258}
 .ghost.small,.secondary.small{padding:9px 12px;font-size:.85rem}
-.danger{background:linear-gradient(180deg,#F2A9A9 0%,#D96B6B 100%);color:#fff;width:100%}
+.danger{background:#D96B6B;color:#fff;width:100%}
 .danger.small{padding:9px 12px;font-size:.85rem;width:auto;flex:1}
 
 /* ---------- current book ---------- */
@@ -162,7 +173,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 /* ---------- streak / stats ---------- */
 .streak-grid{display:flex;gap:12px}
 .streak-card{flex:1;text-align:center;padding:16px 10px;border-radius:18px;background:linear-gradient(160deg,#FFF3E0,#FFE7D1)}
-.streak-fire{font-size:1.8rem}
+.streak-icon{width:26px;height:26px;margin:0 auto;display:block;fill:none;stroke:#C97A2B;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .streak-num{font-family:"Fredoka";font-weight:600;font-size:1.4rem;color:#C97A2B}
 .streak-lbl{font-size:.82rem;color:var(--muted)}
 
@@ -266,25 +277,27 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
       </div>
 
       <div class="ring-wrap">
-        <svg class="ring-svg" viewBox="0 0 120 120">
-          <defs>
-            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#F7A8B8"/>
-              <stop offset="100%" stop-color="#A8C686"/>
-            </linearGradient>
-          </defs>
-          <circle class="ring-bg" cx="60" cy="60" r="50"/>
-          <circle id="ringFg" class="ring-fg" cx="60" cy="60" r="50"/>
-        </svg>
-        <div class="ring-center">
-          <div id="ringNum" class="ring-num">0 / 100</div>
-          <div id="ringLabel" class="ring-label">pages today</div>
+        <div class="ring-stack">
+          <svg class="ring-svg" viewBox="0 0 120 120">
+            <defs>
+              <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#F7A8B8"/>
+                <stop offset="100%" stop-color="#A8C686"/>
+              </linearGradient>
+            </defs>
+            <circle class="ring-bg" cx="60" cy="60" r="50"/>
+            <circle id="ringFg" class="ring-fg" cx="60" cy="60" r="50"/>
+          </svg>
+          <div class="ring-center">
+            <div id="ringNum" class="ring-num">0 / 100</div>
+            <div id="ringLabel" class="ring-label">pages today</div>
+          </div>
         </div>
       </div>
 
       <div class="mini-row">
         <div class="mini-stat">
-          <div class="num" id="homeStreak">🔥 0</div>
+          <div class="num"><svg class="ti" viewBox="0 0 24 24"><path d="M12 8c3.5 0 6.5 2.3 7 6.2.5 4-2.5 7.3-7 7.3s-7.5-3.3-7-7.3C5.5 10.3 8.5 8 12 8z"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3"/></svg><span id="homeStreak">0</span></div>
           <div class="lbl">day streak</div>
         </div>
         <div class="mini-stat green">
@@ -295,24 +308,24 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 
       <div id="quoteBox" class="quote-box"></div>
 
-      <button class="primary" style="margin-top:16px" onclick="openLogModal()">📖 Log Reading</button>
+      <button class="primary" style="margin-top:16px" onclick="openLogModal()">Log Reading</button>
     </div>
   </div>
 
   <!-- ============ BOOK & JOURNAL ============ -->
   <div id="view-journal" class="view">
     <div class="card">
-      <div class="section-title">🍵 Currently Reading</div>
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z"/><path d="M12 6v13"/></svg>Currently Reading</div>
       <div id="bookBlock"></div>
       <div class="row-buttons">
-        <button class="ghost small" onclick="openNewBookModal()">📚 New Book</button>
-        <button class="ghost small" onclick="finishBook()">✓ Finish Book</button>
+        <button class="ghost small" onclick="openNewBookModal()">New Book</button>
+        <button class="ghost small" onclick="finishBook()">Finish Book</button>
       </div>
-      <button class="primary" style="margin-top:12px" onclick="openLogModal()">+ Log Reading</button>
+      <button class="primary" style="margin-top:12px" onclick="openLogModal()">Log Reading</button>
     </div>
 
     <div class="card">
-      <div class="section-title">🍓 Reading Journal</div>
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Reading Journal</div>
       <div id="journalToday"></div>
       <div id="journalYesterday"></div>
       <details class="collapsible" id="olderDaysWrap">
@@ -320,17 +333,17 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
         <div id="olderDays" style="margin-top:8px"></div>
       </details>
       <div class="row-buttons" style="margin-top:16px">
-        <button class="secondary small" onclick="startNewDay()">🌙 Start New Day</button>
-        <button class="ghost small" onclick="undo()">↩️ Undo Last</button>
+        <button class="secondary small" onclick="startNewDay()">Start New Day</button>
+        <button class="ghost small" onclick="undo()">Undo Last</button>
       </div>
-      <button class="ghost small" style="width:100%;margin-top:10px" onclick="resetToday()">🧹 Reset Today's Log</button>
+      <button class="ghost small" style="width:100%;margin-top:10px" onclick="resetToday()">Reset Today's Log</button>
     </div>
   </div>
 
   <!-- ============ CALENDAR ============ -->
   <div id="view-calendar" class="view">
     <div class="card">
-      <div class="section-title">📅 Strawberry Calendar</div>
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>Strawberry Calendar</div>
       <div class="cal-nav">
         <button onclick="calShiftMonth(-1)">‹</button>
         <div id="calMonthLabel" class="cal-month"></div>
@@ -344,15 +357,15 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <!-- ============ PROGRESS (streak / stats / achievements / backup) ============ -->
   <div id="view-progress" class="view">
     <div class="card">
-      <div class="section-title">🔥 Reading Streak</div>
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M12 8c3.5 0 6.5 2.3 7 6.2.5 4-2.5 7.3-7 7.3s-7.5-3.3-7-7.3C5.5 10.3 8.5 8 12 8z"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3"/></svg>Reading Streak</div>
       <div class="streak-grid">
         <div class="streak-card">
-          <div class="streak-fire">🔥</div>
+          <svg class="streak-icon" viewBox="0 0 24 24"><path d="M12 8c3.5 0 6.5 2.3 7 6.2.5 4-2.5 7.3-7 7.3s-7.5-3.3-7-7.3C5.5 10.3 8.5 8 12 8z"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3"/></svg>
           <div class="streak-num" id="curStreak">0 days</div>
           <div class="streak-lbl">Current</div>
         </div>
         <div class="streak-card">
-          <div class="streak-fire">🏅</div>
+          <svg class="streak-icon" viewBox="0 0 24 24"><path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 17l-5.6 3.1 1.4-6.3-4.8-4.3 6.4-.6z"/></svg>
           <div class="streak-num" id="longStreak">0 days</div>
           <div class="streak-lbl">Longest</div>
         </div>
@@ -360,7 +373,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     </div>
 
     <div class="card">
-      <div class="section-title">📊 Stats</div>
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Stats</div>
       <div class="stats-grid">
         <div class="stat-tile"><div class="stat-num" id="statBooks">0</div><div class="stat-lbl">Books Finished</div></div>
         <div class="stat-tile green"><div class="stat-num" id="statPages">0</div><div class="stat-lbl">Pages Read</div></div>
@@ -370,18 +383,18 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     </div>
 
     <div class="card">
-      <div class="section-title">🏆 Achievements</div>
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><circle cx="12" cy="9" r="5"/><path d="M9 13.5 7.5 21 12 18.5 16.5 21 15 13.5"/></svg>Achievements</div>
       <div class="ach-grid" id="achGrid"></div>
     </div>
 
     <div class="card">
-      <div class="section-title">☁️ Backup</div>
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1-1-7.87A5 5 0 0 1 15.9 8.5 4.5 4.5 0 0 1 17.5 18H7z"/></svg>Backup</div>
       <div class="row-buttons">
         <button class="ghost small" onclick="exportData()">Export Data</button>
         <button class="ghost small" onclick="document.getElementById('importFile').click()">Import Backup</button>
       </div>
       <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
-      <button class="danger" style="margin-top:12px" onclick="clearAllData()">🧹 Clear All Data</button>
+      <button class="danger" style="margin-top:12px" onclick="clearAllData()">Clear All Data</button>
       <div class="footer-note" style="margin-top:6px">Wipes your book, journal, streaks, stats, and achievements. Export a backup first if you might want it back.</div>
     </div>
 
@@ -824,7 +837,7 @@ function renderHome(){
   document.getElementById("ringLabel").textContent = total >= s.goal ? "goal complete! 🎉" : "pages today";
   document.getElementById("ringLabel").className = "ring-label" + (total >= s.goal ? " ring-goal-complete" : "");
 
-  document.getElementById("homeStreak").textContent = `🔥 ${s.streak.current}`;
+  document.getElementById("homeStreak").textContent = s.streak.current;
 
   if(s.book && s.book.total){
     const bpct = Math.min(Math.round((s.book.lastPage / s.book.total) * 100), 100);
