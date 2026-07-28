@@ -646,8 +646,9 @@ function startNewDay(){
   if(!confirm("Start a fresh day? Today's log will move into your Reading Journal.")) return;
   closeDay(s.today.date);
   s.today = { date: todayStr(), log: [], startSnapshot: makeSnapshot() };
+  s.undo = null;
   save();
-  toast("🌙 New day started — see you tomorrow's you!");
+  toast("New day started — see you tomorrow's you!");
   renderAll();
 }
 
@@ -767,6 +768,7 @@ function finishBookConfirm(){
   s.finishedLog = s.finishedLog || [];
   s.finishedLog.push({ id: genId(), title: book.title, date: todayStr() });
   s.books = s.books.filter(b=>b.id!==pendingRemoveId);
+  s.undo = null;
   checkAchievements();
   save();
   closeModal("removeBookModal");
@@ -796,6 +798,7 @@ function removeBookConfirm(){
   }
 
   s.books = s.books.filter(b=>b.id!==bookId);
+  s.undo = null;
   save();
   closeModal("removeBookModal");
   toast("Book removed");
@@ -1278,6 +1281,21 @@ function renderAll(){
 }
 
 renderAll();
+
+/* ============================================================
+   DATE-CHANGE WATCHER
+   ensureRollover() only used to run when a user action triggered a
+   render, so leaving the app open (or backgrounded on a phone)
+   through midnight never noticed the date had changed. This catches
+   both cases: a periodic check while the tab is open, and a check
+   whenever the app becomes visible again (e.g. unlocking your phone
+   the next day).
+   ============================================================ */
+setInterval(renderAll, 60000);
+
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState === "visible") renderAll();
+});
 
 /* ============================================================
    SERVICE WORKER (offline support)
