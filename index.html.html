@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>strwbereads (˶ᵔ ᵕ ᵔ˶) ‹𝟹</title>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FFF9F5;
+  --pink:#F7A8B8;
+  --pink-dark:#E8879E;
+  --green:#A8C686;
+  --green-dark:#7FA66A;
+  --text:#4B3A33;
+  --card:#FFFDF9;
+  --line:#EADFD8;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:linear-gradient(180deg,#FFF9F5 0%,#FFF4F7 100%);
+  font-family:"Patrick Hand",-apple-system,BlinkMacSystemFont,sans-serif;
+  color:var(--text);
+  padding:20px;
+}
+.wrapper{max-width:500px;margin:0 auto}
+.card{
+  background:var(--card);
+  border-radius:28px;
+  padding:20px;
+  margin-bottom:16px;
+  box-shadow:0 10px 24px rgba(200,120,140,.15);
+  border:1px solid rgba(255,255,255,.7);
+}
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.header h1{
+  margin:0;
+  font-size:1.5rem;
+  color:var(--green-dark);
+}
+.greeting{
+  margin:6px 0 14px;
+  color:#8A6F66;
+  font-size:.95rem;
+}
+.strawberry{
+  width:44px;
+  height:44px;
+  flex:0 0 auto;
+}
+.progress-text{
+  font-size:1.1rem;
+  font-weight:700;
+  margin-bottom:10px;
+}
+.helper{
+  margin-top:8px;
+  color:#8A6F66;
+  font-size:.95rem;
+}
+.progress{
+  width:100%;
+  height:16px;
+  background:#F3E7E2;
+  border-radius:999px;
+  overflow:hidden;
+}
+.bar{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--pink) 0%,var(--green) 100%);
+  transition:width .35s ease;
+}
+.book-bar{
+  background:linear-gradient(90deg,#CFE2B3 0%,var(--green-dark) 100%);
+}
+label{
+  display:block;
+  margin-top:12px;
+  margin-bottom:6px;
+  font-weight:700;
+}
+input{
+  width:100%;
+  padding:14px;
+  border-radius:16px;
+  border:1px solid #E7D7D2;
+  font-size:1rem;
+  font-family:"Patrick Hand",-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#FFFEFC;
+  color:var(--text);
+}
+input:focus{
+  outline:none;
+  border-color:var(--pink-dark);
+  box-shadow:0 0 0 4px rgba(232,135,158,.18);
+}
+.buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:16px;
+}
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:18px;
+  font-size:1rem;
+  font-weight:700;
+  font-family:"Patrick Hand",-apple-system,BlinkMacSystemFont,sans-serif;
+  cursor:pointer;
+  transition:transform .08s ease, opacity .2s ease;
+}
+button:active{transform:scale(.98)}
+.primary{
+  background:linear-gradient(180deg,var(--pink) 0%,var(--pink-dark) 100%);
+  color:white;
+}
+.secondary{
+  background:linear-gradient(180deg,var(--green) 0%,var(--green-dark) 100%);
+  color:white;
+}
+.ghost{
+  background:#F5EEE9;
+  color:#7B6258;
+}
+.book-progress{
+  margin-top:14px;
+  color:#7B6258;
+  font-size:.98rem;
+}
+.section-title{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  margin:0 0 12px;
+  color:var(--pink-dark);
+}
+.history-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 0;
+  border-bottom:1px dashed var(--line);
+  font-size:.95rem;
+}
+.history-item:last-child{border-bottom:none}
+.badge{
+  background:#FFF0F4;
+  color:var(--pink-dark);
+  padding:6px 10px;
+  border-radius:999px;
+  font-weight:700;
+  font-size:.85rem;
+}
+.footer-note{
+  text-align:center;
+  color:#9A837A;
+  font-size:.85rem;
+  margin-top:10px;
+}
+.empty{
+  color:#9A837A;
+  font-size:.95rem;
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="card">
+    <div class="header" style="justify-content:center;position:relative;">
+      <div>
+        <h1 style="width:100%;text-align:center;">strwbereads (˶ᵔ ᵕ ᵔ˶) ‹𝟹</h1>
+        <div id="greeting" class="greeting"></div>
+      </div>
+      <svg class="strawberry" style="position:absolute;right:0;" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 18c9 0 18 6 20 18 2 13-7 24-20 24S10 49 12 36c2-12 11-18 20-18z" fill="#F48CA7"/>
+        <path d="M20 18c3-5 7-8 12-8s9 3 12 8" fill="none" stroke="#7FA66A" stroke-width="5" stroke-linecap="round"/>
+        <path d="M32 10c2 0 4-3 4-6" fill="none" stroke="#7FA66A" stroke-width="4" stroke-linecap="round"/>
+        <g fill="#FFF3B0">
+          <circle cx="24" cy="30" r="1.6"/><circle cx="34" cy="28" r="1.6"/><circle cx="42" cy="34" r="1.6"/>
+          <circle cx="28" cy="40" r="1.6"/><circle cx="38" cy="44" r="1.6"/><circle cx="22" cy="48" r="1.6"/>
+        </g>
+      </svg>
+    </div>
+
+    <div id="status" class="progress-text">📖 Progress: 0 / 100 pages</div>
+    <div class="progress"><div id="goalbar" class="bar"></div></div>
+    <div id="left" class="helper">100 pages left today</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">🍵 Current Book</div>
+
+    <label for="book">Book Title</label>
+    <input id="book" placeholder="e.g. Atomic Habits">
+
+    <label for="total">Total Pages</label>
+    <input id="total" type="number" placeholder="320">
+
+    <label for="page">Current Page</label>
+    <input id="page" type="number" placeholder="1">
+
+    <div class="buttons">
+      <button class="primary" onclick="logRead()">📖 Log Reading</button>
+      <button class="secondary" onclick="newBook()">📚 Start New Book</button>
+      <button class="ghost" onclick="undo()">↩️ Undo Last Log</button>
+    <button class="ghost" onclick="resetToday()">🧹 Reset Today's Log</button>
+    </div>
+
+    <div id="bookprog" class="book-progress"></div>
+    
+  </div>
+
+  <div class="card">
+    <div class="section-title">🍓 Today's Reading Log</div>
+    <div id="history" class="empty">No reading logged yet today.</div>
+  </div>
+
+  <div class="footer-note">made for the love of 🍓🍵📜<br>｡𖦹°‧strwberi_i ｡𖦹°‧</div>
+</div>
+
+<script>
+let s = JSON.parse(localStorage.getItem("reading") || "{}");
+
+function today(){ return new Date().toISOString().slice(0,10); }
+
+function ensureDailyReset(){
+  if(!s.date || s.date !== today()){
+    s.todayTotal = 0;
+    s.date = today();
+    s.history = [];
+  }
+}
+
+function save(){ localStorage.setItem("reading", JSON.stringify(s)); }
+
+function greeting(){
+  const h = new Date().getHours();
+  if(h < 12) return "🌞 Good morning!";
+  if(h < 18) return "☀️ Good afternoon!";
+  return "🌙 Good evening!";
+}
+
+function updateUI(){
+  ensureDailyReset();
+
+  document.getElementById("greeting").textContent = greeting();
+
+  const total = s.todayTotal || 0;
+  const goalBar = document.getElementById("goalbar");
+
+  if(total >= 100){
+    document.getElementById("status").textContent = `🎉 Reading Goal Complete — ${total} pages today!`;
+    document.getElementById("left").textContent = "Enjoy the rest of your reading! 🍵";
+  }else{
+    document.getElementById("status").textContent = `📖 Progress: ${total} / 100 pages`;
+    document.getElementById("left").textContent = `${100-total} pages left today`;
+  }
+
+  goalBar.style.width = Math.min(total,100) + "%";
+
+  document.getElementById("book").value = s.book || "";
+  document.getElementById("total").value = s.total || "";
+
+  if(s.total){
+    document.getElementById("bookprog").textContent = `${s.lastPage||0} / ${s.total} pages`;
+    document.getElementById("bookbar").style.width =
+      Math.min(((s.lastPage||0) / s.total) * 100, 100) + "%";
+  }else{
+    document.getElementById("bookprog").textContent = "";
+    document.getElementById("bookbar").style.width = "0%";
+  }
+
+  const historyEl = document.getElementById("history");
+  const hist = (s.history || []).slice().reverse();
+
+  if(hist.length === 0){
+    historyEl.className = "empty";
+    historyEl.textContent = "No reading logged yet today.";
+  }else{
+    historyEl.className = "";
+    historyEl.innerHTML = hist.map(x => `
+      <div class="history-item">
+        <div>${x.time} • Page ${x.page}</div>
+        <div class="badge">+${x.read} pages</div>
+      </div>
+    `).join("");
+  }
+
+  save();
+}
+
+function newBook(){
+  s.book = document.getElementById("book").value.trim();
+  s.total = parseInt(document.getElementById("total").value) || 0;
+  s.lastPage = parseInt(document.getElementById("page").value) || 1;
+  updateUI();
+  alert("🍵 New book started!");
+}
+
+function logRead(){
+  ensureDailyReset();
+
+  if(!s.book){
+    newBook();
+    return;
+  }
+
+  const p = parseInt(document.getElementById("page").value);
+  if(isNaN(p)) return;
+
+  s.prev = {
+    lastPage: s.lastPage,
+    todayTotal: s.todayTotal,
+    history: [...(s.history || [])]
+  };
+
+  const read = Math.max(0, p - (s.lastPage || 1));
+  s.lastPage = p;
+  s.todayTotal = (s.todayTotal || 0) + read;
+
+  s.history = s.history || [];
+  s.history.push({
+    time: new Date().toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}),
+    read,
+    page:p
+  });
+
+  if(s.history.length > 5){
+    s.history = s.history.slice(-5);
+  }
+
+  updateUI();
+
+  if(s.todayTotal >= 100){
+    alert(`🎉 Reading Goal Complete!\nYou read ${s.todayTotal} pages today.`);
+  }else{
+    alert(`📖 You read ${read} pages.\n${100 - s.todayTotal} pages left today.`);
+  }
+}
+
+
+function resetToday(){
+ if(!confirm("Reset today's reading log?")) return;
+ s.todayTotal=0;
+ s.history=[];
+ updateUI();
+ alert("🧹 Today's reading log has been reset.");
+}
+
+function undo(){
+  if(!s.prev) return;
+  s.lastPage = s.prev.lastPage;
+  s.todayTotal = s.prev.todayTotal;
+  s.history = s.prev.history;
+  updateUI();
+  alert("↩️ Last log undone.");
+}
+
+updateUI();
+</script>
+</body>
+</html>
