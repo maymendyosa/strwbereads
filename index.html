@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>strwbereads (˶ᵔ ᵕ ᵔ˶) ‹𝟹</title>
+<title>Reading Tracker</title>
 
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#F7A8B8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="strwbereads">
+<meta name="apple-mobile-web-app-title" content="Reading Tracker">
 
 <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -90,6 +90,11 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
 }
 .ring-num{font-family:"Fredoka";font-size:1.9rem;font-weight:600;color:var(--pink-dark)}
 .ring-label{font-size:.85rem;color:var(--muted)}
+.goal-edit-link{
+  background:none;border:none;margin-top:6px;padding:4px 8px;
+  font-family:"Patrick Hand",sans-serif;font-size:.88rem;color:var(--muted);
+  text-decoration:underline;cursor:pointer;
+}
 .ring-goal-complete{color:var(--green-dark)}
 
 .mini-row{display:flex;gap:12px;margin-top:8px}
@@ -262,7 +267,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <div class="card">
       <div class="header">
         <div style="width:100%">
-          <h1>strwbereads (˶ᵔ ᵕ ᵔ˶) ‹𝟹</h1>
+          <h1>Reading Tracker</h1>
           <div id="greeting" class="greeting"></div>
         </div>
         <svg class="strawberry" viewBox="0 0 64 64" aria-hidden="true">
@@ -293,6 +298,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
             <div id="ringLabel" class="ring-label">pages today</div>
           </div>
         </div>
+        <button class="goal-edit-link" onclick="openGoalModal()">Change daily goal</button>
       </div>
 
       <div class="mini-row">
