@@ -12,6 +12,15 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Reading Tracker">
+<script>
+/* applied before first paint so returning users never see a flash of the wrong theme */
+(function(){
+  try{
+    var t = localStorage.getItem("strwbereads_theme");
+    if(t === "dark" || t === "warm") document.documentElement.setAttribute("data-theme", t);
+  }catch(e){}
+})();
+</script>
 
 <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -60,6 +69,29 @@ html[data-theme="dark"]{
   --input-border:#4A3542;
   --ghost-bg:#3A2732;
   --ghost-text:#F3E7E1;
+}
+html[data-theme="warm"]{
+  --cream:#FFF6E9;
+  --pink:#E2896F;
+  --pink-dark:#C65C42;
+  --pink-pale:#FBE7DA;
+  --green:#B7A66A;
+  --green-dark:#8C7A3F;
+  --green-pale:#F3EEDD;
+  --gold:#E0A83E;
+  --text:#3A2E22;
+  --muted:#8A7259;
+  --card:#FFF9F0;
+  --line:#EDE0D0;
+  --empty-cell:#F1E3D2;
+  --bg:#F5EAD8;
+  --bg-square:#EEDFC8;
+  --toast-bg:#3A2E22;
+  --toast-text:#FFF6E9;
+  --input-bg:#FFFCF6;
+  --input-border:#E9D8C4;
+  --ghost-bg:#F2E4D3;
+  --ghost-text:#7A6248;
 }
 *{box-sizing:border-box}
 html{height:100%}
@@ -111,6 +143,12 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
 .header h1{margin:0;font-size:1.4rem;color:var(--green-dark);text-align:center;width:100%}
 .greeting{margin:6px 0 0;color:var(--muted);font-size:.95rem;text-align:center}
 .strawberry{width:48px;height:60px;flex:0 0 auto;position:absolute;right:0;top:-6px;image-rendering:pixelated}
+.theme-toggle{
+  position:absolute;left:0;top:-2px;width:36px;height:36px;border-radius:50%;
+  background:var(--ghost-bg);border:none;font-size:1.05rem;line-height:1;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+  box-shadow:0 2px 6px rgba(75,58,51,.1);
+}
 .sparkle{color:#F0C05A;font-size:.8em;vertical-align:middle}
 @media (prefers-reduced-motion:no-preference){
   .strawberry{animation:bob 3.2s ease-in-out infinite}
@@ -202,6 +240,11 @@ html[data-theme="dark"] .hue-1{--hue-soft:#3A2C1E}
 html[data-theme="dark"] .hue-2{--hue-soft:#3A2732}
 html[data-theme="dark"] .hue-3{--hue-soft:#332439}
 html[data-theme="dark"] .hue-4{--hue-soft:#20301F}
+html[data-theme="warm"] .hue-0{--hue-soft:#FBE3D9;--hue-a:#F0C3AE;--hue-b:#D98357}
+html[data-theme="warm"] .hue-1{--hue-soft:#FCEBD2;--hue-a:#F0D2A0;--hue-b:#C99A4E}
+html[data-theme="warm"] .hue-2{--hue-soft:#F7E7D8;--hue-a:#E8CBAE;--hue-b:#BE8F63}
+html[data-theme="warm"] .hue-3{--hue-soft:#F1E7D6;--hue-a:#DEC7A0;--hue-b:#A98A54}
+html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894F}
 
 .book-bar{background:linear-gradient(90deg,var(--hue-a,#CFE2B3) 0%,var(--hue-b,var(--green-dark)) 100%)}
 .book-progress{margin-top:8px;color:var(--muted);font-size:.92rem;display:flex;justify-content:space-between}
@@ -271,11 +314,15 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 .note-history-item{color:var(--green-dark);font-style:italic}
 .badge{background:var(--pink-pale);color:var(--pink-dark);padding:6px 10px;border-radius:999px;font-weight:700;font-size:.85rem;white-space:nowrap}
 .empty{color:var(--muted);font-size:.95rem;text-align:center;padding:6px 0}
-.collapsible{border-top:1px dashed var(--line);margin-top:10px;padding-top:10px}
-.collapsible summary{cursor:pointer;font-weight:700;color:var(--pink-dark);list-style:none;display:flex;align-items:center;gap:6px}
-.collapsible summary::-webkit-details-marker{display:none}
-.collapsible summary:before{content:"▸";transition:transform .15s}
-.collapsible[open] summary:before{transform:rotate(90deg)}
+.journal-older-nudge{
+  border-top:1px dashed var(--line);margin-top:10px;padding-top:12px;
+  text-align:center;color:var(--muted);font-size:.9rem;
+}
+.journal-cal-link{
+  background:none;border:none;padding:0;margin-left:2px;
+  color:var(--pink-dark);font-weight:700;font-size:.9rem;
+  font-family:"Patrick Hand",sans-serif;cursor:pointer;text-decoration:underline;
+}
 
 /* ---------- calendar ---------- */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
@@ -391,6 +438,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <div id="view-home" class="view active">
     <div class="card">
       <div class="header">
+        <button class="theme-toggle" id="themeToggle" onclick="cycleTheme()" aria-label="Toggle light, dark, or blue light mode" title="Toggle theme">☀️</button>
         <div style="width:100%">
           <h1><span class="sparkle" aria-hidden="true">✦</span> Reading Tracker <span class="sparkle" aria-hidden="true">✦</span></h1>
           <div id="greeting" class="greeting"></div>
@@ -482,10 +530,9 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
       <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Reading Journal</div>
       <div id="journalToday"></div>
       <div id="journalYesterday"></div>
-      <details class="collapsible" id="olderDaysWrap">
-        <summary>Older days</summary>
-        <div id="olderDays" style="margin-top:8px"></div>
-      </details>
+      <div class="journal-older-nudge" id="journalOlderNudge">
+        Looking for older entries? <button class="journal-cal-link" onclick="switchTab('calendar')">Check the Calendar 📅</button>
+      </div>
       <div class="row-buttons" style="margin-top:16px">
         <button class="secondary small" onclick="startNewDay()">Start New Day</button>
         <button class="ghost small" onclick="undo()">Undo Last</button>
@@ -682,6 +729,44 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
    ============================================================ */
 const STORAGE_KEY = "strwbereads_v3";
 const GOAL = 100;
+
+/* ============================================================
+   THEME (light / dark / blue light filter)
+   ============================================================ */
+const THEME_KEY = "strwbereads_theme";
+const THEMES = ["light", "dark", "warm"];
+const THEME_META = {
+  light: { icon: "☀️", label: "Light mode" },
+  dark:  { icon: "🌙", label: "Dark mode" },
+  warm:  { icon: "🕯️", label: "Blue light filter" }
+};
+
+function getTheme(){
+  try{ return localStorage.getItem(THEME_KEY) || "light"; }catch(e){ return "light"; }
+}
+
+function applyTheme(theme){
+  if(!THEME_META[theme]) theme = "light";
+  if(theme === "light"){
+    document.documentElement.removeAttribute("data-theme");
+  } else {
+    document.documentElement.setAttribute("data-theme", theme);
+  }
+  const btn = document.getElementById("themeToggle");
+  if(btn){
+    btn.textContent = THEME_META[theme].icon;
+    btn.setAttribute("aria-label", `${THEME_META[theme].label} — tap to change`);
+  }
+  try{ localStorage.setItem(THEME_KEY, theme); }catch(e){}
+}
+
+function cycleTheme(){
+  const next = THEMES[(THEMES.indexOf(getTheme()) + 1) % THEMES.length];
+  applyTheme(next);
+  toast(`${THEME_META[next].icon} ${THEME_META[next].label}`);
+}
+
+applyTheme(getTheme());
 
 function todayStr(d = new Date()){
   const y = d.getFullYear();
@@ -1520,21 +1605,9 @@ function renderJournal(){
   const allDates = new Set([...journalDates, ...noteDates]);
   allDates.delete(s.today.date);
   allDates.delete(yKey);
-  const olderKeys = [...allDates].sort().reverse();
 
-  const olderEl = document.getElementById("olderDays");
-  const wrap = document.getElementById("olderDaysWrap");
-  if(olderKeys.length === 0){
-    wrap.style.display = "none";
-  } else {
-    wrap.style.display = "";
-    olderEl.innerHTML = olderKeys.map(k => `
-      <div class="journal-day">
-        <div class="journal-day-title">${formatDate(k)}</div>
-        ${dayItemsHtml(s.journal[k], notesForDate(k))}
-      </div>
-    `).join("");
-  }
+  const nudge = document.getElementById("journalOlderNudge");
+  nudge.style.display = allDates.size === 0 ? "none" : "";
 }
 
 function formatDate(iso){
