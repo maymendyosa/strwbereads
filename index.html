@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/favicon.ico">
-<meta name="theme-color" content="#F4838C">
+<meta name="theme-color" content="#F4838C" id="themeColorMeta">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Reading Tracker">
@@ -22,7 +22,7 @@
 })();
 </script>
 
-<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jersey+10&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --cream:#FFF9F5;
@@ -105,13 +105,14 @@ body{
     linear-gradient(-45deg, transparent 75%, var(--bg-square) 75%);
   background-size:20px 20px;
   background-position:0 0, 0 10px, 10px -10px, -10px 0px;
-  font-family:"Patrick Hand",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-family:"Jersey 10",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:18px;
+  letter-spacing:.01em;
   color:var(--text);
   padding:16px 16px calc(120px + env(safe-area-inset-bottom));
   min-height:100vh;
-  transition:background-color .2s ease,color .2s ease;
 }
-h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystemFont,sans-serif}
+h1,h2,.section-title,.fredoka{font-family:"Pixelify Sans",-apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:.01em}
 .wrapper{max-width:480px;margin:0 auto}
 
 /* ---------- cards ---------- */
@@ -120,7 +121,7 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
   border-radius:26px;
   padding:20px;
   margin-bottom:16px;
-  box-shadow:0 10px 24px rgba(224,82,95,.14);
+  box-shadow:0 10px 24px rgba(35,28,25,.12);
   border:1px solid rgba(255,255,255,.7);
 }
 .section-title{
@@ -141,7 +142,8 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
 /* ---------- home header ---------- */
 .header{display:flex;align-items:center;justify-content:center;gap:12px;position:relative}
 .header h1{margin:0;font-size:1.4rem;color:var(--green-dark);text-align:center;width:100%}
-.greeting{margin:6px 0 0;color:var(--muted);font-size:.95rem;text-align:center}
+.greeting{margin:6px 0 0;color:var(--muted);font-size:.95rem;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px}
+.greeting-icon{width:15px;height:18px;flex:0 0 auto;image-rendering:pixelated}
 .strawberry{width:48px;height:60px;flex:0 0 auto;position:absolute;right:0;top:-6px;image-rendering:pixelated}
 .theme-toggle{
   position:absolute;left:0;top:-2px;width:36px;height:36px;border-radius:50%;
@@ -166,11 +168,11 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
   align-items:center;justify-content:center;text-align:center;pointer-events:none;
   padding:0 20px;
 }
-.ring-num{font-family:"Fredoka";font-size:1.9rem;font-weight:600;color:var(--pink-dark)}
+.ring-num{font-family:"Pixelify Sans";font-size:1.9rem;font-weight:600;color:var(--pink-dark)}
 .ring-label{font-size:.85rem;color:var(--muted)}
 .goal-edit-link{
   background:none;border:none;margin-top:6px;padding:4px 8px;
-  font-family:"Patrick Hand",sans-serif;font-size:.88rem;color:var(--muted);
+  font-family:"Jersey 10",sans-serif;font-size:.88rem;color:var(--muted);
   text-decoration:underline;cursor:pointer;
 }
 .ring-goal-complete{color:var(--green-dark)}
@@ -181,7 +183,7 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
   text-align:center;
 }
 .mini-stat.green{background:var(--green-pale)}
-.mini-stat .num{font-family:"Fredoka";font-weight:600;font-size:1.1rem;color:var(--pink-dark);display:flex;align-items:center;justify-content:center;gap:5px}
+.mini-stat .num{font-family:"Pixelify Sans";font-weight:600;font-size:1.1rem;color:var(--pink-dark);display:flex;align-items:center;justify-content:center;gap:5px}
 .mini-stat.green .num{color:var(--green-dark)}
 .mini-stat .lbl{font-size:.78rem;color:var(--muted)}
 
@@ -202,7 +204,7 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
 .notes-add-row input{flex:1;padding:11px 13px;border-radius:14px;margin:0}
 .notes-add-row button{
   width:44px;flex:0 0 auto;border-radius:14px;background:var(--pink-dark);color:#fff;
-  border:none;font-size:1.3rem;cursor:pointer;font-family:"Fredoka",sans-serif;
+  border:none;font-size:1.3rem;cursor:pointer;font-family:"Pixelify Sans",sans-serif;
 }
 .notes-hint{color:var(--muted);font-size:.78rem;text-align:center;margin-top:6px}
 
@@ -212,7 +214,7 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
 .row-buttons button{flex:1}
 button{
   padding:13px;border:none;border-radius:16px;font-size:1rem;font-weight:600;
-  font-family:"Fredoka",sans-serif;cursor:pointer;transition:transform .08s ease,opacity .2s ease;
+  font-family:"Pixelify Sans",sans-serif;cursor:pointer;transition:transform .08s ease,opacity .2s ease;
 }
 button:active{transform:scale(.97)}
 .primary{background:var(--pink-dark);color:#fff;width:100%}
@@ -223,7 +225,7 @@ button:active{transform:scale(.97)}
 .danger.small{padding:9px 12px;font-size:.85rem;width:auto;flex:1}
 
 /* ---------- current book(s) ---------- */
-.book-title{font-family:"Fredoka";font-weight:600;font-size:1.25rem;margin:0 0 10px}
+.book-title{font-family:"Pixelify Sans";font-weight:600;font-size:1.25rem;margin:0 0 10px}
 .book-empty{color:var(--muted);font-size:.95rem;text-align:center;padding:10px 0}
 .progress{width:100%;height:16px;background:rgba(255,255,255,.55);border-radius:999px;overflow:hidden}
 .bar{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--pink) 0%,var(--pink-dark) 100%);transition:width .4s ease}
@@ -249,7 +251,7 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .book-bar{background:linear-gradient(90deg,var(--hue-a,#CFE2B3) 0%,var(--hue-b,var(--green-dark)) 100%)}
 .book-progress{margin-top:8px;color:var(--muted);font-size:.92rem;display:flex;justify-content:space-between}
 
-.book-card{position:relative;background:var(--hue-soft,var(--pink-pale));border-radius:18px;padding:14px 16px;margin-bottom:12px;transition:background-color .2s ease}
+.book-card{position:relative;background:var(--hue-soft,var(--pink-pale));border-radius:18px;padding:14px 16px;margin-bottom:12px}
 .book-card:last-child{margin-bottom:0}
 .book-card-inner{cursor:pointer}
 .book-info{flex:1;min-width:0}
@@ -265,7 +267,7 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 
 .books-read-subtitle{
   display:flex;align-items:center;justify-content:center;gap:6px;
-  font-family:"Fredoka";font-weight:600;color:var(--muted);font-size:.9rem;margin-bottom:12px;
+  font-family:"Pixelify Sans";font-weight:600;color:var(--muted);font-size:.9rem;margin-bottom:12px;
 }
 .books-read-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .books-read-cell{text-align:center}
@@ -282,9 +284,11 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .books-read-pager{display:none;align-items:center;justify-content:center;gap:14px;margin-top:14px}
 .books-read-pager button{background:none;border:none;font-size:1.2rem;color:var(--pink-dark);padding:4px 10px;cursor:pointer}
 .books-read-pager button:disabled{opacity:.3;cursor:default}
-.books-read-pager span{font-family:"Fredoka";font-weight:600;color:var(--muted);font-size:.85rem}
+.books-read-pager span{font-family:"Pixelify Sans";font-weight:600;color:var(--muted);font-size:.85rem}
 
 .tbr-summary{color:var(--muted);font-size:.92rem;text-align:center}
+.tbr-summary-main{font-family:"Pixelify Sans";font-weight:600;color:var(--text);font-size:1rem}
+.tbr-summary-sub{font-size:.82rem;color:var(--muted);margin-top:4px}
 .tbr-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
 .tbr-item{
   display:flex;justify-content:space-between;align-items:center;gap:8px;
@@ -297,12 +301,12 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
   background:var(--pink-pale);box-shadow:0 6px 16px rgba(75,58,51,.15);display:flex;align-items:center;justify-content:center;
 }
 .tbr-pick-cover svg{width:62%;height:62%}
-.tbr-pick-title{font-family:"Fredoka";font-weight:600;font-size:1.15rem;margin-top:8px}
+.tbr-pick-title{font-family:"Pixelify Sans";font-weight:600;font-size:1.15rem;margin-top:8px}
 
 label{display:block;margin-top:12px;margin-bottom:6px;font-weight:700;font-size:.95rem}
 input{
   width:100%;padding:13px;border-radius:14px;border:1px solid var(--input-border);font-size:1rem;
-  font-family:"Patrick Hand",sans-serif;background:var(--input-bg);color:var(--text);
+  font-family:"Jersey 10",sans-serif;background:var(--input-bg);color:var(--text);
 }
 input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba(224,82,95,.18)}
 
@@ -321,13 +325,13 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 .journal-cal-link{
   background:none;border:none;padding:0;margin-left:2px;
   color:var(--pink-dark);font-weight:700;font-size:.9rem;
-  font-family:"Patrick Hand",sans-serif;cursor:pointer;text-decoration:underline;
+  font-family:"Jersey 10",sans-serif;cursor:pointer;text-decoration:underline;
 }
 
 /* ---------- calendar ---------- */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .cal-nav button{background:none;border:none;font-size:1.2rem;padding:4px 10px;color:var(--pink-dark)}
-.cal-month{font-family:"Fredoka";font-weight:600}
+.cal-month{font-family:"Pixelify Sans";font-weight:600}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
 .cal-dow{font-size:.72rem;color:var(--muted);font-weight:700}
 .cal-cell{
@@ -342,22 +346,17 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 .cal-cell.selected{box-shadow:0 0 0 2px var(--green-dark) inset}
 .cal-detail{margin-top:14px}
 
-/* ---------- streak / stats ---------- */
-.streak-grid{display:flex;gap:12px}
-.streak-card{flex:1;text-align:center;padding:16px 10px;border-radius:18px;background:linear-gradient(160deg,#FFF3E0,#FFE7D1)}
-.streak-num{font-family:"Fredoka";font-weight:600;font-size:1.4rem;color:#C97A2B}
-.streak-lbl{font-size:.82rem;color:var(--muted)}
-
+/* ---------- stats ---------- */
 .range-toggle{display:flex;gap:6px;margin-bottom:14px;background:var(--empty-cell);border-radius:14px;padding:4px}
 .range-btn{
   flex:1;background:none;border:none;padding:8px 6px;border-radius:11px;
-  font-family:"Fredoka",sans-serif;font-size:.82rem;font-weight:600;color:var(--muted);cursor:pointer;
+  font-family:"Pixelify Sans",sans-serif;font-size:.82rem;font-weight:600;color:var(--muted);cursor:pointer;
 }
-.range-btn.active{background:var(--card);color:var(--pink-dark);box-shadow:0 2px 6px rgba(224,82,95,.15)}
+.range-btn.active{background:var(--card);color:var(--pink-dark);box-shadow:0 2px 6px rgba(35,28,25,.14)}
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .stat-tile{background:var(--pink-pale);border-radius:16px;padding:14px;text-align:center}
 .stat-tile.green{background:var(--green-pale)}
-.stat-num{font-family:"Fredoka";font-weight:600;font-size:1.4rem;color:var(--pink-dark)}
+.stat-num{font-family:"Pixelify Sans";font-weight:600;font-size:1.4rem;color:var(--pink-dark)}
 .stat-tile.green .stat-num{color:var(--green-dark)}
 .stat-lbl{font-size:.8rem;color:var(--muted);margin-top:2px}
 
@@ -376,13 +375,13 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 .tabbar{
   position:fixed;left:0;right:0;bottom:0;background:var(--card);
   display:flex;border-top:1px solid var(--line);
-  box-shadow:0 -6px 18px rgba(224,82,95,.12);
+  box-shadow:0 -6px 18px rgba(35,28,25,.10);
   padding:8px 6px calc(8px + env(safe-area-inset-bottom));
   z-index:50;
 }
 .tab-btn{
   flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;
-  gap:2px;color:var(--muted);font-family:"Fredoka";font-size:.72rem;font-weight:600;padding:6px 2px;
+  gap:2px;color:var(--muted);font-family:"Pixelify Sans";font-size:.72rem;font-weight:600;padding:6px 2px;
 }
 .tab-btn .ic{font-size:1.35rem}
 .tab-btn.active{color:var(--pink-dark)}
@@ -400,7 +399,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 }
 .modal-backdrop.open{display:flex}
 .modal{background:var(--card);border-radius:24px;padding:22px;width:100%;max-width:380px;box-shadow:0 20px 50px rgba(0,0,0,.2)}
-.modal h3{margin:0 0 4px;font-family:"Fredoka"}
+.modal h3{margin:0 0 4px;font-family:"Pixelify Sans"}
 .modal .sub{color:var(--muted);font-size:.9rem;margin-bottom:10px}
 
 /* ---------- toast ---------- */
@@ -423,7 +422,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 }
 .celebrate-card.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .celebrate-card .big{font-size:2.4rem;margin-bottom:6px}
-.celebrate-card p{margin:6px 0 0;font-family:"Fredoka";font-weight:600;color:var(--pink-dark)}
+.celebrate-card p{margin:6px 0 0;font-family:"Pixelify Sans";font-weight:600;color:var(--pink-dark)}
 
 @media (prefers-reduced-motion:reduce){
   .confetti-piece{animation:none;display:none}
@@ -468,7 +467,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 
       <div class="mini-row">
         <div class="mini-stat">
-          <div class="num"><svg class="berry-icon" width="16" height="16" viewBox="0 0 24 24"><path d="M12 22C12 22 5 14 5 9A7 7 0 0 1 19 9C19 14 12 22 12 22Z" fill="#E0525F"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3" fill="none" stroke="#7FA66A" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="14.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="12" cy="16" r="0.6" fill="#FFF3B0"/></svg><span id="homeStreak">0</span></div>
+          <div class="num"><span id="homeStreak">0</span></div>
           <div class="lbl">day streak</div>
         </div>
         <div class="mini-stat green">
@@ -519,7 +518,10 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 
     <div class="card">
       <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M8 4h8v3H8z"/><path d="M7 7h10l1 12.5a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z"/></svg>TBR Jar</div>
-      <div class="tbr-summary" id="tbrSummary">0 titles waiting</div>
+      <div class="tbr-summary">
+        <div class="tbr-summary-main" id="tbrSummaryMain">Can't decide what to read? Shake me now!</div>
+        <div class="tbr-summary-sub" id="tbrSummarySub">0 book choices</div>
+      </div>
       <div class="row-buttons" style="margin-top:10px">
         <button class="ghost small" onclick="openTbrJar()">Manage Titles</button>
         <button class="secondary small" onclick="shakeJar()">Shake</button>
@@ -558,22 +560,6 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <!-- ============ PROGRESS (streak / stats / achievements / backup) ============ -->
   <div id="view-progress" class="view">
     <div class="card">
-      <div class="section-title"><svg class="berry-icon" width="20" height="20" viewBox="0 0 24 24"><path d="M12 22C12 22 5 14 5 9A7 7 0 0 1 19 9C19 14 12 22 12 22Z" fill="#E0525F"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3" fill="none" stroke="#7FA66A" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="14.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="12" cy="16" r="0.6" fill="#FFF3B0"/></svg>Reading Streak</div>
-      <div class="streak-grid">
-        <div class="streak-card">
-          <svg class="berry-icon" width="28" height="28" viewBox="0 0 24 24" style="margin:0 auto;display:block"><path d="M12 22C12 22 5 14 5 9A7 7 0 0 1 19 9C19 14 12 22 12 22Z" fill="#E0525F"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3" fill="none" stroke="#7FA66A" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.5" cy="12" r="0.7" fill="#FFF3B0"/><circle cx="14.5" cy="12" r="0.7" fill="#FFF3B0"/><circle cx="12" cy="16" r="0.7" fill="#FFF3B0"/></svg>
-          <div class="streak-num" id="curStreak">0 days</div>
-          <div class="streak-lbl">Current</div>
-        </div>
-        <div class="streak-card">
-          <svg class="berry-icon" width="28" height="28" viewBox="0 0 24 24" style="margin:0 auto;display:block"><path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 17l-5.6 3.1 1.4-6.3-4.8-4.3 6.4-.6z" fill="#F0C05A"/></svg>
-          <div class="streak-num" id="longStreak">0 days</div>
-          <div class="streak-lbl">Longest</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
       <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Stats</div>
       <div class="range-toggle" id="statsRangeToggle">
         <button class="range-btn active" data-range="all" onclick="setStatsRange('all')">All Time</button>
@@ -581,6 +567,8 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
         <button class="range-btn" data-range="month" onclick="setStatsRange('month')">This Month</button>
       </div>
       <div class="stats-grid">
+        <div class="stat-tile"><div class="stat-num" id="curStreak">0 days</div><div class="stat-lbl">Current Streak</div></div>
+        <div class="stat-tile green"><div class="stat-num" id="longStreak">0 days</div><div class="stat-lbl">Longest Streak</div></div>
         <div class="stat-tile"><div class="stat-num" id="statBooks">0</div><div class="stat-lbl">Books Finished</div></div>
         <div class="stat-tile green"><div class="stat-num" id="statPages">0</div><div class="stat-lbl">Pages Read</div></div>
         <div class="stat-tile"><div class="stat-num" id="statAvg">0</div><div class="stat-lbl">Avg pages/day</div></div>
@@ -736,9 +724,9 @@ const GOAL = 100;
 const THEME_KEY = "strwbereads_theme";
 const THEMES = ["light", "dark", "warm"];
 const THEME_META = {
-  light: { icon: "☀️", label: "Light mode" },
-  dark:  { icon: "🌙", label: "Dark mode" },
-  warm:  { icon: "🕯️", label: "Blue light filter" }
+  light: { icon: "☀️", label: "Light mode", bg: "#EDF2E4" },
+  dark:  { icon: "🌙", label: "Dark mode", bg: "#1B1119" },
+  warm:  { icon: "🕯️", label: "Blue light filter", bg: "#F5EAD8" }
 };
 
 function getTheme(){
@@ -757,6 +745,8 @@ function applyTheme(theme){
     btn.textContent = THEME_META[theme].icon;
     btn.setAttribute("aria-label", `${THEME_META[theme].label} — tap to change`);
   }
+  const meta = document.getElementById("themeColorMeta");
+  if(meta) meta.setAttribute("content", THEME_META[theme].bg);
   try{ localStorage.setItem(THEME_KEY, theme); }catch(e){}
 }
 
@@ -965,7 +955,10 @@ function unlock(id){
   if(s.achievements[id]) return;
   s.achievements[id] = { date: todayStr() };
   const a = ACHIEVEMENTS.find(x=>x.id===id);
-  if(a) toast(`${a.emoji} Achievement unlocked: ${a.name}!`);
+  if(a){
+    spawnConfetti(16);
+    toast(`${a.emoji} Achievement unlocked: ${a.name}!`);
+  }
 }
 
 function checkAchievements(ctx){
@@ -1048,10 +1041,17 @@ function renderTbrList(){
 }
 
 function renderTbrSummary(){
-  const el = document.getElementById("tbrSummary");
-  if(!el) return;
+  const main = document.getElementById("tbrSummaryMain");
+  const sub = document.getElementById("tbrSummarySub");
+  if(!main || !sub) return;
   const n = (s.tbr || []).length;
-  el.textContent = n === 0 ? "Your jar is empty" : `${n} title${n===1?"":"s"} waiting`;
+  if(n === 0){
+    main.textContent = "Your jar is empty";
+    sub.textContent = "add a few titles to get started!";
+  } else {
+    main.textContent = "Can't decide what to read? Shake me now!";
+    sub.textContent = `${n} book choice${n===1?"":"s"}`;
+  }
 }
 
 function addTbrTitle(){
@@ -1120,8 +1120,8 @@ function finishBookConfirm(){
   checkAchievements();
   save();
   closeModal("removeBookModal");
-  toast("Book finished — nice work!");
   renderAll();
+  celebrate(`You finished <strong>${escapeHtml(book.title || "your book")}</strong>! 🎉`);
 }
 
 function removeBookConfirm(){
@@ -1327,10 +1327,10 @@ function importData(evt){
 /* ============================================================
    CELEBRATION
    ============================================================ */
-function celebrate(){
+function spawnConfetti(count){
   const layer = document.getElementById("celebrate-layer");
   const emojis = ["🍓","✨","🎉","🍓","🌸","✨"];
-  for(let i=0;i<28;i++){
+  for(let i=0;i<count;i++){
     const el = document.createElement("div");
     el.className = "confetti-piece";
     el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
@@ -1342,9 +1342,14 @@ function celebrate(){
     layer.appendChild(el);
     setTimeout(()=>el.remove(), (dur+1)*1000);
   }
+}
+
+function celebrate(message){
+  const layer = document.getElementById("celebrate-layer");
+  spawnConfetti(28);
   const card = document.createElement("div");
   card.className = "celebrate-card";
-  card.innerHTML = `<div class="big">🍓📚✨</div><p>Amazing job! You reached your reading goal today!</p>`;
+  card.innerHTML = `<div class="big">🍓📚✨</div><p>${message || "Amazing job! You reached your reading goal today!"}</p>`;
   layer.appendChild(card);
   requestAnimationFrame(()=>card.classList.add("show"));
   setTimeout(()=>{
@@ -1424,8 +1429,8 @@ function renderNotes(){
    ============================================================ */
 function renderHome(){
   const h = new Date().getHours();
-  document.getElementById("greeting").textContent =
-    h < 12 ? "🌞 Good morning!" : h < 18 ? "☀️ Good afternoon!" : "🌙 Good evening!";
+  const greetText = h < 12 ? "Good morning!" : h < 18 ? "Good afternoon!" : "Good evening!";
+  document.getElementById("greeting").innerHTML = `${PIXEL_SHAKE_SVG}<span>${greetText}</span>`;
 
   const total = todayTotal();
   const pct = Math.min(total / s.goal, 1);
@@ -1522,6 +1527,9 @@ const PIXEL_HEART_SVG = `<svg viewBox='0 0 14 12' width='14' height='12' xmlns='
 
 /* small pixel strawberry used as the "cover" swatch icon for finished books */
 const PIXEL_BERRY_SVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="10" y="1" width="4" height="2" fill="#FFF3C9"/><rect x="6" y="3" width="12" height="2" fill="#FFF3C9"/><rect x="4" y="7" width="16" height="2" fill="#fff" opacity=".9"/><rect x="3" y="9" width="18" height="2" fill="#fff" opacity=".9"/><rect x="3" y="11" width="18" height="2" fill="#fff" opacity=".9"/><rect x="4" y="13" width="16" height="2" fill="#fff" opacity=".9"/><rect x="5" y="15" width="14" height="2" fill="#fff" opacity=".9"/><rect x="7" y="17" width="10" height="2" fill="#fff" opacity=".9"/><rect x="9" y="19" width="6" height="2" fill="#fff" opacity=".9"/><rect x="8" y="9" width="2" height="2" fill="#FFF3C9"/><rect x="15" y="9" width="2" height="2" fill="#FFF3C9"/><rect x="6" y="13" width="2" height="2" fill="#FFF3C9"/><rect x="17" y="13" width="2" height="2" fill="#FFF3C9"/><rect x="11" y="17" width="2" height="2" fill="#FFF3C9"/></svg>`;
+
+/* cute pixel strawberry shake used on the home greeting instead of emoji */
+const PIXEL_SHAKE_SVG = `<svg class="greeting-icon" viewBox="0 0 22 26" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="10" y="0" width="2" height="2" fill="#7FA66A"/><rect x="8" y="2" width="6" height="2" fill="#E0525F"/><rect x="4" y="4" width="14" height="2" fill="#FFFDF9"/><rect x="14" y="4" width="2" height="2" fill="#F4838C"/><rect x="2" y="6" width="18" height="2" fill="#FFFDF9"/><rect x="14" y="6" width="2" height="2" fill="#F4838C"/><rect x="1" y="8" width="20" height="2" fill="#F0C05A"/><rect x="14" y="8" width="2" height="2" fill="#fff"/><rect x="1" y="10" width="20" height="2" fill="#FFC9CF"/><rect x="14" y="10" width="2" height="2" fill="#F4838C"/><rect x="2" y="12" width="18" height="2" fill="#F4838C"/><rect x="3" y="14" width="16" height="2" fill="#E0525F"/><rect x="9" y="14" width="2" height="2" fill="#FFF3C9"/><rect x="4" y="16" width="14" height="2" fill="#F4838C"/><rect x="5" y="18" width="12" height="2" fill="#FFC9CF"/><rect x="6" y="20" width="10" height="2" fill="#F0C05A"/><rect x="7" y="22" width="8" height="2" fill="#E0A83E"/><rect x="8" y="24" width="6" height="2" fill="#C97A2B"/></svg>`;
 
 /* cute pixel "surprise" gift box used when the TBR jar picks a title */
 const SURPRISE_SVG = `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="8" y="18" width="32" height="6" fill="#E0525F"/><rect x="8" y="24" width="32" height="18" fill="#F4838C"/><rect x="8" y="24" width="32" height="4" fill="#FFF0EE"/><rect x="20" y="18" width="8" height="24" fill="#F0C05A"/><rect x="16" y="8" width="8" height="10" fill="#7FA66A"/><rect x="24" y="8" width="8" height="10" fill="#7FA66A"/><rect x="18" y="10" width="4" height="6" fill="#A8C686"/><rect x="26" y="10" width="4" height="6" fill="#A8C686"/><rect x="10" y="10" width="3" height="3" fill="#F0C05A"/><rect x="35" y="30" width="3" height="3" fill="#F0C05A"/><rect x="6" y="34" width="3" height="3" fill="#F4838C"/></svg>`;
