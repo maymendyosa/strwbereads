@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/favicon.ico">
-<meta name="theme-color" content="#F7A8B8">
+<meta name="theme-color" content="#F4838C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Reading Tracker">
@@ -17,9 +17,9 @@
 <style>
 :root{
   --cream:#FFF9F5;
-  --pink:#F7A8B8;
-  --pink-dark:#E8879E;
-  --pink-pale:#FFF0F4;
+  --pink:#F4838C;
+  --pink-dark:#E0525F;
+  --pink-pale:#FFF0EE;
   --green:#A8C686;
   --green-dark:#7FA66A;
   --green-pale:#F0F5E8;
@@ -29,16 +29,55 @@
   --card:#FFFDF9;
   --line:#EADFD8;
   --empty-cell:#F3E7E2;
+  --bg:#EDF2E4;
+  --bg-square:#E3ECD6;
+  --toast-bg:#4B3A33;
+  --toast-text:#fff;
+  --input-bg:#FFFEFC;
+  --input-border:#E7D7D2;
+  --ghost-bg:#F5EEE9;
+  --ghost-text:#7B6258;
+}
+html[data-theme="dark"]{
+  --cream:#241826;
+  --pink:#F4838C;
+  --pink-dark:#FF8FA0;
+  --pink-pale:#3D2530;
+  --green:#A8C686;
+  --green-dark:#A9D080;
+  --green-pale:#24301F;
+  --gold:#F5CE6E;
+  --text:#F3E7E1;
+  --muted:#C2A99E;
+  --card:#2E1E2A;
+  --line:#4A3542;
+  --empty-cell:#3A2732;
+  --bg:#1B1119;
+  --bg-square:#241A22;
+  --toast-bg:#F3E7E1;
+  --toast-text:#241826;
+  --input-bg:#241826;
+  --input-border:#4A3542;
+  --ghost-bg:#3A2732;
+  --ghost-text:#F3E7E1;
 }
 *{box-sizing:border-box}
 html{height:100%}
 body{
   margin:0;
-  background:#EDF2E4;
+  background-color:var(--bg);
+  background-image:
+    linear-gradient(45deg, var(--bg-square) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--bg-square) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--bg-square) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--bg-square) 75%);
+  background-size:20px 20px;
+  background-position:0 0, 0 10px, 10px -10px, -10px 0px;
   font-family:"Patrick Hand",-apple-system,BlinkMacSystemFont,sans-serif;
   color:var(--text);
   padding:16px 16px calc(120px + env(safe-area-inset-bottom));
   min-height:100vh;
+  transition:background-color .2s ease,color .2s ease;
 }
 h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystemFont,sans-serif}
 .wrapper{max-width:480px;margin:0 auto}
@@ -49,7 +88,7 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
   border-radius:26px;
   padding:20px;
   margin-bottom:16px;
-  box-shadow:0 10px 24px rgba(200,120,140,.14);
+  box-shadow:0 10px 24px rgba(224,82,95,.14);
   border:1px solid rgba(255,255,255,.7);
 }
 .section-title{
@@ -71,7 +110,8 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
 .header{display:flex;align-items:center;justify-content:center;gap:12px;position:relative}
 .header h1{margin:0;font-size:1.4rem;color:var(--green-dark);text-align:center;width:100%}
 .greeting{margin:6px 0 0;color:var(--muted);font-size:.95rem;text-align:center}
-.strawberry{width:42px;height:42px;flex:0 0 auto;position:absolute;right:0}
+.strawberry{width:48px;height:60px;flex:0 0 auto;position:absolute;right:0;top:-6px;image-rendering:pixelated}
+.sparkle{color:#F0C05A;font-size:.8em;vertical-align:middle}
 @media (prefers-reduced-motion:no-preference){
   .strawberry{animation:bob 3.2s ease-in-out infinite}
 }
@@ -139,7 +179,7 @@ button{
 button:active{transform:scale(.97)}
 .primary{background:var(--pink-dark);color:#fff;width:100%}
 .secondary{background:var(--green-dark);color:#fff}
-.ghost{background:#F5EEE9;color:#7B6258}
+.ghost{background:var(--ghost-bg);color:var(--ghost-text)}
 .ghost.small,.secondary.small{padding:9px 12px;font-size:.85rem}
 .danger{background:#D96B6B;color:#fff;width:100%}
 .danger.small{padding:9px 12px;font-size:.85rem;width:auto;flex:1}
@@ -147,22 +187,31 @@ button:active{transform:scale(.97)}
 /* ---------- current book(s) ---------- */
 .book-title{font-family:"Fredoka";font-weight:600;font-size:1.25rem;margin:0 0 10px}
 .book-empty{color:var(--muted);font-size:.95rem;text-align:center;padding:10px 0}
-.progress{width:100%;height:16px;background:var(--empty-cell);border-radius:999px;overflow:hidden}
+.progress{width:100%;height:16px;background:rgba(255,255,255,.55);border-radius:999px;overflow:hidden}
 .bar{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--pink) 0%,var(--pink-dark) 100%);transition:width .4s ease}
-.book-bar{background:linear-gradient(90deg,#CFE2B3 0%,var(--green-dark) 100%)}
+
+/* ---------- strawberry pastel hues (alternate by index so neighboring
+   books/entries never share a color) ---------- */
+.hue-0{--hue-soft:#FFEEF0;--hue-a:#FFC9CF;--hue-b:#F4838C}
+.hue-1{--hue-soft:#FFF3E6;--hue-a:#FFDCB8;--hue-b:#EF9F52}
+.hue-2{--hue-soft:#FBEEF4;--hue-a:#F6C9DE;--hue-b:#DD7FA8}
+.hue-3{--hue-a:#E4C9F4;--hue-b:#B27FE0;--hue-soft:#F4EBFC}
+.hue-4{--hue-soft:#EAFAEE;--hue-a:#C9F0D4;--hue-b:#74BF83}
+html[data-theme="dark"] .hue-0{--hue-soft:#3D2530}
+html[data-theme="dark"] .hue-1{--hue-soft:#3A2C1E}
+html[data-theme="dark"] .hue-2{--hue-soft:#3A2732}
+html[data-theme="dark"] .hue-3{--hue-soft:#332439}
+html[data-theme="dark"] .hue-4{--hue-soft:#20301F}
+
+.book-bar{background:linear-gradient(90deg,var(--hue-a,#CFE2B3) 0%,var(--hue-b,var(--green-dark)) 100%)}
 .book-progress{margin-top:8px;color:var(--muted);font-size:.92rem;display:flex;justify-content:space-between}
 
-.book-card{position:relative;background:var(--pink-pale);border-radius:18px;padding:14px 16px;margin-bottom:12px}
+.book-card{position:relative;background:var(--hue-soft,var(--pink-pale));border-radius:18px;padding:14px 16px;margin-bottom:12px;transition:background-color .2s ease}
 .book-card:last-child{margin-bottom:0}
-.book-card-inner{display:flex;gap:12px;cursor:pointer}
-.book-cover{
-  width:42px;height:60px;flex:0 0 auto;border-radius:8px;overflow:hidden;
-  background:#fff;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 2px 6px rgba(75,58,51,.1);
-}
-.book-cover img{width:100%;height:100%;object-fit:contain;object-position:center;display:block}
+.book-card-inner{cursor:pointer}
 .book-info{flex:1;min-width:0}
-.book-card .book-title{font-size:1.1rem;margin:0 22px 8px 0}
+.book-card .book-title{font-size:1.1rem;margin:0 22px 2px 0}
+.book-author{font-size:.85rem;font-style:italic;color:var(--muted);margin:0 22px 8px 0}
 .book-remove{
   position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;
   background:#fff;color:var(--muted);border:1px solid var(--line);
@@ -178,10 +227,11 @@ button:active{transform:scale(.97)}
 .books-read-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .books-read-cell{text-align:center}
 .books-read-cover{
-  width:100%;aspect-ratio:2/3;border-radius:8px;overflow:hidden;background:#fff;
+  width:100%;aspect-ratio:2/3;border-radius:8px;overflow:hidden;
+  background:linear-gradient(135deg,var(--hue-a,#FFC9CF) 0%,var(--hue-b,#F4838C) 100%);
   display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(75,58,51,.1);
 }
-.books-read-cover img{width:100%;height:100%;object-fit:contain}
+.books-read-cover svg{width:46%;height:46%}
 .books-read-title{
   font-size:.72rem;color:var(--muted);margin-top:5px;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;
@@ -195,40 +245,23 @@ button:active{transform:scale(.97)}
 .tbr-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
 .tbr-item{
   display:flex;justify-content:space-between;align-items:center;gap:8px;
-  background:var(--green-pale);border-radius:12px;padding:9px 10px;font-size:.92rem;
+  background:var(--hue-soft,var(--green-pale));border-radius:12px;padding:9px 10px;font-size:.92rem;
 }
 .tbr-item .tbr-title{flex:1;word-break:break-word}
 .tbr-del{background:none;border:none;color:var(--muted);font-size:1.05rem;line-height:1;cursor:pointer;padding:0 2px}
 .tbr-pick-cover{
   width:110px;height:154px;margin:14px auto 4px;border-radius:10px;overflow:hidden;
-  background:#fff;box-shadow:0 6px 16px rgba(75,58,51,.15);display:flex;align-items:center;justify-content:center;
+  background:var(--pink-pale);box-shadow:0 6px 16px rgba(75,58,51,.15);display:flex;align-items:center;justify-content:center;
 }
-.tbr-pick-cover img{width:100%;height:100%;object-fit:contain}
+.tbr-pick-cover svg{width:62%;height:62%}
 .tbr-pick-title{font-family:"Fredoka";font-weight:600;font-size:1.15rem;margin-top:8px}
-
-.cover-pick-list{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;margin-top:4px}
-.cover-pick{
-  display:flex;align-items:center;gap:12px;background:var(--pink-pale);border:none;
-  border-radius:14px;padding:9px 12px;cursor:pointer;text-align:left;width:100%;
-  font-family:"Patrick Hand",sans-serif;
-}
-.cover-pick:hover{background:var(--pink);}
-.cover-pick-img{
-  width:40px;height:56px;flex:0 0 auto;border-radius:6px;overflow:hidden;
-  background:#fff;display:flex;align-items:center;justify-content:center;
-}
-.cover-pick-img img{width:100%;height:100%;object-fit:contain;display:block}
-.cover-pick-text{flex:1;min-width:0}
-.cover-pick-title{font-family:"Fredoka";font-weight:600;font-size:.95rem;color:var(--text)}
-.cover-pick-author{color:var(--muted);font-size:.82rem;margin-top:2px}
-.cover-pick-skip{background:var(--empty-cell);justify-content:center;color:var(--muted);font-weight:600}
 
 label{display:block;margin-top:12px;margin-bottom:6px;font-weight:700;font-size:.95rem}
 input{
-  width:100%;padding:13px;border-radius:14px;border:1px solid #E7D7D2;font-size:1rem;
-  font-family:"Patrick Hand",sans-serif;background:#FFFEFC;color:var(--text);
+  width:100%;padding:13px;border-radius:14px;border:1px solid var(--input-border);font-size:1rem;
+  font-family:"Patrick Hand",sans-serif;background:var(--input-bg);color:var(--text);
 }
-input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba(232,135,158,.18)}
+input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba(224,82,95,.18)}
 
 /* ---------- journal ---------- */
 .journal-day{margin-bottom:6px}
@@ -255,7 +288,8 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   font-size:1rem;line-height:1;cursor:pointer;background:var(--empty-cell);color:var(--muted);border:none;
   position:relative;overflow:hidden;padding:0;margin:0;
 }
-.cal-cell.read{background:var(--pink-pale);font-size:.9rem}
+.cal-cell.read{background:var(--pink-dark);font-size:.9rem}
+.cal-cell.read svg{display:block}
 .cal-cell.faded{opacity:0}
 .cal-cell.today{box-shadow:0 0 0 2px var(--pink-dark) inset}
 .cal-cell.selected{box-shadow:0 0 0 2px var(--green-dark) inset}
@@ -272,7 +306,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   flex:1;background:none;border:none;padding:8px 6px;border-radius:11px;
   font-family:"Fredoka",sans-serif;font-size:.82rem;font-weight:600;color:var(--muted);cursor:pointer;
 }
-.range-btn.active{background:var(--card);color:var(--pink-dark);box-shadow:0 2px 6px rgba(200,120,140,.15)}
+.range-btn.active{background:var(--card);color:var(--pink-dark);box-shadow:0 2px 6px rgba(224,82,95,.15)}
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .stat-tile{background:var(--pink-pale);border-radius:16px;padding:14px;text-align:center}
 .stat-tile.green{background:var(--green-pale)}
@@ -295,7 +329,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 .tabbar{
   position:fixed;left:0;right:0;bottom:0;background:var(--card);
   display:flex;border-top:1px solid var(--line);
-  box-shadow:0 -6px 18px rgba(200,120,140,.12);
+  box-shadow:0 -6px 18px rgba(224,82,95,.12);
   padding:8px 6px calc(8px + env(safe-area-inset-bottom));
   z-index:50;
 }
@@ -325,7 +359,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 /* ---------- toast ---------- */
 #toast{
   position:fixed;left:50%;bottom:86px;transform:translateX(-50%) translateY(20px);
-  background:var(--text);color:#fff;padding:10px 18px;border-radius:999px;font-size:.9rem;
+  background:var(--toast-bg);color:var(--toast-text);padding:10px 18px;border-radius:999px;font-size:.9rem;
   opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:200;
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -358,18 +392,10 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <div class="card">
       <div class="header">
         <div style="width:100%">
-          <h1>Reading Tracker</h1>
+          <h1><span class="sparkle" aria-hidden="true">✦</span> Reading Tracker <span class="sparkle" aria-hidden="true">✦</span></h1>
           <div id="greeting" class="greeting"></div>
         </div>
-        <svg class="strawberry" viewBox="0 0 64 64" aria-hidden="true">
-          <path d="M32 18c9 0 18 6 20 18 2 13-7 24-20 24S10 49 12 36c2-12 11-18 20-18z" fill="#F48CA7"/>
-          <path d="M20 18c3-5 7-8 12-8s9 3 12 8" fill="none" stroke="#7FA66A" stroke-width="5" stroke-linecap="round"/>
-          <path d="M32 10c2 0 4-3 4-6" fill="none" stroke="#7FA66A" stroke-width="4" stroke-linecap="round"/>
-          <g fill="#FFF3B0">
-            <circle cx="24" cy="30" r="1.6"/><circle cx="34" cy="28" r="1.6"/><circle cx="42" cy="34" r="1.6"/>
-            <circle cx="28" cy="40" r="1.6"/><circle cx="38" cy="44" r="1.6"/><circle cx="22" cy="48" r="1.6"/>
-          </g>
-        </svg>
+<svg class="strawberry" viewBox="0 0 64 80" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="28" y="0" width="8" height="8" fill="#5C8A49"/><rect x="20" y="8" width="24" height="4" fill="#7FA66A"/><rect x="12" y="12" width="12" height="4" fill="#7FA66A"/><rect x="40" y="12" width="12" height="4" fill="#7FA66A"/><rect x="8" y="16" width="16" height="4" fill="#5C8A49"/><rect x="40" y="16" width="16" height="4" fill="#5C8A49"/><rect x="12" y="20" width="40" height="4" fill="#E0525F"/><rect x="8" y="24" width="48" height="4" fill="#E0525F"/><rect x="4" y="28" width="56" height="4" fill="#E0525F"/><rect x="4" y="32" width="56" height="4" fill="#E0525F"/><rect x="4" y="36" width="56" height="4" fill="#E0525F"/><rect x="8" y="40" width="48" height="4" fill="#E0525F"/><rect x="8" y="44" width="48" height="4" fill="#E0525F"/><rect x="12" y="48" width="40" height="4" fill="#E0525F"/><rect x="12" y="52" width="40" height="4" fill="#E0525F"/><rect x="16" y="56" width="32" height="4" fill="#E0525F"/><rect x="16" y="60" width="32" height="4" fill="#E0525F"/><rect x="20" y="64" width="24" height="4" fill="#E0525F"/><rect x="24" y="68" width="16" height="4" fill="#E0525F"/><rect x="28" y="72" width="8" height="4" fill="#E0525F"/><rect x="12" y="20" width="4" height="4" fill="#F4838C"/><rect x="8" y="24" width="4" height="4" fill="#F4838C"/><rect x="4" y="28" width="4" height="4" fill="#F4838C"/><rect x="4" y="32" width="4" height="4" fill="#F4838C"/><rect x="4" y="36" width="4" height="4" fill="#F4838C"/><rect x="8" y="40" width="4" height="4" fill="#F4838C"/><rect x="8" y="44" width="4" height="4" fill="#F4838C"/><rect x="12" y="48" width="4" height="4" fill="#F4838C"/><rect x="12" y="52" width="4" height="4" fill="#F4838C"/><rect x="16" y="56" width="4" height="4" fill="#F4838C"/><rect x="16" y="60" width="4" height="4" fill="#F4838C"/><rect x="20" y="64" width="4" height="4" fill="#F4838C"/><rect x="24" y="68" width="4" height="4" fill="#F4838C"/><rect x="28" y="72" width="4" height="4" fill="#F4838C"/><rect x="16" y="28" width="4" height="4" fill="#F0C05A"/><rect x="44" y="28" width="4" height="4" fill="#F0C05A"/><rect x="12" y="40" width="4" height="4" fill="#F0C05A"/><rect x="48" y="40" width="4" height="4" fill="#F0C05A"/><rect x="20" y="52" width="4" height="4" fill="#F0C05A"/><rect x="40" y="52" width="4" height="4" fill="#F0C05A"/><rect x="16" y="64" width="4" height="4" fill="#F0C05A"/><rect x="44" y="64" width="4" height="4" fill="#F0C05A"/><rect x="28" y="72" width="4" height="4" fill="#F0C05A"/></svg>
       </div>
 
       <div class="ring-wrap">
@@ -377,7 +403,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
           <svg class="ring-svg" viewBox="0 0 120 120">
             <defs>
               <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#F7A8B8"/>
+                <stop offset="0%" stop-color="#F4838C"/>
                 <stop offset="100%" stop-color="#A8C686"/>
               </linearGradient>
             </defs>
@@ -394,7 +420,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 
       <div class="mini-row">
         <div class="mini-stat">
-          <div class="num"><svg class="berry-icon" width="16" height="16" viewBox="0 0 24 24"><path d="M12 22C12 22 5 14 5 9A7 7 0 0 1 19 9C19 14 12 22 12 22Z" fill="#E8879E"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3" fill="none" stroke="#7FA66A" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="14.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="12" cy="16" r="0.6" fill="#FFF3B0"/></svg><span id="homeStreak">0</span></div>
+          <div class="num"><svg class="berry-icon" width="16" height="16" viewBox="0 0 24 24"><path d="M12 22C12 22 5 14 5 9A7 7 0 0 1 19 9C19 14 12 22 12 22Z" fill="#E0525F"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3" fill="none" stroke="#7FA66A" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="14.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="12" cy="16" r="0.6" fill="#FFF3B0"/></svg><span id="homeStreak">0</span></div>
           <div class="lbl">day streak</div>
         </div>
         <div class="mini-stat green">
@@ -412,7 +438,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
         <div class="notes-hint">Older notes live in your Journal</div>
       </div>
 
-      <button class="primary" style="margin-top:16px" onclick="openLogModal()">Log Reading</button>
+      <button class="primary" style="margin-top:16px" onclick="openLogModal()">📖 Log Reading</button>
     </div>
 
     <div class="card">
@@ -440,7 +466,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
       <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z"/><path d="M12 6v13"/></svg>Currently Reading</div>
       <div id="bookBlock"></div>
       <button class="ghost small" style="width:100%;margin-top:10px" onclick="openNewBookModal()">New Book</button>
-      <button class="primary" style="margin-top:10px" onclick="openLogModal()">Log Reading</button>
+      <button class="primary" style="margin-top:10px" onclick="openLogModal()">📖 Log Reading</button>
     </div>
 
     <div class="card">
@@ -485,10 +511,10 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <!-- ============ PROGRESS (streak / stats / achievements / backup) ============ -->
   <div id="view-progress" class="view">
     <div class="card">
-      <div class="section-title"><svg class="berry-icon" width="20" height="20" viewBox="0 0 24 24"><path d="M12 22C12 22 5 14 5 9A7 7 0 0 1 19 9C19 14 12 22 12 22Z" fill="#E8879E"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3" fill="none" stroke="#7FA66A" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="14.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="12" cy="16" r="0.6" fill="#FFF3B0"/></svg>Reading Streak</div>
+      <div class="section-title"><svg class="berry-icon" width="20" height="20" viewBox="0 0 24 24"><path d="M12 22C12 22 5 14 5 9A7 7 0 0 1 19 9C19 14 12 22 12 22Z" fill="#E0525F"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3" fill="none" stroke="#7FA66A" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="14.5" cy="12" r="0.6" fill="#FFF3B0"/><circle cx="12" cy="16" r="0.6" fill="#FFF3B0"/></svg>Reading Streak</div>
       <div class="streak-grid">
         <div class="streak-card">
-          <svg class="berry-icon" width="28" height="28" viewBox="0 0 24 24" style="margin:0 auto;display:block"><path d="M12 22C12 22 5 14 5 9A7 7 0 0 1 19 9C19 14 12 22 12 22Z" fill="#E8879E"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3" fill="none" stroke="#7FA66A" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.5" cy="12" r="0.7" fill="#FFF3B0"/><circle cx="14.5" cy="12" r="0.7" fill="#FFF3B0"/><circle cx="12" cy="16" r="0.7" fill="#FFF3B0"/></svg>
+          <svg class="berry-icon" width="28" height="28" viewBox="0 0 24 24" style="margin:0 auto;display:block"><path d="M12 22C12 22 5 14 5 9A7 7 0 0 1 19 9C19 14 12 22 12 22Z" fill="#E0525F"/><path d="M8 8c1-1.8 2.4-3 4-3s3 1.2 4 3" fill="none" stroke="#7FA66A" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.5" cy="12" r="0.7" fill="#FFF3B0"/><circle cx="14.5" cy="12" r="0.7" fill="#FFF3B0"/><circle cx="12" cy="16" r="0.7" fill="#FFF3B0"/></svg>
           <div class="streak-num" id="curStreak">0 days</div>
           <div class="streak-lbl">Current</div>
         </div>
@@ -566,6 +592,8 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <div class="sub">What are you reading next?</div>
     <label for="nbTitle">Book Title</label>
     <input id="nbTitle" placeholder="e.g. Atomic Habits">
+    <label for="nbAuthor">Author (optional)</label>
+    <input id="nbAuthor" placeholder="e.g. James Clear">
     <label for="nbTotal">Total Pages</label>
     <input id="nbTotal" type="number" inputmode="numeric" placeholder="320">
     <label for="nbStart">Starting Page</label>
@@ -574,16 +602,6 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
       <button class="ghost small" onclick="closeModal('bookModal')">Cancel</button>
       <button class="primary" style="flex:1" onclick="submitNewBook()">Next</button>
     </div>
-  </div>
-</div>
-
-<!-- ============ COVER PICKER MODAL ============ -->
-<div class="modal-backdrop" id="coverPickerModal">
-  <div class="modal" style="max-width:420px">
-    <h3>Choose a Cover</h3>
-    <div class="sub" id="coverPickerSub">Searching…</div>
-    <div class="cover-pick-list" id="coverPickerList"></div>
-    <button class="ghost small" style="width:100%;margin-top:10px" onclick="cancelNewBook()">Cancel</button>
   </div>
 </div>
 
@@ -654,6 +672,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
       <button class="ghost small" onclick="shakeJar()">Shake Again</button>
       <button class="primary" style="flex:1" onclick="readPickedBook()">Read This</button>
     </div>
+    <button class="ghost small" style="width:100%;margin-top:10px" onclick="closeModal('tbrPickModal')">Exit</button>
   </div>
 </div>
 
@@ -889,103 +908,39 @@ let pendingRemoveId = null;
 
 function openNewBookModal(){
   document.getElementById("nbTitle").value = "";
+  document.getElementById("nbAuthor").value = "";
   document.getElementById("nbTotal").value = "";
   document.getElementById("nbStart").value = 1;
   openModal("bookModal");
 }
 
-function submitNewBook(){
+async function submitNewBook(){
   const title = document.getElementById("nbTitle").value.trim();
+  const author = document.getElementById("nbAuthor").value.trim();
   const total = parseInt(document.getElementById("nbTotal").value) || 0;
   const start = parseInt(document.getElementById("nbStart").value) || 1;
   if(!title){ toast("Give your book a title"); return; }
-  pendingNewBook = { title, total, start };
   closeModal("bookModal");
-  openCoverPicker(title);
-}
 
-let pendingNewBook = null;
-let coverPickerResults = [];
-
-async function openCoverPicker(title){
-  coverPickerResults = [];
-  document.getElementById("coverPickerSub").textContent = `Results for "${title}" — pick the right one`;
-  document.getElementById("coverPickerList").innerHTML = `<div class="empty">Searching…</div>`;
-  openModal("coverPickerModal");
-  try{
-    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(title)}&maxResults=6`);
-    const data = res.ok ? await res.json() : null;
-    coverPickerResults = (data && data.items) || [];
-  }catch(e){
-    coverPickerResults = [];
-  }
-  renderCoverPicker();
-}
-
-function renderCoverPicker(){
-  const list = document.getElementById("coverPickerList");
-  const cards = coverPickerResults.map((item, i) => {
-    const vi = item.volumeInfo || {};
-    const links = vi.imageLinks;
-    const thumb = links && (links.thumbnail || links.smallThumbnail);
-    const cover = thumb ? thumb.replace(/^http:\/\//, "https://") : "";
-    const author = (vi.authors && vi.authors.join(", ")) || "Unknown author";
-    return `
-      <button class="cover-pick" onclick="chooseCover(${i})">
-        <div class="cover-pick-img">${cover ? `<img src="${cover}" alt="">` : BOOK_PLACEHOLDER_SVG}</div>
-        <div class="cover-pick-text">
-          <div class="cover-pick-title">${escapeHtml(vi.title || "Untitled")}</div>
-          <div class="cover-pick-author">${escapeHtml(author)}</div>
-        </div>
-      </button>
-    `;
-  }).join("");
-
-  list.innerHTML = `
-    ${cards || `<div class="empty">No matches found</div>`}
-    <button class="cover-pick cover-pick-skip" onclick="chooseCover(-1)">No cover / skip</button>
-  `;
-}
-
-function chooseCover(index){
-  if(!pendingNewBook){ closeModal("coverPickerModal"); return; }
-  let cover = null;
-  const item = coverPickerResults[index];
-  if(item){
-    const links = item.volumeInfo && item.volumeInfo.imageLinks;
-    const thumb = links && (links.thumbnail || links.smallThumbnail);
-    if(thumb) cover = thumb.replace(/^http:\/\//, "https://");
-  }
   const newBook = {
     id: genId(),
-    title: pendingNewBook.title,
-    total: pendingNewBook.total,
-    lastPage: pendingNewBook.start,
-    coverChecked: true   // a deliberate choice was made (including "skip") — don't auto-fetch later
+    title,
+    total,
+    lastPage: start
   };
-  if(cover) newBook.cover = cover;
+  if(author) newBook.author = author;
 
   s.books.push(newBook);
   checkAchievements();
   save();
-  closeModal("coverPickerModal");
-  pendingNewBook = null;
-  coverPickerResults = [];
   toast("New book started!");
   renderAll();
-}
-
-function cancelNewBook(){
-  pendingNewBook = null;
-  coverPickerResults = [];
-  closeModal("coverPickerModal");
 }
 
 /* ============================================================
    TBR JAR
    ============================================================ */
 let tbrPickedId = null;
-let tbrPickCover = null;
 
 function openTbrJar(){
   renderTbrList();
@@ -999,8 +954,8 @@ function renderTbrList(){
     el.innerHTML = `<div class="notes-empty">Your jar is empty — add a few titles</div>`;
     return;
   }
-  el.innerHTML = items.map(t => `
-    <div class="tbr-item">
+  el.innerHTML = items.map((t,i) => `
+    <div class="tbr-item hue-${i % 5}">
       <span class="tbr-title">${escapeHtml(t.title)}</span>
       <button class="tbr-del" onclick="deleteTbrTitle('${t.id}')" aria-label="Remove">×</button>
     </div>
@@ -1041,54 +996,22 @@ function shakeJar(){
   }
   const pick = items[Math.floor(Math.random() * items.length)];
   tbrPickedId = pick.id;
-  tbrPickCover = null;
   document.getElementById("tbrPickTitle").textContent = pick.title;
-  document.getElementById("tbrPickCover").innerHTML = BOOK_PLACEHOLDER_SVG;
+  document.getElementById("tbrPickCover").innerHTML = SURPRISE_SVG;
   closeModal("tbrJarModal");
   openModal("tbrPickModal");
-  fetchTbrPickCover(pick.title);
-}
-
-async function lookupCoverUrl(title){
-  const tryQuery = async (q) => {
-    try{
-      const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
-      if(!res.ok) return null;
-      const data = await res.json();
-      const item = data.items && data.items[0];
-      const links = item && item.volumeInfo && item.volumeInfo.imageLinks;
-      const thumb = links && (links.thumbnail || links.smallThumbnail);
-      return thumb ? thumb.replace(/^http:\/\//, "https://") : null;
-    }catch(e){ return null; }
-  };
-  // exact-phrase title search first (more precise), then a looser fallback
-  return (await tryQuery(`intitle:${encodeURIComponent('"' + title + '"')}`))
-      || (await tryQuery(encodeURIComponent(title)));
-}
-
-async function fetchTbrPickCover(title){
-  const cover = await lookupCoverUrl(title);
-  if(cover){
-    tbrPickCover = cover;
-    const coverEl = document.getElementById("tbrPickCover");
-    if(coverEl){
-      coverEl.innerHTML = `<img src="${cover}" alt="" onerror="this.parentElement.innerHTML='${BOOK_PLACEHOLDER_SVG.replace(/'/g,"\\'")}'">`;
-    }
-  }
 }
 
 function readPickedBook(){
   const picked = (s.tbr || []).find(t => t.id === tbrPickedId);
   if(!picked){ closeModal("tbrPickModal"); return; }
-  const newBook = { id: genId(), title: picked.title, total: 0, lastPage: 1, coverChecked: true };
-  if(tbrPickCover) newBook.cover = tbrPickCover;
+  const newBook = { id: genId(), title: picked.title, total: 0, lastPage: 1 };
   s.books.push(newBook);
   s.tbr = (s.tbr || []).filter(t => t.id !== tbrPickedId);
   checkAchievements();
   save();
   closeModal("tbrPickModal");
   tbrPickedId = null;
-  tbrPickCover = null;
   toast("Added to Currently Reading!");
   renderAll();
 }
@@ -1106,7 +1029,7 @@ function finishBookConfirm(){
   if(!book){ closeModal("removeBookModal"); return; }
   s.stats.booksFinished += 1;
   s.finishedLog = s.finishedLog || [];
-  s.finishedLog.push({ id: genId(), title: book.title, date: todayStr(), cover: book.cover || null });
+  s.finishedLog.push({ id: genId(), title: book.title, date: todayStr() });
   s.books = s.books.filter(b=>b.id!==pendingRemoveId);
   s.undo = null;
   checkAchievements();
@@ -1463,11 +1386,10 @@ function booksReadShiftPage(delta){
   renderBooksRead();
 }
 
-function renderBooksReadCell(entry){
-  const cover = entry.cover;
+function renderBooksReadCell(entry, i){
   return `
     <div class="books-read-cell">
-      <div class="books-read-cover">${cover ? `<img src="${cover}" alt="">` : BOOK_PLACEHOLDER_SVG}</div>
+      <div class="books-read-cover hue-${i % 5}">${PIXEL_BERRY_SVG}</div>
       <div class="books-read-title">${escapeHtml(entry.title || "Untitled")}</div>
     </div>
   `;
@@ -1511,26 +1433,13 @@ function renderBooksRead(){
 /* ============================================================
    RENDER: JOURNAL
    ============================================================ */
-const fetchingCovers = new Set();
+const PIXEL_HEART_SVG = `<svg viewBox='0 0 14 12' width='14' height='12' xmlns='http://www.w3.org/2000/svg' shape-rendering='crispEdges' aria-hidden='true' style='color:#fff'><rect x='2' y='0' width='4' height='2' fill='currentColor'/><rect x='8' y='0' width='4' height='2' fill='currentColor'/><rect x='0' y='2' width='14' height='2' fill='currentColor'/><rect x='0' y='4' width='14' height='2' fill='currentColor'/><rect x='2' y='6' width='10' height='2' fill='currentColor'/><rect x='4' y='8' width='6' height='2' fill='currentColor'/><rect x='6' y='10' width='2' height='2' fill='currentColor'/></svg>`;
 
-async function fetchCoverForBook(book){
-  if(!book || !book.title || book.cover || book.coverChecked) return;
-  if(fetchingCovers.has(book.id)) return;
-  fetchingCovers.add(book.id);
-  try{
-    const cover = await lookupCoverUrl(book.title);
-    if(cover) book.cover = cover;
-    book.coverChecked = true;
-    save();
-    renderBooks();
-  }catch(e){
-    // offline or blocked — leave unchecked so it retries on a later render
-  }finally{
-    fetchingCovers.delete(book.id);
-  }
-}
+/* small pixel strawberry used as the "cover" swatch icon for finished books */
+const PIXEL_BERRY_SVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="10" y="1" width="4" height="2" fill="#FFF3C9"/><rect x="6" y="3" width="12" height="2" fill="#FFF3C9"/><rect x="4" y="7" width="16" height="2" fill="#fff" opacity=".9"/><rect x="3" y="9" width="18" height="2" fill="#fff" opacity=".9"/><rect x="3" y="11" width="18" height="2" fill="#fff" opacity=".9"/><rect x="4" y="13" width="16" height="2" fill="#fff" opacity=".9"/><rect x="5" y="15" width="14" height="2" fill="#fff" opacity=".9"/><rect x="7" y="17" width="10" height="2" fill="#fff" opacity=".9"/><rect x="9" y="19" width="6" height="2" fill="#fff" opacity=".9"/><rect x="8" y="9" width="2" height="2" fill="#FFF3C9"/><rect x="15" y="9" width="2" height="2" fill="#FFF3C9"/><rect x="6" y="13" width="2" height="2" fill="#FFF3C9"/><rect x="17" y="13" width="2" height="2" fill="#FFF3C9"/><rect x="11" y="17" width="2" height="2" fill="#FFF3C9"/></svg>`;
 
-const BOOK_PLACEHOLDER_SVG = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#B8A79E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z"/><path d="M12 6v13"/></svg>`;
+/* cute pixel "surprise" gift box used when the TBR jar picks a title */
+const SURPRISE_SVG = `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="8" y="18" width="32" height="6" fill="#E0525F"/><rect x="8" y="24" width="32" height="18" fill="#F4838C"/><rect x="8" y="24" width="32" height="4" fill="#FFF0EE"/><rect x="20" y="18" width="8" height="24" fill="#F0C05A"/><rect x="16" y="8" width="8" height="10" fill="#7FA66A"/><rect x="24" y="8" width="8" height="10" fill="#7FA66A"/><rect x="18" y="10" width="4" height="6" fill="#A8C686"/><rect x="26" y="10" width="4" height="6" fill="#A8C686"/><rect x="10" y="10" width="3" height="3" fill="#F0C05A"/><rect x="35" y="30" width="3" height="3" fill="#F0C05A"/><rect x="6" y="34" width="3" height="3" fill="#F4838C"/></svg>`;
 
 function renderBooks(){
   const el = document.getElementById("bookBlock");
@@ -1538,19 +1447,16 @@ function renderBooks(){
     el.innerHTML = `<div class="book-empty">No book yet — start one to begin your journal</div>`;
     return;
   }
-  el.innerHTML = s.books.map(b => {
+  el.innerHTML = s.books.map((b, i) => {
     const total = b.total || 0;
     const pct = total ? Math.min(Math.round((b.lastPage/total)*100),100) : 0;
-    const coverInner = b.cover
-      ? `<img src="${b.cover}" alt="" onerror="this.parentElement.innerHTML='${BOOK_PLACEHOLDER_SVG.replace(/'/g,"\\'")}'">`
-      : BOOK_PLACEHOLDER_SVG;
     return `
-      <div class="book-card">
+      <div class="book-card hue-${i % 5}">
         <button class="book-remove" onclick="event.stopPropagation();openRemoveBookModal('${b.id}')" aria-label="Remove book">×</button>
         <div class="book-card-inner" onclick="openLogModal('${b.id}')">
-          <div class="book-cover">${coverInner}</div>
           <div class="book-info">
             <div class="book-title">${escapeHtml(b.title || "Untitled")}</div>
+            ${b.author ? `<div class="book-author">by ${escapeHtml(b.author)}</div>` : ""}
             <div class="progress"><div class="bar book-bar" style="width:${pct}%"></div></div>
             <div class="book-progress">
               <span>Page ${b.lastPage} ${total ? "/ " + total : ""}</span>
@@ -1561,8 +1467,6 @@ function renderBooks(){
       </div>
     `;
   }).join("");
-
-  s.books.forEach(b => { if(!b.cover && !b.coverChecked) fetchCoverForBook(b); });
 }
 
 function notesForDate(dateStr){
@@ -1684,7 +1588,7 @@ function renderCalendar(){
     if(read) classes.push("read");
     if(iso === t) classes.push("today");
     if(iso === calSelected) classes.push("selected");
-    html += `<button class="${classes.join(" ")}" onclick="calSelectDay('${iso}')">${read ? "🍓" : day}</button>`;
+    html += `<button class="${classes.join(" ")}" onclick="calSelectDay('${iso}')">${read ? PIXEL_HEART_SVG : day}</button>`;
   }
   grid.innerHTML = html;
 
