@@ -57,7 +57,7 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
   align-items:center;
   gap:8px;
   margin:0 0 14px;
-  color:var(--pink-dark);
+  color:var(--green-dark);
   font-size:1.05rem;
   font-weight:600;
 }
@@ -126,6 +126,7 @@ h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystem
   width:44px;flex:0 0 auto;border-radius:14px;background:var(--pink-dark);color:#fff;
   border:none;font-size:1.3rem;cursor:pointer;font-family:"Fredoka",sans-serif;
 }
+.notes-hint{color:var(--muted);font-size:.78rem;text-align:center;margin-top:6px}
 
 /* ---------- buttons ---------- */
 .buttons{display:flex;flex-direction:column;gap:10px;margin-top:14px}
@@ -153,9 +154,15 @@ button:active{transform:scale(.97)}
 
 .book-card{position:relative;background:var(--pink-pale);border-radius:18px;padding:14px 16px;margin-bottom:12px}
 .book-card:last-child{margin-bottom:0}
-.book-card .book-title{font-size:1.1rem;margin:0 22px 8px 0;cursor:pointer}
-.book-card .progress{cursor:pointer}
-.book-card .book-progress{cursor:pointer}
+.book-card-inner{display:flex;gap:12px;cursor:pointer}
+.book-cover{
+  width:42px;height:60px;flex:0 0 auto;border-radius:8px;overflow:hidden;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(75,58,51,.1);
+}
+.book-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.book-info{flex:1;min-width:0}
+.book-card .book-title{font-size:1.1rem;margin:0 22px 8px 0}
 .book-remove{
   position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;
   background:#fff;color:var(--muted);border:1px solid var(--line);
@@ -176,6 +183,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 .journal-day-title{font-weight:700;color:var(--muted);font-size:.9rem;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.02em}
 .history-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line);font-size:.95rem}
 .history-item:last-child{border-bottom:none}
+.note-history-item{color:var(--green-dark);font-style:italic}
 .badge{background:var(--pink-pale);color:var(--pink-dark);padding:6px 10px;border-radius:999px;font-weight:700;font-size:.85rem;white-space:nowrap}
 .empty{color:var(--muted);font-size:.95rem;text-align:center;padding:6px 0}
 .collapsible{border-top:1px dashed var(--line);margin-top:10px;padding-top:10px}
@@ -349,6 +357,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
           <input id="noteInput" placeholder="Add a note..." onkeydown="if(event.key==='Enter')addNote()">
           <button onclick="addNote()" aria-label="Add note">+</button>
         </div>
+        <div class="notes-hint">Older notes live in your Journal</div>
       </div>
 
       <button class="primary" style="margin-top:16px" onclick="openLogModal()">Log Reading</button>
@@ -439,6 +448,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
         <button class="ghost small" onclick="document.getElementById('importFile').click()">Import Backup</button>
       </div>
       <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+      <button class="ghost small" style="width:100%;margin-top:10px" onclick="exportCSV()">Export CSV (spreadsheet)</button>
       <button class="danger" style="margin-top:12px" onclick="clearAllData()">Clear All Data</button>
       <div class="footer-note" style="margin-top:6px">Wipes your books, journal, streaks, stats, and achievements. Export a backup first if you might want it back.</div>
     </div>
@@ -715,7 +725,15 @@ const ACHIEVEMENTS = [
   { id:"hundred_pages", emoji:"📖", name:"100 Pages" },
   { id:"first_book",    emoji:"📚", name:"First Book" },
   { id:"streak_7",      emoji:"🌸", name:"7 Day Streak" },
-  { id:"night_owl",     emoji:"☕", name:"Night Owl" }
+  { id:"night_owl",     emoji:"☕", name:"Night Owl" },
+  { id:"early_bird",    emoji:"🌅", name:"Early Bird" },
+  { id:"speed_reader",  emoji:"⚡", name:"Speed Reader" },
+  { id:"marathoner",    emoji:"🏃", name:"Marathoner" },
+  { id:"double_booked", emoji:"🍇", name:"Double Booked" },
+  { id:"well_read",     emoji:"🎓", name:"Well Read" },
+  { id:"thousand_club", emoji:"💯", name:"Thousand Club" },
+  { id:"note_taker",    emoji:"📝", name:"Note to Self" },
+  { id:"comeback",      emoji:"🌱", name:"Welcome Back" }
 ];
 
 function unlock(id){
@@ -725,12 +743,21 @@ function unlock(id){
   if(a) toast(`${a.emoji} Achievement unlocked: ${a.name}!`);
 }
 
-function checkAchievements(hourOfLog){
+function checkAchievements(ctx){
+  ctx = ctx || {};
   if(s.stats.sessionsCount >= 1) unlock("first_session");
   if(todayTotal() >= s.goal) unlock("hundred_pages");
   if(s.stats.booksFinished >= 1) unlock("first_book");
+  if(s.stats.booksFinished >= 5) unlock("well_read");
+  if(s.stats.totalPagesAllTime >= 1000) unlock("thousand_club");
   if(s.streak.current >= 7) unlock("streak_7");
-  if(typeof hourOfLog === "number" && (hourOfLog >= 21 || hourOfLog < 5)) unlock("night_owl");
+  if(s.books.length >= 3) unlock("double_booked");
+  if((s.notes||[]).length >= 1) unlock("note_taker");
+  if((s.today.log||[]).length >= 3) unlock("marathoner");
+  if(typeof ctx.hourOfLog === "number" && (ctx.hourOfLog >= 21 || ctx.hourOfLog < 5)) unlock("night_owl");
+  if(typeof ctx.hourOfLog === "number" && (ctx.hourOfLog >= 5 && ctx.hourOfLog < 7)) unlock("early_bird");
+  if(typeof ctx.sessionRead === "number" && ctx.sessionRead >= 50) unlock("speed_reader");
+  if(typeof ctx.gapDays === "number" && ctx.gapDays >= 7) unlock("comeback");
 }
 
 /* ============================================================
@@ -751,11 +778,14 @@ function submitNewBook(){
   const total = parseInt(document.getElementById("nbTotal").value) || 0;
   const start = parseInt(document.getElementById("nbStart").value) || 1;
   if(!title){ toast("Give your book a title"); return; }
-  s.books.push({ id: genId(), title, total, lastPage: start });
+  const newBook = { id: genId(), title, total, lastPage: start };
+  s.books.push(newBook);
+  checkAchievements();
   save();
   closeModal("bookModal");
   toast("New book started!");
   renderAll();
+  fetchCoverForBook(newBook);
 }
 
 function openRemoveBookModal(id){
@@ -860,19 +890,24 @@ function submitLog(){
   const read = Math.max(0, p - from);
   const now = new Date();
   const wasComplete = todayTotal() >= s.goal;
+  const isFirstToday = (s.today.log || []).length === 0;
+  const prevLastActive = s.streak.lastActiveDate;
 
   book.lastPage = p;
   s.today.log = s.today.log || [];
   s.today.log.push({
     time: now.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}),
+    ts: now.getTime(),
     from, to:p, read, book: book.title, bookId: book.id
   });
   s.stats.sessionsCount += 1;
   s.stats.totalPagesAllTime += read;
 
+  const gapDays = (isFirstToday && prevLastActive) ? dayDiff(prevLastActive, s.today.date) : null;
+
   // streak counts today as active immediately too
   updateStreak(s.today.date, todayTotal());
-  checkAchievements(now.getHours());
+  checkAchievements({ hourOfLog: now.getHours(), sessionRead: read, gapDays });
 
   save();
   closeModal("logModal");
@@ -927,6 +962,33 @@ function exportData(){
   a.click();
   URL.revokeObjectURL(url);
   toast("☁️ Backup exported");
+}
+
+function csvEscape(val){
+  const str = String(val === undefined || val === null ? "" : val);
+  if(/[",\n]/.test(str)) return '"' + str.replace(/"/g,'""') + '"';
+  return str;
+}
+
+function exportCSV(){
+  const rows = [["Date","Time","Book","From Page","To Page","Pages Read"]];
+  Object.keys(s.journal).sort().forEach(date => {
+    (s.journal[date] || []).forEach(e => {
+      rows.push([date, e.time, e.book || "", e.from, e.to, e.read]);
+    });
+  });
+  (s.today.log || []).forEach(e => {
+    rows.push([s.today.date, e.time, e.book || "", e.from, e.to, e.read]);
+  });
+  const csv = rows.map(r => r.map(csvEscape).join(",")).join("\r\n");
+  const blob = new Blob([csv], {type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `strwbereads-sessions-${todayStr()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("CSV exported");
 }
 
 function importData(evt){
@@ -1011,23 +1073,29 @@ function addNote(){
   const text = input.value.trim();
   if(!text) return;
   s.notes = s.notes || [];
-  s.notes.push({ id: genId(), text, date: todayStr() });
+  const now = new Date();
+  s.notes.push({
+    id: genId(), text, date: todayStr(),
+    time: now.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}),
+    ts: now.getTime()
+  });
   input.value = "";
+  checkAchievements();
   save();
-  renderNotes();
+  renderAll();
 }
 
 function deleteNote(id){
   s.notes = (s.notes || []).filter(n => n.id !== id);
   save();
-  renderNotes();
+  renderAll();
 }
 
 function renderNotes(){
   const el = document.getElementById("notesList");
-  const notes = s.notes || [];
+  const notes = (s.notes || []).filter(n => n.date === s.today.date);
   if(!notes.length){
-    el.innerHTML = `<div class="notes-empty">No notes yet — jot something down</div>`;
+    el.innerHTML = `<div class="notes-empty">No notes yet today — jot something down</div>`;
     return;
   }
   el.innerHTML = notes.slice().reverse().map(n => `
@@ -1066,6 +1134,33 @@ function renderHome(){
 /* ============================================================
    RENDER: JOURNAL
    ============================================================ */
+const fetchingCovers = new Set();
+
+async function fetchCoverForBook(book){
+  if(!book || !book.title || book.cover || book.coverChecked) return;
+  if(fetchingCovers.has(book.id)) return;
+  fetchingCovers.add(book.id);
+  try{
+    const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(book.title)}&limit=1`);
+    if(res.ok){
+      const data = await res.json();
+      const doc = data.docs && data.docs[0];
+      if(doc && doc.cover_i){
+        book.cover = `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`;
+      }
+    }
+    book.coverChecked = true;
+    save();
+    renderBooks();
+  }catch(e){
+    // offline or blocked — leave unchecked so it retries on a later render
+  }finally{
+    fetchingCovers.delete(book.id);
+  }
+}
+
+const BOOK_PLACEHOLDER_SVG = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#B8A79E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z"/><path d="M12 6v13"/></svg>`;
+
 function renderBooks(){
   const el = document.getElementById("bookBlock");
   if(!s.books.length){
@@ -1075,30 +1170,56 @@ function renderBooks(){
   el.innerHTML = s.books.map(b => {
     const total = b.total || 0;
     const pct = total ? Math.min(Math.round((b.lastPage/total)*100),100) : 0;
+    const coverInner = b.cover
+      ? `<img src="${b.cover}" alt="" onerror="this.parentElement.innerHTML='${BOOK_PLACEHOLDER_SVG.replace(/'/g,"\\'")}'">`
+      : BOOK_PLACEHOLDER_SVG;
     return `
       <div class="book-card">
         <button class="book-remove" onclick="event.stopPropagation();openRemoveBookModal('${b.id}')" aria-label="Remove book">×</button>
-        <div onclick="openLogModal('${b.id}')">
-          <div class="book-title">${escapeHtml(b.title || "Untitled")}</div>
-          <div class="progress"><div class="bar book-bar" style="width:${pct}%"></div></div>
-          <div class="book-progress">
-            <span>Page ${b.lastPage} ${total ? "/ " + total : ""}</span>
-            <span>${total ? pct + "%" : ""}</span>
+        <div class="book-card-inner" onclick="openLogModal('${b.id}')">
+          <div class="book-cover">${coverInner}</div>
+          <div class="book-info">
+            <div class="book-title">${escapeHtml(b.title || "Untitled")}</div>
+            <div class="progress"><div class="bar book-bar" style="width:${pct}%"></div></div>
+            <div class="book-progress">
+              <span>Page ${b.lastPage} ${total ? "/ " + total : ""}</span>
+              <span>${total ? pct + "%" : ""}</span>
+            </div>
           </div>
         </div>
       </div>
     `;
   }).join("");
+
+  s.books.forEach(b => { if(!b.cover && !b.coverChecked) fetchCoverForBook(b); });
 }
 
-function logListHtml(log){
-  if(!log || !log.length) return `<div class="empty">No reading logged.</div>`;
-  return log.slice().reverse().map(x => `
-    <div class="history-item">
-      <div>${x.time}${x.book ? " • " + escapeHtml(x.book) : ""} • Page ${x.from} → ${x.to}</div>
-      <div class="badge">+${x.read}</div>
-    </div>
-  `).join("");
+function notesForDate(dateStr){
+  return (s.notes || []).filter(n => n.date === dateStr);
+}
+
+function dayItemsHtml(log, notes){
+  const items = [
+    ...(log || []).map(x => ({ ...x, kind: "log" })),
+    ...(notes || []).map(x => ({ ...x, kind: "note" }))
+  ];
+  if(!items.length) return `<div class="empty">Nothing logged.</div>`;
+  items.sort((a,b) => (a.ts||0) - (b.ts||0));
+  return items.slice().reverse().map(x => {
+    if(x.kind === "note"){
+      return `
+        <div class="history-item note-history-item">
+          <div>${x.time || ""} • ${escapeHtml(x.text)}</div>
+        </div>
+      `;
+    }
+    return `
+      <div class="history-item">
+        <div>${x.time}${x.book ? " • " + escapeHtml(x.book) : ""} • Page ${x.from} → ${x.to}</div>
+        <div class="badge">+${x.read}</div>
+      </div>
+    `;
+  }).join("");
 }
 
 function renderJournal(){
@@ -1107,17 +1228,24 @@ function renderJournal(){
 
   document.getElementById("journalToday").innerHTML = `
     <div class="journal-day-title">🍓 Today</div>
-    ${logListHtml(s.today.log)}
+    ${dayItemsHtml(s.today.log, notesForDate(s.today.date))}
   `;
 
   const yKey = todayStr(new Date(Date.now() - 86400000));
   const yLog = s.journal[yKey];
-  document.getElementById("journalYesterday").innerHTML = yLog ? `
+  const yNotes = notesForDate(yKey);
+  document.getElementById("journalYesterday").innerHTML = (yLog || yNotes.length) ? `
     <div class="journal-day-title">🍓 Yesterday</div>
-    ${logListHtml(yLog)}
+    ${dayItemsHtml(yLog, yNotes)}
   ` : "";
 
-  const olderKeys = Object.keys(s.journal).filter(k => k !== yKey).sort().reverse();
+  const noteDates = new Set((s.notes || []).map(n => n.date));
+  const journalDates = new Set(Object.keys(s.journal));
+  const allDates = new Set([...journalDates, ...noteDates]);
+  allDates.delete(s.today.date);
+  allDates.delete(yKey);
+  const olderKeys = [...allDates].sort().reverse();
+
   const olderEl = document.getElementById("olderDays");
   const wrap = document.getElementById("olderDaysWrap");
   if(olderKeys.length === 0){
@@ -1127,7 +1255,7 @@ function renderJournal(){
     olderEl.innerHTML = olderKeys.map(k => `
       <div class="journal-day">
         <div class="journal-day-title">${formatDate(k)}</div>
-        ${logListHtml(s.journal[k])}
+        ${dayItemsHtml(s.journal[k], notesForDate(k))}
       </div>
     `).join("");
   }
@@ -1193,7 +1321,7 @@ function renderCalendar(){
     const log = calSelected === s.today.date ? s.today.log : s.journal[calSelected];
     detail.innerHTML = `
       <div class="journal-day-title">${formatDate(calSelected)}</div>
-      ${logListHtml(log)}
+      ${dayItemsHtml(log, notesForDate(calSelected))}
     `;
   } else {
     detail.innerHTML = `<div class="empty">Tap a day to see that journal 🍓</div>`;
