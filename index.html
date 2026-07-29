@@ -31,13 +31,13 @@
   --empty-cell:#F3E7E2;
 }
 *{box-sizing:border-box}
-html,body{height:100%}
+html{height:100%}
 body{
   margin:0;
   background:#EDF2E4;
   font-family:"Patrick Hand",-apple-system,BlinkMacSystemFont,sans-serif;
   color:var(--text);
-  padding:16px 16px 88px;
+  padding:16px 16px calc(120px + env(safe-area-inset-bottom));
   min-height:100vh;
 }
 h1,h2,.section-title,.fredoka{font-family:"Fredoka",-apple-system,BlinkMacSystemFont,sans-serif}
@@ -160,7 +160,7 @@ button:active{transform:scale(.97)}
   background:#fff;display:flex;align-items:center;justify-content:center;
   box-shadow:0 2px 6px rgba(75,58,51,.1);
 }
-.book-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.book-cover img{width:100%;height:100%;object-fit:contain;object-position:center;display:block}
 .book-info{flex:1;min-width:0}
 .book-card .book-title{font-size:1.1rem;margin:0 22px 8px 0}
 .book-remove{
@@ -170,6 +170,58 @@ button:active{transform:scale(.97)}
   font-size:1rem;line-height:1;cursor:pointer;padding:0;
 }
 .book-remove:hover{background:var(--pink-dark);color:#fff}
+
+.books-read-subtitle{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  font-family:"Fredoka";font-weight:600;color:var(--muted);font-size:.9rem;margin-bottom:12px;
+}
+.books-read-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.books-read-cell{text-align:center}
+.books-read-cover{
+  width:100%;aspect-ratio:2/3;border-radius:8px;overflow:hidden;background:#fff;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(75,58,51,.1);
+}
+.books-read-cover img{width:100%;height:100%;object-fit:contain}
+.books-read-title{
+  font-size:.72rem;color:var(--muted);margin-top:5px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;
+}
+.books-read-pager{display:none;align-items:center;justify-content:center;gap:14px;margin-top:14px}
+.books-read-pager button{background:none;border:none;font-size:1.2rem;color:var(--pink-dark);padding:4px 10px;cursor:pointer}
+.books-read-pager button:disabled{opacity:.3;cursor:default}
+.books-read-pager span{font-family:"Fredoka";font-weight:600;color:var(--muted);font-size:.85rem}
+
+.tbr-summary{color:var(--muted);font-size:.92rem;text-align:center}
+.tbr-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.tbr-item{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  background:var(--green-pale);border-radius:12px;padding:9px 10px;font-size:.92rem;
+}
+.tbr-item .tbr-title{flex:1;word-break:break-word}
+.tbr-del{background:none;border:none;color:var(--muted);font-size:1.05rem;line-height:1;cursor:pointer;padding:0 2px}
+.tbr-pick-cover{
+  width:110px;height:154px;margin:14px auto 4px;border-radius:10px;overflow:hidden;
+  background:#fff;box-shadow:0 6px 16px rgba(75,58,51,.15);display:flex;align-items:center;justify-content:center;
+}
+.tbr-pick-cover img{width:100%;height:100%;object-fit:contain}
+.tbr-pick-title{font-family:"Fredoka";font-weight:600;font-size:1.15rem;margin-top:8px}
+
+.cover-pick-list{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;margin-top:4px}
+.cover-pick{
+  display:flex;align-items:center;gap:12px;background:var(--pink-pale);border:none;
+  border-radius:14px;padding:9px 12px;cursor:pointer;text-align:left;width:100%;
+  font-family:"Patrick Hand",sans-serif;
+}
+.cover-pick:hover{background:var(--pink);}
+.cover-pick-img{
+  width:40px;height:56px;flex:0 0 auto;border-radius:6px;overflow:hidden;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+}
+.cover-pick-img img{width:100%;height:100%;object-fit:contain;display:block}
+.cover-pick-text{flex:1;min-width:0}
+.cover-pick-title{font-family:"Fredoka";font-weight:600;font-size:.95rem;color:var(--text)}
+.cover-pick-author{color:var(--muted);font-size:.82rem;margin-top:2px}
+.cover-pick-skip{background:var(--empty-cell);justify-content:center;color:var(--muted);font-weight:600}
 
 label{display:block;margin-top:12px;margin-bottom:6px;font-weight:700;font-size:.95rem}
 input{
@@ -362,6 +414,24 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 
       <button class="primary" style="margin-top:16px" onclick="openLogModal()">Log Reading</button>
     </div>
+
+    <div class="card">
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>Books Read</div>
+      <div class="range-toggle" id="booksReadRangeToggle">
+        <button class="range-btn active" data-range="month" onclick="setBooksReadRange('month')">This Month</button>
+        <button class="range-btn" data-range="year" onclick="setBooksReadRange('year')">This Year</button>
+      </div>
+      <div class="books-read-subtitle">
+        <span id="booksReadCount">0</span> Books
+        <svg class="ti" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>
+      </div>
+      <div class="books-read-grid" id="booksReadGrid"></div>
+      <div class="books-read-pager" id="booksReadPager"></div>
+      <div class="range-toggle" id="booksReadSizeToggle" style="margin-top:10px">
+        <button class="range-btn active" data-size="9" onclick="setBooksReadPageSize(9)">9 / page</button>
+        <button class="range-btn" data-size="15" onclick="setBooksReadPageSize(15)">15 / page</button>
+      </div>
+    </div>
   </div>
 
   <!-- ============ BOOK & JOURNAL ============ -->
@@ -371,6 +441,15 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
       <div id="bookBlock"></div>
       <button class="ghost small" style="width:100%;margin-top:10px" onclick="openNewBookModal()">New Book</button>
       <button class="primary" style="margin-top:10px" onclick="openLogModal()">Log Reading</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M8 4h8v3H8z"/><path d="M7 7h10l1 12.5a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z"/></svg>TBR Jar</div>
+      <div class="tbr-summary" id="tbrSummary">0 titles waiting</div>
+      <div class="row-buttons" style="margin-top:10px">
+        <button class="ghost small" onclick="openTbrJar()">Manage Titles</button>
+        <button class="secondary small" onclick="shakeJar()">Shake</button>
+      </div>
     </div>
 
     <div class="card">
@@ -493,8 +572,18 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <input id="nbStart" type="number" inputmode="numeric" placeholder="1">
     <div class="row-buttons" style="margin-top:14px">
       <button class="ghost small" onclick="closeModal('bookModal')">Cancel</button>
-      <button class="primary" style="flex:1" onclick="submitNewBook()">Start</button>
+      <button class="primary" style="flex:1" onclick="submitNewBook()">Next</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ COVER PICKER MODAL ============ -->
+<div class="modal-backdrop" id="coverPickerModal">
+  <div class="modal" style="max-width:420px">
+    <h3>Choose a Cover</h3>
+    <div class="sub" id="coverPickerSub">Searching…</div>
+    <div class="cover-pick-list" id="coverPickerList"></div>
+    <button class="ghost small" style="width:100%;margin-top:10px" onclick="cancelNewBook()">Cancel</button>
   </div>
 </div>
 
@@ -538,6 +627,36 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   </div>
 </div>
 
+<!-- ============ TBR JAR MODAL ============ -->
+<div class="modal-backdrop" id="tbrJarModal">
+  <div class="modal">
+    <h3>🫙 TBR Jar</h3>
+    <div class="sub">Add titles you want to read, then shake for a pick</div>
+    <div class="tbr-list" id="tbrList"></div>
+    <div class="notes-add-row" style="margin-top:10px">
+      <input id="tbrInput" placeholder="Add a book title..." onkeydown="if(event.key==='Enter')addTbrTitle()">
+      <button onclick="addTbrTitle()" aria-label="Add title">+</button>
+    </div>
+    <div class="row-buttons" style="margin-top:14px">
+      <button class="ghost small" onclick="closeModal('tbrJarModal')">Close</button>
+      <button class="secondary" style="flex:1" onclick="shakeJar()">Shake the Jar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TBR PICK MODAL ============ -->
+<div class="modal-backdrop" id="tbrPickModal">
+  <div class="modal" style="text-align:center">
+    <h3>The Jar Picked...</h3>
+    <div class="tbr-pick-cover" id="tbrPickCover"></div>
+    <div class="tbr-pick-title" id="tbrPickTitle"></div>
+    <div class="row-buttons" style="margin-top:16px">
+      <button class="ghost small" onclick="shakeJar()">Shake Again</button>
+      <button class="primary" style="flex:1" onclick="readPickedBook()">Read This</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    STATE
@@ -558,6 +677,7 @@ function defaultState(){
     goal: GOAL,
     books: [],                        // [{id,title,total,lastPage}]
     notes: [],                        // [{id,text,date}]
+    tbr: [],                          // [{id,title}] — To Be Read jar
     today: { date: todayStr(), log: [], startSnapshot: null },
     journal: {},                      // "YYYY-MM-DD" -> [{time,from,to,read,book}]
     streak: { current:0, longest:0, lastActiveDate:null },
@@ -602,6 +722,7 @@ if(s.book !== undefined){
 if(!s.books) s.books = [];
 if(!s.notes) s.notes = [];
 if(!s.finishedLog) s.finishedLog = [];
+if(!s.tbr) s.tbr = [];
 
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
 
@@ -778,14 +899,198 @@ function submitNewBook(){
   const total = parseInt(document.getElementById("nbTotal").value) || 0;
   const start = parseInt(document.getElementById("nbStart").value) || 1;
   if(!title){ toast("Give your book a title"); return; }
-  const newBook = { id: genId(), title, total, lastPage: start };
+  pendingNewBook = { title, total, start };
+  closeModal("bookModal");
+  openCoverPicker(title);
+}
+
+let pendingNewBook = null;
+let coverPickerResults = [];
+
+async function openCoverPicker(title){
+  coverPickerResults = [];
+  document.getElementById("coverPickerSub").textContent = `Results for "${title}" — pick the right one`;
+  document.getElementById("coverPickerList").innerHTML = `<div class="empty">Searching…</div>`;
+  openModal("coverPickerModal");
+  try{
+    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(title)}&maxResults=6`);
+    const data = res.ok ? await res.json() : null;
+    coverPickerResults = (data && data.items) || [];
+  }catch(e){
+    coverPickerResults = [];
+  }
+  renderCoverPicker();
+}
+
+function renderCoverPicker(){
+  const list = document.getElementById("coverPickerList");
+  const cards = coverPickerResults.map((item, i) => {
+    const vi = item.volumeInfo || {};
+    const links = vi.imageLinks;
+    const thumb = links && (links.thumbnail || links.smallThumbnail);
+    const cover = thumb ? thumb.replace(/^http:\/\//, "https://") : "";
+    const author = (vi.authors && vi.authors.join(", ")) || "Unknown author";
+    return `
+      <button class="cover-pick" onclick="chooseCover(${i})">
+        <div class="cover-pick-img">${cover ? `<img src="${cover}" alt="">` : BOOK_PLACEHOLDER_SVG}</div>
+        <div class="cover-pick-text">
+          <div class="cover-pick-title">${escapeHtml(vi.title || "Untitled")}</div>
+          <div class="cover-pick-author">${escapeHtml(author)}</div>
+        </div>
+      </button>
+    `;
+  }).join("");
+
+  list.innerHTML = `
+    ${cards || `<div class="empty">No matches found</div>`}
+    <button class="cover-pick cover-pick-skip" onclick="chooseCover(-1)">No cover / skip</button>
+  `;
+}
+
+function chooseCover(index){
+  if(!pendingNewBook){ closeModal("coverPickerModal"); return; }
+  let cover = null;
+  const item = coverPickerResults[index];
+  if(item){
+    const links = item.volumeInfo && item.volumeInfo.imageLinks;
+    const thumb = links && (links.thumbnail || links.smallThumbnail);
+    if(thumb) cover = thumb.replace(/^http:\/\//, "https://");
+  }
+  const newBook = {
+    id: genId(),
+    title: pendingNewBook.title,
+    total: pendingNewBook.total,
+    lastPage: pendingNewBook.start,
+    coverChecked: true   // a deliberate choice was made (including "skip") — don't auto-fetch later
+  };
+  if(cover) newBook.cover = cover;
+
   s.books.push(newBook);
   checkAchievements();
   save();
-  closeModal("bookModal");
+  closeModal("coverPickerModal");
+  pendingNewBook = null;
+  coverPickerResults = [];
   toast("New book started!");
   renderAll();
-  fetchCoverForBook(newBook);
+}
+
+function cancelNewBook(){
+  pendingNewBook = null;
+  coverPickerResults = [];
+  closeModal("coverPickerModal");
+}
+
+/* ============================================================
+   TBR JAR
+   ============================================================ */
+let tbrPickedId = null;
+let tbrPickCover = null;
+
+function openTbrJar(){
+  renderTbrList();
+  openModal("tbrJarModal");
+}
+
+function renderTbrList(){
+  const el = document.getElementById("tbrList");
+  const items = s.tbr || [];
+  if(!items.length){
+    el.innerHTML = `<div class="notes-empty">Your jar is empty — add a few titles</div>`;
+    return;
+  }
+  el.innerHTML = items.map(t => `
+    <div class="tbr-item">
+      <span class="tbr-title">${escapeHtml(t.title)}</span>
+      <button class="tbr-del" onclick="deleteTbrTitle('${t.id}')" aria-label="Remove">×</button>
+    </div>
+  `).join("");
+}
+
+function renderTbrSummary(){
+  const el = document.getElementById("tbrSummary");
+  if(!el) return;
+  const n = (s.tbr || []).length;
+  el.textContent = n === 0 ? "Your jar is empty" : `${n} title${n===1?"":"s"} waiting`;
+}
+
+function addTbrTitle(){
+  const input = document.getElementById("tbrInput");
+  const title = input.value.trim();
+  if(!title) return;
+  s.tbr = s.tbr || [];
+  s.tbr.push({ id: genId(), title });
+  input.value = "";
+  save();
+  renderTbrList();
+  renderTbrSummary();
+}
+
+function deleteTbrTitle(id){
+  s.tbr = (s.tbr || []).filter(t => t.id !== id);
+  save();
+  renderTbrList();
+  renderTbrSummary();
+}
+
+function shakeJar(){
+  const items = s.tbr || [];
+  if(!items.length){
+    toast("Add some titles to your jar first");
+    return;
+  }
+  const pick = items[Math.floor(Math.random() * items.length)];
+  tbrPickedId = pick.id;
+  tbrPickCover = null;
+  document.getElementById("tbrPickTitle").textContent = pick.title;
+  document.getElementById("tbrPickCover").innerHTML = BOOK_PLACEHOLDER_SVG;
+  closeModal("tbrJarModal");
+  openModal("tbrPickModal");
+  fetchTbrPickCover(pick.title);
+}
+
+async function lookupCoverUrl(title){
+  const tryQuery = async (q) => {
+    try{
+      const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`);
+      if(!res.ok) return null;
+      const data = await res.json();
+      const item = data.items && data.items[0];
+      const links = item && item.volumeInfo && item.volumeInfo.imageLinks;
+      const thumb = links && (links.thumbnail || links.smallThumbnail);
+      return thumb ? thumb.replace(/^http:\/\//, "https://") : null;
+    }catch(e){ return null; }
+  };
+  // exact-phrase title search first (more precise), then a looser fallback
+  return (await tryQuery(`intitle:${encodeURIComponent('"' + title + '"')}`))
+      || (await tryQuery(encodeURIComponent(title)));
+}
+
+async function fetchTbrPickCover(title){
+  const cover = await lookupCoverUrl(title);
+  if(cover){
+    tbrPickCover = cover;
+    const coverEl = document.getElementById("tbrPickCover");
+    if(coverEl){
+      coverEl.innerHTML = `<img src="${cover}" alt="" onerror="this.parentElement.innerHTML='${BOOK_PLACEHOLDER_SVG.replace(/'/g,"\\'")}'">`;
+    }
+  }
+}
+
+function readPickedBook(){
+  const picked = (s.tbr || []).find(t => t.id === tbrPickedId);
+  if(!picked){ closeModal("tbrPickModal"); return; }
+  const newBook = { id: genId(), title: picked.title, total: 0, lastPage: 1, coverChecked: true };
+  if(tbrPickCover) newBook.cover = tbrPickCover;
+  s.books.push(newBook);
+  s.tbr = (s.tbr || []).filter(t => t.id !== tbrPickedId);
+  checkAchievements();
+  save();
+  closeModal("tbrPickModal");
+  tbrPickedId = null;
+  tbrPickCover = null;
+  toast("Added to Currently Reading!");
+  renderAll();
 }
 
 function openRemoveBookModal(id){
@@ -801,7 +1106,7 @@ function finishBookConfirm(){
   if(!book){ closeModal("removeBookModal"); return; }
   s.stats.booksFinished += 1;
   s.finishedLog = s.finishedLog || [];
-  s.finishedLog.push({ id: genId(), title: book.title, date: todayStr() });
+  s.finishedLog.push({ id: genId(), title: book.title, date: todayStr(), cover: book.cover || null });
   s.books = s.books.filter(b=>b.id!==pendingRemoveId);
   s.undo = null;
   checkAchievements();
@@ -1129,6 +1434,78 @@ function renderHome(){
   document.getElementById("homeBookCount").textContent = s.books.length;
 
   renderNotes();
+  renderBooksRead();
+}
+
+/* ============================================================
+   BOOKS READ GRID
+   ============================================================ */
+let booksReadRange = "month";
+let booksReadPageSize = 9;
+let booksReadPage = 0;
+
+function setBooksReadRange(r){
+  booksReadRange = r;
+  booksReadPage = 0;
+  document.querySelectorAll("#booksReadRangeToggle .range-btn").forEach(b => b.classList.toggle("active", b.dataset.range === r));
+  renderBooksRead();
+}
+
+function setBooksReadPageSize(n){
+  booksReadPageSize = n;
+  booksReadPage = 0;
+  document.querySelectorAll("#booksReadSizeToggle .range-btn").forEach(b => b.classList.toggle("active", Number(b.dataset.size) === n));
+  renderBooksRead();
+}
+
+function booksReadShiftPage(delta){
+  booksReadPage += delta;
+  renderBooksRead();
+}
+
+function renderBooksReadCell(entry){
+  const cover = entry.cover;
+  return `
+    <div class="books-read-cell">
+      <div class="books-read-cover">${cover ? `<img src="${cover}" alt="">` : BOOK_PLACEHOLDER_SVG}</div>
+      <div class="books-read-title">${escapeHtml(entry.title || "Untitled")}</div>
+    </div>
+  `;
+}
+
+function renderBooksRead(){
+  const list = (s.finishedLog || [])
+    .filter(f => inStatsRange(f.date, booksReadRange))
+    .sort((a,b) => b.date.localeCompare(a.date));
+
+  document.getElementById("booksReadCount").textContent = list.length;
+
+  const totalPages = Math.max(1, Math.ceil(list.length / booksReadPageSize));
+  if(booksReadPage >= totalPages) booksReadPage = totalPages - 1;
+  if(booksReadPage < 0) booksReadPage = 0;
+
+  const start = booksReadPage * booksReadPageSize;
+  const pageItems = list.slice(start, start + booksReadPageSize);
+
+  const grid = document.getElementById("booksReadGrid");
+  if(!pageItems.length){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">No books finished ${booksReadRange==='month' ? 'this month' : 'this year'} yet.</div>`;
+  } else {
+    grid.innerHTML = pageItems.map(renderBooksReadCell).join("");
+  }
+
+  const pager = document.getElementById("booksReadPager");
+  if(list.length > booksReadPageSize){
+    pager.style.display = "flex";
+    pager.innerHTML = `
+      <button onclick="booksReadShiftPage(-1)" ${booksReadPage===0 ? "disabled" : ""}>‹</button>
+      <span>${booksReadPage+1} / ${totalPages}</span>
+      <button onclick="booksReadShiftPage(1)" ${booksReadPage>=totalPages-1 ? "disabled" : ""}>›</button>
+    `;
+  } else {
+    pager.style.display = "none";
+    pager.innerHTML = "";
+  }
 }
 
 /* ============================================================
@@ -1141,14 +1518,8 @@ async function fetchCoverForBook(book){
   if(fetchingCovers.has(book.id)) return;
   fetchingCovers.add(book.id);
   try{
-    const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(book.title)}&limit=1`);
-    if(res.ok){
-      const data = await res.json();
-      const doc = data.docs && data.docs[0];
-      if(doc && doc.cover_i){
-        book.cover = `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`;
-      }
-    }
+    const cover = await lookupCoverUrl(book.title);
+    if(cover) book.cover = cover;
     book.coverChecked = true;
     save();
     renderBooks();
@@ -1225,6 +1596,7 @@ function dayItemsHtml(log, notes){
 function renderJournal(){
   ensureRollover();
   renderBooks();
+  renderTbrSummary();
 
   document.getElementById("journalToday").innerHTML = `
     <div class="journal-day-title">🍓 Today</div>
