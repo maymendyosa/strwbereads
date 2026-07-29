@@ -130,6 +130,10 @@ h1,h2,.section-title,.fredoka{font-family:"Ticketing","Pixelify Sans",-apple-sys
   box-shadow:0 10px 24px rgba(35,28,25,.12);
   border:1px solid rgba(255,255,255,.7);
 }
+html[data-theme="dark"] .card{
+  border-color:rgba(255,255,255,.05);
+  box-shadow:0 10px 24px rgba(0,0,0,.35);
+}
 .section-title{
   display:flex;
   align-items:center;
@@ -138,6 +142,12 @@ h1,h2,.section-title,.fredoka{font-family:"Ticketing","Pixelify Sans",-apple-sys
   color:var(--green-dark);
   font-size:1.05rem;
   font-weight:600;
+}
+.view-page-title{
+  text-align:center;
+  color:var(--green-dark);
+  font-size:1.3rem;
+  margin:4px 0 16px;
 }
 .ti{
   width:20px;height:20px;flex:0 0 auto;
@@ -152,9 +162,10 @@ h1,h2,.section-title,.fredoka{font-family:"Ticketing","Pixelify Sans",-apple-sys
 .greeting-icon{width:15px;height:18px;flex:0 0 auto;image-rendering:pixelated}
 .strawberry{width:48px;height:60px;flex:0 0 auto;position:absolute;right:0;top:-6px;image-rendering:pixelated}
 .theme-toggle{
-  position:absolute;left:0;top:-2px;width:36px;height:36px;border-radius:50%;
+  flex:0 0 auto;align-self:center;width:36px;height:36px;border-radius:50%;
   background:var(--ghost-bg);border:none;font-size:1.05rem;line-height:1;
   display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+  margin-left:4px;
   box-shadow:0 2px 6px rgba(75,58,51,.1);
 }
 .sparkle{color:#F0C05A;font-size:.8em;vertical-align:middle}
@@ -379,7 +390,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 
 /* ---------- tabbar ---------- */
 .tabbar{
-  position:fixed;left:0;right:0;bottom:0;background:var(--card);
+  position:fixed;left:0;right:0;bottom:0;background:var(--green-pale);
   display:flex;border-top:1px solid var(--line);
   box-shadow:0 -6px 18px rgba(35,28,25,.10);
   padding:8px 6px calc(8px + env(safe-area-inset-bottom));
@@ -443,7 +454,6 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <div id="view-home" class="view active">
     <div class="card">
       <div class="header">
-        <button class="theme-toggle" id="themeToggle" onclick="cycleTheme()" aria-label="Toggle light, dark, or blue light mode" title="Toggle theme">☀️</button>
         <div style="width:100%">
           <h1><span class="sparkle" aria-hidden="true">✦</span> Reading Tracker <span class="sparkle" aria-hidden="true">✦</span></h1>
           <div id="greeting" class="greeting"></div>
@@ -495,26 +505,23 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     </div>
 
     <div class="card">
-      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>Books Read</div>
-      <div class="range-toggle" id="booksReadRangeToggle">
-        <button class="range-btn active" data-range="month" onclick="setBooksReadRange('month')">This Month</button>
-        <button class="range-btn" data-range="year" onclick="setBooksReadRange('year')">This Year</button>
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Reading Journal</div>
+      <div id="journalToday"></div>
+      <div id="journalYesterday"></div>
+      <div class="journal-older-nudge" id="journalOlderNudge">
+        Looking for older entries? <button class="journal-cal-link" onclick="switchTab('calendar')">Check the Calendar 📅</button>
       </div>
-      <div class="books-read-subtitle">
-        <span id="booksReadCount">0</span> Books
-        <svg class="ti" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>
+      <div class="row-buttons" style="margin-top:16px">
+        <button class="secondary small" onclick="startNewDay()">Start New Day</button>
+        <button class="ghost small" onclick="undo()">Undo Last</button>
       </div>
-      <div class="books-read-grid" id="booksReadGrid"></div>
-      <div class="books-read-pager" id="booksReadPager"></div>
-      <div class="range-toggle" id="booksReadSizeToggle" style="margin-top:10px">
-        <button class="range-btn active" data-size="9" onclick="setBooksReadPageSize(9)">9 / page</button>
-        <button class="range-btn" data-size="15" onclick="setBooksReadPageSize(15)">15 / page</button>
-      </div>
+      <button class="ghost small" style="width:100%;margin-top:10px" onclick="resetToday()">Reset Today's Log</button>
     </div>
   </div>
 
-  <!-- ============ BOOK & JOURNAL ============ -->
+  <!-- ============ YOUR BOOKS PAGE ============ -->
   <div id="view-journal" class="view">
+    <div class="view-page-title">Your Books Page</div>
     <div class="card">
       <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z"/><path d="M12 6v13"/></svg>Currently Reading</div>
       <div id="bookBlock"></div>
@@ -535,17 +542,21 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     </div>
 
     <div class="card">
-      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Reading Journal</div>
-      <div id="journalToday"></div>
-      <div id="journalYesterday"></div>
-      <div class="journal-older-nudge" id="journalOlderNudge">
-        Looking for older entries? <button class="journal-cal-link" onclick="switchTab('calendar')">Check the Calendar 📅</button>
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>Books Read</div>
+      <div class="range-toggle" id="booksReadRangeToggle">
+        <button class="range-btn active" data-range="month" onclick="setBooksReadRange('month')">This Month</button>
+        <button class="range-btn" data-range="year" onclick="setBooksReadRange('year')">This Year</button>
       </div>
-      <div class="row-buttons" style="margin-top:16px">
-        <button class="secondary small" onclick="startNewDay()">Start New Day</button>
-        <button class="ghost small" onclick="undo()">Undo Last</button>
+      <div class="books-read-subtitle">
+        <span id="booksReadCount">0</span> Books
+        <svg class="ti" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>
       </div>
-      <button class="ghost small" style="width:100%;margin-top:10px" onclick="resetToday()">Reset Today's Log</button>
+      <div class="books-read-grid" id="booksReadGrid"></div>
+      <div class="books-read-pager" id="booksReadPager"></div>
+      <div class="range-toggle" id="booksReadSizeToggle" style="margin-top:10px">
+        <button class="range-btn active" data-size="9" onclick="setBooksReadPageSize(9)">9 / page</button>
+        <button class="range-btn" data-size="15" onclick="setBooksReadPageSize(15)">15 / page</button>
+      </div>
     </div>
   </div>
 
@@ -599,7 +610,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
       <div class="footer-note" style="margin-top:6px">Wipes your books, journal, streaks, stats, and achievements. Export a backup first if you might want it back.</div>
     </div>
 
-    <div class="footer-note">made for the love of 🍓🍵📜<br>｡𖦹°‧strwberi_i ｡𖦹°‧</div>
+    <div class="footer-note">°𖦹｡ made for the love of strawberries and reading ｡𖦹°</div>
   </div>
 
 </div>
@@ -607,9 +618,10 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 <!-- ============ TAB BAR ============ -->
 <div class="tabbar">
   <button class="tab-btn active" data-view="home" onclick="switchTab('home')"><span class="ic">🏠</span>Home</button>
-  <button class="tab-btn" data-view="journal" onclick="switchTab('journal')"><span class="ic">📖</span>Journal</button>
+  <button class="tab-btn" data-view="journal" onclick="switchTab('journal')"><span class="ic">📚</span>Books</button>
   <button class="tab-btn" data-view="calendar" onclick="switchTab('calendar')"><span class="ic">📅</span>Calendar</button>
   <button class="tab-btn" data-view="progress" onclick="switchTab('progress')"><span class="ic">🏆</span>Progress</button>
+  <button class="theme-toggle" id="themeToggle" onclick="cycleTheme()" aria-label="Toggle light, dark, or blue light mode" title="Toggle theme">☀️</button>
 </div>
 
 <!-- ============ LOG READING MODAL ============ -->
@@ -617,6 +629,10 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <div class="modal">
     <h3>📖 Log Reading</h3>
     <div class="sub" id="logModalSub">What page are you on now?</div>
+    <label for="logTitleInput">Book Title</label>
+    <input id="logTitleInput" placeholder="e.g. Atomic Habits">
+    <label for="logAuthorInput">Author (optional)</label>
+    <input id="logAuthorInput" placeholder="e.g. James Clear">
     <label for="logPageInput">Current Page</label>
     <input id="logPageInput" type="number" inputmode="numeric" placeholder="e.g. 91">
     <div class="row-buttons" style="margin-top:14px">
@@ -1185,6 +1201,8 @@ function openLogModal(bookId){
   const book = s.books.find(b=>b.id===activeLogBookId);
   if(!book) return;
   document.getElementById("logModalSub").textContent = `${book.title} — currently on page ${book.lastPage} of ${book.total || "?"}`;
+  document.getElementById("logTitleInput").value = book.title || "";
+  document.getElementById("logAuthorInput").value = book.author || "";
   document.getElementById("logPageInput").value = "";
   openModal("logModal");
   setTimeout(()=>document.getElementById("logPageInput").focus(), 50);
@@ -1197,6 +1215,9 @@ function submitLog(){
   const p = parseInt(document.getElementById("logPageInput").value);
   if(isNaN(p)){ toast("Enter a page number"); return; }
 
+  const editedTitle = document.getElementById("logTitleInput").value.trim();
+  const editedAuthor = document.getElementById("logAuthorInput").value.trim();
+
   s.undo = {
     books: JSON.parse(JSON.stringify(s.books)),
     today: JSON.parse(JSON.stringify(s.today)),
@@ -1204,6 +1225,9 @@ function submitLog(){
     stats: { ...s.stats },
     achievements: JSON.parse(JSON.stringify(s.achievements))
   };
+
+  if(editedTitle) book.title = editedTitle;
+  if(editedAuthor){ book.author = editedAuthor; } else { delete book.author; }
 
   const from = book.lastPage || 1;
   const read = Math.max(0, p - from);
