@@ -161,12 +161,18 @@ html[data-theme="dark"] .card{
 .greeting{margin:6px 0 0;color:var(--muted);font-size:.95rem;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px}
 .greeting-icon{width:15px;height:18px;flex:0 0 auto;image-rendering:pixelated}
 .strawberry{width:48px;height:60px;flex:0 0 auto;position:absolute;right:0;top:-6px;image-rendering:pixelated}
+.theme-toggle-wrap{
+  flex:0 1 60px;min-width:0;align-self:flex-start;display:flex;flex-direction:column;align-items:center;
+  gap:2px;padding:6px 2px;
+}
 .theme-toggle{
-  flex:0 0 auto;align-self:center;width:36px;height:36px;border-radius:50%;
+  flex:0 0 auto;width:36px;height:36px;border-radius:50%;
   background:var(--ghost-bg);border:none;font-size:1.05rem;line-height:1;
   display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
-  margin-left:4px;
   box-shadow:0 2px 6px rgba(75,58,51,.1);
+}
+.theme-toggle-label{
+  color:var(--muted);font-family:"Ticketing","Pixelify Sans";font-size:.72rem;font-weight:600;
 }
 .sparkle{color:#F0C05A;font-size:.8em;vertical-align:middle}
 @media (prefers-reduced-motion:no-preference){
@@ -191,6 +197,9 @@ html[data-theme="dark"] .card{
   background:none;border:none;margin-top:6px;padding:4px 8px;
   font-family:"Ticketing","Pixelify Sans",sans-serif;font-size:.88rem;color:var(--muted);
   text-decoration:underline;cursor:pointer;
+}
+.goal-edit-link.locked{
+  text-decoration:none;cursor:default;opacity:.6;
 }
 .ring-goal-complete{color:var(--green-dark)}
 
@@ -358,6 +367,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 }
 .cal-cell.read{background:var(--pink-dark);font-size:.9rem}
 .cal-cell.read svg{display:block}
+.cal-cell.goal-missed{background:var(--pink-pale);color:var(--pink-dark)}
 .cal-cell.faded{opacity:0}
 .cal-cell.today{box-shadow:0 0 0 2px var(--pink-dark) inset}
 .cal-cell.selected{box-shadow:0 0 0 2px var(--green-dark) inset}
@@ -391,13 +401,14 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 /* ---------- tabbar ---------- */
 .tabbar{
   position:fixed;left:0;right:0;bottom:0;background:var(--green-pale);
-  display:flex;border-top:1px solid var(--line);
+  display:flex;justify-content:center;align-items:flex-start;gap:clamp(4px,2vw,18px);
+  border-top:1px solid var(--line);
   box-shadow:0 -6px 18px rgba(35,28,25,.10);
   padding:8px 6px calc(8px + env(safe-area-inset-bottom));
   z-index:50;
 }
 .tab-btn{
-  flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;
+  flex:0 1 72px;min-width:0;background:none;border:none;display:flex;flex-direction:column;align-items:center;
   gap:2px;color:var(--muted);font-family:"Ticketing","Pixelify Sans";font-size:.72rem;font-weight:600;padding:6px 2px;
 }
 .tab-btn .ic{font-size:1.35rem}
@@ -461,6 +472,11 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 <svg class="strawberry" viewBox="0 0 64 80" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="28" y="0" width="8" height="8" fill="#5C8A49"/><rect x="20" y="8" width="24" height="4" fill="#7FA66A"/><rect x="12" y="12" width="12" height="4" fill="#7FA66A"/><rect x="40" y="12" width="12" height="4" fill="#7FA66A"/><rect x="8" y="16" width="16" height="4" fill="#5C8A49"/><rect x="40" y="16" width="16" height="4" fill="#5C8A49"/><rect x="12" y="20" width="40" height="4" fill="#E0525F"/><rect x="8" y="24" width="48" height="4" fill="#E0525F"/><rect x="4" y="28" width="56" height="4" fill="#E0525F"/><rect x="4" y="32" width="56" height="4" fill="#E0525F"/><rect x="4" y="36" width="56" height="4" fill="#E0525F"/><rect x="8" y="40" width="48" height="4" fill="#E0525F"/><rect x="8" y="44" width="48" height="4" fill="#E0525F"/><rect x="12" y="48" width="40" height="4" fill="#E0525F"/><rect x="12" y="52" width="40" height="4" fill="#E0525F"/><rect x="16" y="56" width="32" height="4" fill="#E0525F"/><rect x="16" y="60" width="32" height="4" fill="#E0525F"/><rect x="20" y="64" width="24" height="4" fill="#E0525F"/><rect x="24" y="68" width="16" height="4" fill="#E0525F"/><rect x="28" y="72" width="8" height="4" fill="#E0525F"/><rect x="12" y="20" width="4" height="4" fill="#F4838C"/><rect x="8" y="24" width="4" height="4" fill="#F4838C"/><rect x="4" y="28" width="4" height="4" fill="#F4838C"/><rect x="4" y="32" width="4" height="4" fill="#F4838C"/><rect x="4" y="36" width="4" height="4" fill="#F4838C"/><rect x="8" y="40" width="4" height="4" fill="#F4838C"/><rect x="8" y="44" width="4" height="4" fill="#F4838C"/><rect x="12" y="48" width="4" height="4" fill="#F4838C"/><rect x="12" y="52" width="4" height="4" fill="#F4838C"/><rect x="16" y="56" width="4" height="4" fill="#F4838C"/><rect x="16" y="60" width="4" height="4" fill="#F4838C"/><rect x="20" y="64" width="4" height="4" fill="#F4838C"/><rect x="24" y="68" width="4" height="4" fill="#F4838C"/><rect x="28" y="72" width="4" height="4" fill="#F4838C"/><rect x="16" y="28" width="4" height="4" fill="#F0C05A"/><rect x="44" y="28" width="4" height="4" fill="#F0C05A"/><rect x="12" y="40" width="4" height="4" fill="#F0C05A"/><rect x="48" y="40" width="4" height="4" fill="#F0C05A"/><rect x="20" y="52" width="4" height="4" fill="#F0C05A"/><rect x="40" y="52" width="4" height="4" fill="#F0C05A"/><rect x="16" y="64" width="4" height="4" fill="#F0C05A"/><rect x="44" y="64" width="4" height="4" fill="#F0C05A"/><rect x="28" y="72" width="4" height="4" fill="#F0C05A"/></svg>
       </div>
 
+      <div class="range-toggle" id="goalToggle" style="margin-top:14px">
+        <button class="range-btn active" data-view="pages" onclick="switchGoalView('pages')">Pages</button>
+        <button class="range-btn" data-view="books" onclick="switchGoalView('books')">Books</button>
+      </div>
+
       <div class="ring-wrap">
         <div class="ring-stack">
           <svg class="ring-svg" viewBox="0 0 120 120">
@@ -478,7 +494,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
             <div id="ringLabel" class="ring-label">pages today</div>
           </div>
         </div>
-        <button class="goal-edit-link" onclick="openGoalModal()">Change daily goal</button>
+        <button class="goal-edit-link" id="goalEditLink">Change daily goal</button>
       </div>
 
       <div class="mini-row">
@@ -620,7 +636,10 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <button class="tab-btn" data-view="journal" onclick="switchTab('journal')"><span class="ic">📚</span>Books</button>
   <button class="tab-btn" data-view="calendar" onclick="switchTab('calendar')"><span class="ic">📅</span>Calendar</button>
   <button class="tab-btn" data-view="progress" onclick="switchTab('progress')"><span class="ic">🏆</span>Progress</button>
-  <button class="theme-toggle" id="themeToggle" onclick="cycleTheme()" aria-label="Toggle light, dark, or blue light mode" title="Toggle theme">☀️</button>
+  <div class="theme-toggle-wrap">
+    <button class="theme-toggle" id="themeToggle" onclick="cycleTheme()" aria-label="Toggle light, dark, or blue light mode" title="Toggle theme">☀️</button>
+    <span class="theme-toggle-label">Mode</span>
+  </div>
 </div>
 
 <!-- ============ LOG READING MODAL ============ -->
@@ -674,6 +693,20 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <div class="row-buttons" style="margin-top:14px">
       <button class="ghost small" onclick="closeModal('goalModal')">Cancel</button>
       <button class="primary" style="flex:1" onclick="submitGoal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CHANGE BOOK GOAL MODAL ============ -->
+<div class="modal-backdrop" id="bookGoalModal">
+  <div class="modal">
+    <h3>Yearly Book Goal</h3>
+    <div class="sub">How many books would you like to read this year?</div>
+    <label for="bookGoalInput">Books this year</label>
+    <input id="bookGoalInput" type="number" inputmode="numeric" placeholder="24">
+    <div class="row-buttons" style="margin-top:14px">
+      <button class="ghost small" onclick="closeModal('bookGoalModal')">Cancel</button>
+      <button class="primary" style="flex:1" onclick="submitBookGoal()">Save</button>
     </div>
   </div>
 </div>
@@ -790,11 +823,13 @@ function dayDiff(a,b){ return Math.round((new Date(b+"T00:00:00") - new Date(a+"
 function defaultState(){
   return {
     goal: GOAL,
+    bookGoal: 24,
     books: [],                        // [{id,title,total,lastPage}]
     notes: [],                        // [{id,text,date}]
     tbr: [],                          // [{id,title}] — To Be Read jar
     today: { date: todayStr(), log: [], startSnapshot: null },
     journal: {},                      // "YYYY-MM-DD" -> [{time,from,to,read,book}]
+    goalHistory: {},                  // "YYYY-MM-DD" -> goal that applied that day
     streak: { current:0, longest:0, lastActiveDate:null },
     stats: { totalPagesAllTime:0, sessionsCount:0, booksFinished:0 },
     finishedLog: [],                  // [{id,title,date}] — for time-scoped stats
@@ -838,6 +873,8 @@ if(!s.books) s.books = [];
 if(!s.notes) s.notes = [];
 if(!s.finishedLog) s.finishedLog = [];
 if(!s.tbr) s.tbr = [];
+if(!s.goalHistory) s.goalHistory = {};
+if(!s.bookGoal) s.bookGoal = 24;
 
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
 
@@ -860,12 +897,14 @@ function closeDay(dateStr){
   if(log.length){
     s.journal[dateStr] = (s.journal[dateStr] || []).concat(log);
   }
-  updateStreak(dateStr, pages);
+  s.goalHistory[dateStr] = s.goal;
+  updateStreak(dateStr, pages, { final: true });
 }
 
-function updateStreak(dateStr, pages){
+function updateStreak(dateStr, pages, opts){
+  opts = opts || {};
   const last = s.streak.lastActiveDate;
-  if(pages > 0){
+  if(pages >= s.goal){
     if(last){
       const diff = dayDiff(last, dateStr);
       if(diff === 1) s.streak.current += 1;
@@ -876,7 +915,9 @@ function updateStreak(dateStr, pages){
     }
     s.streak.lastActiveDate = dateStr;
     if(s.streak.current > s.streak.longest) s.streak.longest = s.streak.current;
-  } else {
+  } else if(opts.final){
+    // only zero out the streak once a day has actually closed without
+    // meeting the goal — not mid-day, while today's log is still in progress
     if(last && dayDiff(last, dateStr) >= 1){
       s.streak.current = 0;
     }
@@ -1159,8 +1200,8 @@ function removeBookConfirm(){
     s.stats.sessionsCount = Math.max(0, s.stats.sessionsCount - sessionsToRemove);
     s.stats.totalPagesAllTime = Math.max(0, s.stats.totalPagesAllTime - pagesToRemove);
 
-    // if today no longer has any reading logged, undo today's streak credit
-    if(todayTotal() === 0 && s.today.startSnapshot){
+    // if today no longer meets the goal, undo today's streak credit
+    if(todayTotal() < s.goal && s.today.startSnapshot){
       s.streak.current = s.today.startSnapshot.streakCurrent;
       s.streak.lastActiveDate = s.today.startSnapshot.streakLastActiveDate;
     }
@@ -1276,19 +1317,49 @@ function undo(){
   renderAll();
 }
 
+function goalIsLocked(){
+  ensureRollover();
+  return (s.today.log || []).length > 0;
+}
+
 function openGoalModal(){
+  if(goalIsLocked()){
+    toast("Goal is locked for today — it resets once you start a new day");
+    return;
+  }
   document.getElementById("goalInput").value = s.goal;
   openModal("goalModal");
   setTimeout(()=>document.getElementById("goalInput").focus(), 50);
 }
 
 function submitGoal(){
+  if(goalIsLocked()){
+    toast("Goal is locked for today — it resets once you start a new day");
+    closeModal("goalModal");
+    return;
+  }
   const g = parseInt(document.getElementById("goalInput").value);
   if(isNaN(g) || g <= 0){ toast("Enter a page goal above 0"); return; }
   s.goal = g;
   save();
   closeModal("goalModal");
   toast(`Daily goal set to ${g} pages`);
+  renderAll();
+}
+
+function openBookGoalModal(){
+  document.getElementById("bookGoalInput").value = s.bookGoal;
+  openModal("bookGoalModal");
+  setTimeout(()=>document.getElementById("bookGoalInput").focus(), 50);
+}
+
+function submitBookGoal(){
+  const g = parseInt(document.getElementById("bookGoalInput").value);
+  if(isNaN(g) || g <= 0){ toast("Enter a book goal above 0"); return; }
+  s.bookGoal = g;
+  save();
+  closeModal("bookGoalModal");
+  toast(`Yearly goal set to ${g} books`);
   renderAll();
 }
 
@@ -1456,21 +1527,61 @@ function renderNotes(){
 /* ============================================================
    RENDER: HOME
    ============================================================ */
+let homeGoalView = "pages"; // always resets to "pages" on app reopen (not persisted)
+
+function switchGoalView(view){
+  homeGoalView = view;
+  renderHome();
+}
+
+function booksReadThisYear(){
+  const year = new Date().getFullYear();
+  return (s.finishedLog || []).filter(f => new Date(f.date + "T00:00:00").getFullYear() === year).length;
+}
+
 function renderHome(){
   const h = new Date().getHours();
   const greetText = h < 12 ? "Good morning!" : h < 18 ? "Good afternoon!" : "Good evening!";
   document.getElementById("greeting").innerHTML = `${PIXEL_SHAKE_SVG}<span>${greetText}</span>`;
 
-  const total = todayTotal();
-  const pct = Math.min(total / s.goal, 1);
+  document.querySelectorAll("#goalToggle .range-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.view === homeGoalView);
+  });
+
   const r = 50, circ = 2*Math.PI*r;
   const fg = document.getElementById("ringFg");
-  fg.style.strokeDasharray = circ;
-  fg.style.strokeDashoffset = circ * (1-pct);
+  const goalLink = document.getElementById("goalEditLink");
 
-  document.getElementById("ringNum").textContent = `${total} / ${s.goal}`;
-  document.getElementById("ringLabel").textContent = total >= s.goal ? "goal complete! 🎉" : "pages today";
-  document.getElementById("ringLabel").className = "ring-label" + (total >= s.goal ? " ring-goal-complete" : "");
+  if(homeGoalView === "books"){
+    const year = new Date().getFullYear();
+    const count = booksReadThisYear();
+    const goal = s.bookGoal;
+    const pct = Math.min(goal ? count / goal : 0, 1);
+    fg.style.strokeDasharray = circ;
+    fg.style.strokeDashoffset = circ * (1-pct);
+
+    document.getElementById("ringNum").textContent = `${count} / ${goal}`;
+    document.getElementById("ringLabel").textContent = count >= goal ? "goal complete! 🎉" : `books read in ${year}`;
+    document.getElementById("ringLabel").className = "ring-label" + (count >= goal ? " ring-goal-complete" : "");
+
+    goalLink.textContent = "Change yearly goal";
+    goalLink.classList.remove("locked");
+    goalLink.onclick = openBookGoalModal;
+  } else {
+    const total = todayTotal();
+    const pct = Math.min(total / s.goal, 1);
+    fg.style.strokeDasharray = circ;
+    fg.style.strokeDashoffset = circ * (1-pct);
+
+    document.getElementById("ringNum").textContent = `${total} / ${s.goal}`;
+    document.getElementById("ringLabel").textContent = total >= s.goal ? "goal complete! 🎉" : "pages today";
+    document.getElementById("ringLabel").className = "ring-label" + (total >= s.goal ? " ring-goal-complete" : "");
+
+    const locked = (s.today.log || []).length > 0;
+    goalLink.textContent = locked ? "Daily goal locked until tomorrow" : "Change daily goal";
+    goalLink.classList.toggle("locked", locked);
+    goalLink.onclick = openGoalModal;
+  }
 
   document.getElementById("homeStreak").textContent = s.streak.current;
   document.getElementById("homeBookCount").textContent = s.books.length;
@@ -1671,9 +1782,19 @@ function calShiftMonth(delta){
   renderCalendar();
 }
 
+function dayPages(iso){
+  if(iso === s.today.date) return todayTotal();
+  return (s.journal[iso] || []).reduce((a,x)=>a+x.read,0);
+}
+function dayGoalForDate(iso){
+  if(iso === s.today.date) return s.goal;
+  return s.goalHistory[iso] || s.goal;
+}
 function dayHasReading(iso){
-  if(iso === s.today.date) return todayTotal() > 0;
-  return !!(s.journal[iso] && s.journal[iso].length);
+  return dayPages(iso) > 0;
+}
+function dayMetGoal(iso){
+  return dayPages(iso) >= dayGoalForDate(iso);
 }
 
 function renderCalendar(){
@@ -1694,11 +1815,14 @@ function renderCalendar(){
   for(let day=1; day<=daysInMonth; day++){
     const iso = `${y}-${String(m+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
     const read = dayHasReading(iso);
+    const metGoal = read && dayMetGoal(iso);
+    const missedGoal = read && !metGoal;
     const classes = ["cal-cell"];
     if(read) classes.push("read");
+    if(missedGoal) classes.push("goal-missed");
     if(iso === t) classes.push("today");
     if(iso === calSelected) classes.push("selected");
-    html += `<button class="${classes.join(" ")}" onclick="calSelectDay('${iso}')">${read ? PIXEL_HEART_SVG : day}</button>`;
+    html += `<button class="${classes.join(" ")}" onclick="calSelectDay('${iso}')">${metGoal ? PIXEL_HEART_SVG : day}</button>`;
   }
   grid.innerHTML = html;
 
