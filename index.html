@@ -349,22 +349,55 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
   display:flex;align-items:center;justify-content:center;gap:6px;
   font-family:"Ticketing","Pixelify Sans";font-weight:600;color:var(--muted);font-size:.9rem;margin-bottom:12px;
 }
-.books-read-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.books-read-cell{text-align:center}
+.books-read-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.books-read-cell{text-align:center;cursor:pointer;min-width:0}
 .books-read-cover{
   width:100%;aspect-ratio:2/3;border-radius:8px;overflow:hidden;
   background:linear-gradient(135deg,var(--hue-a,#FFC9CF) 0%,var(--hue-b,#F4838C) 100%);
   display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(75,58,51,.1);
 }
 .books-read-cover svg{width:46%;height:46%}
+.books-read-cover img{width:100%;height:100%;object-fit:cover;display:block}
 .books-read-title{
-  font-size:.72rem;color:var(--muted);margin-top:5px;overflow:hidden;
+  font-size:.68rem;color:var(--muted);margin-top:5px;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;
 }
-.books-read-pager{display:none;align-items:center;justify-content:center;gap:14px;margin-top:14px}
-.books-read-pager button{background:none;border:none;font-size:1.2rem;color:var(--pink-dark);padding:4px 10px;cursor:pointer}
-.books-read-pager button:disabled{opacity:.3;cursor:default}
-.books-read-pager span{font-family:"Ticketing","Pixelify Sans";font-weight:600;color:var(--muted);font-size:.85rem}
+
+.books-read-list{display:flex;flex-direction:column;gap:8px}
+.books-read-row{
+  display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.03);
+  border-radius:12px;padding:8px 10px;cursor:pointer;
+}
+.books-read-row-cover{
+  flex:0 0 40px;width:40px;aspect-ratio:2/3;border-radius:6px;overflow:hidden;
+  background:linear-gradient(135deg,var(--hue-a,#FFC9CF) 0%,var(--hue-b,#F4838C) 100%);
+  display:flex;align-items:center;justify-content:center;
+}
+.books-read-row-cover svg{width:50%;height:50%}
+.books-read-row-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.books-read-row-info{flex:1;min-width:0}
+.books-read-row-title{font-size:.92rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.books-read-row-date{font-size:.78rem;color:var(--muted)}
+
+.books-read-toolbar{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:14px}
+.brt-views{display:flex;gap:3px;background:var(--empty-cell);border-radius:10px;padding:3px;flex:0 0 auto}
+.brt-view-btn{background:none;border:none;padding:5px 9px;border-radius:8px;font-size:.95rem;line-height:1;color:var(--muted);cursor:pointer}
+.brt-view-btn.active{background:var(--card);color:var(--pink-dark);box-shadow:0 2px 6px rgba(35,28,25,.14)}
+.brt-pager{display:flex;align-items:center;justify-content:center;gap:6px;flex:1 1 auto;min-width:0}
+.brt-pager button{background:none;border:none;font-size:1.05rem;color:var(--pink-dark);padding:2px 5px;cursor:pointer}
+.brt-pager button:disabled{opacity:.3;cursor:default}
+.brt-pager span{font-family:"Ticketing","Pixelify Sans";font-weight:600;color:var(--muted);font-size:.78rem;white-space:nowrap}
+.brt-pagesize{display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.brt-pagesize label{font-size:.7rem;color:var(--muted);white-space:nowrap}
+.brt-pagesize select{
+  font-family:inherit;font-size:.78rem;border-radius:8px;border:1px solid var(--line);
+  padding:3px 5px;background:var(--card);color:var(--text);cursor:pointer;
+}
+
+.brd-cover-wrap{display:flex;justify-content:center;margin:8px 0 12px}
+.brd-cover{flex:0 0 130px;width:130px;max-width:130px;min-width:130px;cursor:pointer}
+.brd-meta{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:10px;line-height:1.5}
+.brd-meta strong{color:var(--text)}
 
 .tbr-summary{color:var(--muted);font-size:.92rem;text-align:center}
 .tbr-summary-main{font-family:"Ticketing","Pixelify Sans";font-weight:600;color:var(--text);font-size:1rem}
@@ -638,10 +671,21 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
         <svg class="ti" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>
       </div>
       <div class="books-read-grid" id="booksReadGrid"></div>
-      <div class="books-read-pager" id="booksReadPager"></div>
-      <div class="range-toggle" id="booksReadSizeToggle" style="margin-top:10px">
-        <button class="range-btn active" data-size="9" onclick="setBooksReadPageSize(9)">9 / page</button>
-        <button class="range-btn" data-size="15" onclick="setBooksReadPageSize(15)">15 / page</button>
+      <div class="books-read-list" id="booksReadList" style="display:none"></div>
+      <div class="books-read-toolbar">
+        <div class="brt-views" id="booksReadViewToggle">
+          <button class="brt-view-btn active" data-view="cover" onclick="setBooksReadViewMode('cover')" title="Cover view" aria-label="Cover view">▦</button>
+          <button class="brt-view-btn" data-view="list" onclick="setBooksReadViewMode('list')" title="List view" aria-label="List view">☰</button>
+        </div>
+        <div class="brt-pager" id="booksReadPager"></div>
+        <div class="brt-pagesize">
+          <label for="booksReadPageSizeSelect">View up to</label>
+          <select id="booksReadPageSizeSelect" onchange="setBooksReadPageSize(parseInt(this.value,10))">
+            <option value="12">12</option>
+            <option value="16">16</option>
+            <option value="20">20</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -798,6 +842,30 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   </div>
 </div>
 
+<!-- ============ FINISHED BOOK DETAIL MODAL ============ -->
+<div class="modal-backdrop" id="bookReadDetailModal">
+  <div class="modal">
+    <h3 id="brdTitle">📖 Book</h3>
+    <div class="brd-cover-wrap">
+      <div class="book-cover-thumb brd-cover" id="brdCover" onclick="openCoverAdjustModalFinished()" title="Adjust cover">
+        <img id="brdCoverImg" alt="" style="display:none" onerror="this.style.display='none';document.getElementById('brdCoverFallback').style.display='flex'" onload="this.style.display='block';document.getElementById('brdCoverFallback').style.display='none'">
+        <div class="books-read-cover" id="brdCoverFallback" style="width:100%;height:100%;aspect-ratio:auto"></div>
+      </div>
+    </div>
+    <div class="brd-meta" id="brdMeta"></div>
+    <label for="brdUrlInput">Cover Photo URL</label>
+    <div class="crop-url-row">
+      <input id="brdUrlInput" type="url" placeholder="https://...">
+      <button class="ghost small" type="button" onclick="updateFinishedCoverUrl()">Update</button>
+    </div>
+    <div class="cover-error" id="brdUrlError" style="display:none">Please enter a valid image link (starting with http:// or https://).</div>
+    <div class="row-buttons" style="margin-top:14px">
+      <button class="primary" style="flex:1" onclick="closeModal('bookReadDetailModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+
 
 <div id="toast"></div>
 <div id="celebrate-layer"></div>
@@ -938,6 +1006,12 @@ function todayStr(d = new Date()){
   return `${y}-${m}-${day}`;
 }
 function dayDiff(a,b){ return Math.round((new Date(b+"T00:00:00") - new Date(a+"T00:00:00")) / 86400000); }
+function formatDisplayDate(dateStr){
+  if(!dateStr) return "";
+  const d = new Date(dateStr + "T00:00:00");
+  if(isNaN(d)) return dateStr;
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
 
 function defaultState(){
   return {
@@ -1255,9 +1329,11 @@ async function submitNewBook(){
    ============================================================ */
 let cropState = { zoom: 1, posX: 50, posY: 50 };
 let cropTargetBookId = null; // null = editing the new-book draft
+let cropTargetKind = "new"; // "new" | "active" | "finished"
 let cropDrag = null;
 
 function openCoverAdjustModal(bookId){
+  cropTargetKind = "active";
   cropTargetBookId = bookId;
   let url, base;
   if(bookId){
@@ -1266,6 +1342,7 @@ function openCoverAdjustModal(bookId){
     url = book.cover.url;
     base = book.cover;
   } else {
+    cropTargetKind = "new";
     if(!nbCoverDraft) return;
     url = nbCoverDraft.url;
     base = nbCoverDraft;
@@ -1275,6 +1352,23 @@ function openCoverAdjustModal(bookId){
   document.getElementById("cropImgError").style.display = "none";
   document.getElementById("cropUrlInput").value = url;
   img.src = url;
+  document.getElementById("cropZoom").value = Math.round(cropState.zoom * 100);
+  applyCropTransform();
+  openModal("coverCropModal");
+}
+
+function openCoverAdjustModalFinished(){
+  if(!currentBrdEntryId) return;
+  const entry = (s.finishedLog || []).find(f => f.id === currentBrdEntryId);
+  if(!entry || !entry.cover) return;
+  cropTargetKind = "finished";
+  cropTargetBookId = currentBrdEntryId;
+  const base = entry.cover;
+  cropState = { zoom: base.zoom || 1, posX: base.posX ?? 50, posY: base.posY ?? 50 };
+  const img = document.getElementById("cropImg");
+  document.getElementById("cropImgError").style.display = "none";
+  document.getElementById("cropUrlInput").value = base.url;
+  img.src = base.url;
   document.getElementById("cropZoom").value = Math.round(cropState.zoom * 100);
   applyCropTransform();
   openModal("coverCropModal");
@@ -1334,9 +1428,12 @@ function onCropZoomInput(){
 
 function saveCoverAdjust(){
   const cover = { url: document.getElementById("cropImg").src, zoom: cropState.zoom, posX: cropState.posX, posY: cropState.posY };
-  if(cropTargetBookId){
+  if(cropTargetKind === "active" && cropTargetBookId){
     const book = s.books.find(b => b.id === cropTargetBookId);
     if(book){ book.cover = cover; save(); renderBooks(); }
+  } else if(cropTargetKind === "finished" && cropTargetBookId){
+    const entry = (s.finishedLog || []).find(f => f.id === cropTargetBookId);
+    if(entry){ entry.cover = cover; save(); renderBooksRead(); populateBrdModal(entry); }
   } else {
     nbCoverDraft = cover;
     updateCoverDraftUi();
@@ -1495,7 +1592,12 @@ function finishBookConfirm(){
   if(!book){ closeModal("removeBookModal"); return; }
   s.stats.booksFinished += 1;
   s.finishedLog = s.finishedLog || [];
-  s.finishedLog.push({ id: genId(), title: book.title, date: todayStr() });
+  const entry = { id: genId(), title: book.title, date: todayStr() };
+  if(book.author) entry.author = book.author;
+  if(book.total) entry.total = book.total;
+  if(book.lastPage) entry.lastPage = book.lastPage;
+  if(book.cover) entry.cover = { ...book.cover };
+  s.finishedLog.push(entry);
   s.books = s.books.filter(b=>b.id!==pendingRemoveId);
   s.undo = null;
   checkAchievements();
@@ -1929,8 +2031,9 @@ function renderHome(){
    BOOKS READ GRID
    ============================================================ */
 let booksReadRange = "month";
-let booksReadPageSize = 9;
+let booksReadPageSize = 12;
 let booksReadPage = 0;
+let booksReadViewMode = "cover";
 
 function setBooksReadRange(r){
   booksReadRange = r;
@@ -1942,7 +2045,16 @@ function setBooksReadRange(r){
 function setBooksReadPageSize(n){
   booksReadPageSize = n;
   booksReadPage = 0;
-  document.querySelectorAll("#booksReadSizeToggle .range-btn").forEach(b => b.classList.toggle("active", Number(b.dataset.size) === n));
+  const select = document.getElementById("booksReadPageSizeSelect");
+  if(select) select.value = String(n);
+  renderBooksRead();
+}
+
+function setBooksReadViewMode(mode){
+  booksReadViewMode = mode;
+  document.querySelectorAll("#booksReadViewToggle .brt-view-btn").forEach(b => b.classList.toggle("active", b.dataset.view === mode));
+  document.getElementById("booksReadGrid").style.display = mode === "cover" ? "grid" : "none";
+  document.getElementById("booksReadList").style.display = mode === "list" ? "flex" : "none";
   renderBooksRead();
 }
 
@@ -1952,10 +2064,30 @@ function booksReadShiftPage(delta){
 }
 
 function renderBooksReadCell(entry, i){
+  const cover = entry.cover && entry.cover.url;
+  const coverInner = cover
+    ? `<img src="${escapeHtml(entry.cover.url)}" alt="" style="object-position:${entry.cover.posX ?? 50}% ${entry.cover.posY ?? 50}%;transform:scale(${entry.cover.zoom || 1})" onerror="this.style.display='none'">`
+    : PIXEL_BERRY_SVG;
   return `
-    <div class="books-read-cell">
-      <div class="books-read-cover hue-${i % 5}">${PIXEL_BERRY_SVG}</div>
+    <div class="books-read-cell" onclick="openBookReadDetail('${entry.id}')">
+      <div class="books-read-cover hue-${i % 5}">${coverInner}</div>
       <div class="books-read-title">${escapeHtml(entry.title || "Untitled")}</div>
+    </div>
+  `;
+}
+
+function renderBooksReadRow(entry, i){
+  const cover = entry.cover && entry.cover.url;
+  const coverInner = cover
+    ? `<img src="${escapeHtml(entry.cover.url)}" alt="" style="object-position:${entry.cover.posX ?? 50}% ${entry.cover.posY ?? 50}%;transform:scale(${entry.cover.zoom || 1})" onerror="this.style.display='none'">`
+    : PIXEL_BERRY_SVG;
+  return `
+    <div class="books-read-row" onclick="openBookReadDetail('${entry.id}')">
+      <div class="books-read-row-cover hue-${i % 5}">${coverInner}</div>
+      <div class="books-read-row-info">
+        <div class="books-read-row-title">${escapeHtml(entry.title || "Untitled")}</div>
+        <div class="books-read-row-date">Finished ${formatDisplayDate(entry.date)}</div>
+      </div>
     </div>
   `;
 }
@@ -1973,12 +2105,14 @@ function renderBooksRead(){
 
   const start = booksReadPage * booksReadPageSize;
   const pageItems = list.slice(start, start + booksReadPageSize);
+  const emptyMsg = `<div class="empty" style="grid-column:1/-1">No books finished ${booksReadRange==='month' ? 'this month' : 'this year'} yet.</div>`;
 
   const grid = document.getElementById("booksReadGrid");
-  if(!pageItems.length){
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">No books finished ${booksReadRange==='month' ? 'this month' : 'this year'} yet.</div>`;
+  const listEl = document.getElementById("booksReadList");
+  if(booksReadViewMode === "cover"){
+    grid.innerHTML = pageItems.length ? pageItems.map(renderBooksReadCell).join("") : emptyMsg;
   } else {
-    grid.innerHTML = pageItems.map(renderBooksReadCell).join("");
+    listEl.innerHTML = pageItems.length ? pageItems.map(renderBooksReadRow).join("") : emptyMsg;
   }
 
   const pager = document.getElementById("booksReadPager");
@@ -1993,6 +2127,58 @@ function renderBooksRead(){
     pager.style.display = "none";
     pager.innerHTML = "";
   }
+}
+
+/* ---- finished book detail modal ---- */
+let currentBrdEntryId = null;
+
+function openBookReadDetail(entryId){
+  const entry = (s.finishedLog || []).find(f => f.id === entryId);
+  if(!entry) return;
+  currentBrdEntryId = entryId;
+  populateBrdModal(entry);
+  openModal("bookReadDetailModal");
+}
+
+function populateBrdModal(entry){
+  document.getElementById("brdTitle").textContent = `📖 ${entry.title || "Untitled"}`;
+  const fallback = document.getElementById("brdCoverFallback");
+  fallback.innerHTML = PIXEL_BERRY_SVG;
+  const img = document.getElementById("brdCoverImg");
+  if(entry.cover && entry.cover.url){
+    img.src = entry.cover.url;
+    img.style.objectPosition = `${entry.cover.posX ?? 50}% ${entry.cover.posY ?? 50}%`;
+    img.style.transform = `scale(${entry.cover.zoom || 1})`;
+    fallback.style.display = "none";
+  } else {
+    img.removeAttribute("src");
+    img.style.display = "none";
+    fallback.style.display = "flex";
+  }
+
+  const metaParts = [];
+  if(entry.author) metaParts.push(`by ${escapeHtml(entry.author)}`);
+  metaParts.push(`Finished <strong>${formatDisplayDate(entry.date)}</strong>`);
+  if(entry.total) metaParts.push(`${entry.total} pages`);
+  document.getElementById("brdMeta").innerHTML = metaParts.join(" • ");
+
+  document.getElementById("brdUrlInput").value = (entry.cover && entry.cover.url) || "";
+  document.getElementById("brdUrlError").style.display = "none";
+}
+
+function updateFinishedCoverUrl(){
+  if(!currentBrdEntryId) return;
+  const url = document.getElementById("brdUrlInput").value.trim();
+  if(!isSafeImageUrl(url)){
+    document.getElementById("brdUrlError").style.display = "block";
+    return;
+  }
+  const entry = (s.finishedLog || []).find(f => f.id === currentBrdEntryId);
+  if(!entry) return;
+  entry.cover = { url, zoom: 1, posX: 50, posY: 50 };
+  save();
+  populateBrdModal(entry);
+  renderBooksRead();
 }
 
 /* ============================================================
