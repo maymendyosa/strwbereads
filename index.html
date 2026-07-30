@@ -46,6 +46,8 @@
   --input-border:#E7D7D2;
   --ghost-bg:#F5EEE9;
   --ghost-text:#7B6258;
+  --icon:#8A6F66;
+  --icon-active:#84867F;
 }
 html[data-theme="dark"]{
   --cream:#241826;
@@ -69,6 +71,8 @@ html[data-theme="dark"]{
   --input-border:#4A3542;
   --ghost-bg:#3A2732;
   --ghost-text:#F3E7E1;
+  --icon:#C2A99E;
+  --icon-active:#131A11;
 }
 html[data-theme="warm"]{
   --cream:#FFF6E9;
@@ -92,6 +96,8 @@ html[data-theme="warm"]{
   --input-border:#E9D8C4;
   --ghost-bg:#F2E4D3;
   --ghost-text:#7A6248;
+  --icon:#8A7259;
+  --icon-active:#858279;
 }
 @font-face{
   font-family:"Ticketing";
@@ -170,7 +176,9 @@ html[data-theme="dark"] .card{
   background:var(--ghost-bg);border:none;font-size:1.05rem;line-height:1;
   display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
   box-shadow:0 2px 6px rgba(75,58,51,.1);
+  color:var(--icon-active);
 }
+
 .theme-toggle-label{
   color:var(--muted);font-family:"Ticketing","Pixelify Sans";font-size:.72rem;font-weight:600;
 }
@@ -191,7 +199,13 @@ html[data-theme="dark"] .card{
   align-items:center;justify-content:center;text-align:center;pointer-events:none;
   padding:0 20px;
 }
-.ring-num{font-family:"Ticketing","Pixelify Sans";font-size:1.9rem;font-weight:600;color:var(--pink-dark)}
+.ring-num{
+  font-family:"Ticketing","Pixelify Sans";color:var(--pink-dark);
+  display:flex;align-items:baseline;justify-content:center;gap:3px;white-space:nowrap;
+}
+.ring-num-achieved{font-size:2rem;font-weight:700}
+.ring-num-sep{font-size:1rem;font-weight:500;opacity:.55}
+.ring-num-goal{font-size:1.05rem;font-weight:500;opacity:.8}
 .ring-label{font-size:.85rem;color:var(--muted)}
 .goal-edit-link{
   background:none;border:none;margin-top:6px;padding:4px 8px;
@@ -429,8 +443,9 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   flex:0 1 72px;min-width:0;background:none;border:none;display:flex;flex-direction:column;align-items:center;
   gap:2px;color:var(--muted);font-family:"Ticketing","Pixelify Sans";font-size:.72rem;font-weight:600;padding:6px 2px;
 }
-.tab-btn .ic{font-size:1.35rem}
+.tab-btn .ic{font-size:1.35rem;color:var(--icon)}
 .tab-btn.active{color:var(--pink-dark)}
+.tab-btn.active .ic{color:var(--icon-active)}
 
 .view{display:none}
 .view.active{display:block;animation:fadein .25s ease}
@@ -508,7 +523,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
             <circle id="ringFg" class="ring-fg" cx="60" cy="60" r="50"/>
           </svg>
           <div class="ring-center">
-            <div id="ringNum" class="ring-num">0 / 100</div>
+            <div id="ringNum" class="ring-num"><span class="ring-num-achieved">0</span><span class="ring-num-sep">/</span><span class="ring-num-goal">100</span></div>
             <div id="ringLabel" class="ring-label">pages today</div>
           </div>
         </div>
@@ -650,12 +665,12 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 
 <!-- ============ TAB BAR ============ -->
 <div class="tabbar">
-  <button class="tab-btn active" data-view="home" onclick="switchTab('home')"><span class="ic">🏠</span>Home</button>
-  <button class="tab-btn" data-view="journal" onclick="switchTab('journal')"><span class="ic">📚</span>Books</button>
-  <button class="tab-btn" data-view="calendar" onclick="switchTab('calendar')"><span class="ic">📅</span>Calendar</button>
-  <button class="tab-btn" data-view="progress" onclick="switchTab('progress')"><span class="ic">🏆</span>Progress</button>
+  <button class="tab-btn active" data-view="home" onclick="switchTab('home')"><span class="ic">🏠︎</span>Home</button>
+  <button class="tab-btn" data-view="journal" onclick="switchTab('journal')"><span class="ic">🕮</span>Books</button>
+  <button class="tab-btn" data-view="calendar" onclick="switchTab('calendar')"><span class="ic">🗓</span>Calendar</button>
+  <button class="tab-btn" data-view="progress" onclick="switchTab('progress')"><span class="ic">🎖</span>Progress</button>
   <div class="theme-toggle-wrap">
-    <button class="theme-toggle" id="themeToggle" onclick="cycleTheme()" aria-label="Toggle light, dark, or blue light mode" title="Toggle theme">☀️</button>
+    <button class="theme-toggle" id="themeToggle" onclick="cycleTheme()" aria-label="Toggle light, dark, or blue light mode" title="Toggle theme">☀</button>
     <span class="theme-toggle-label">Mode</span>
   </div>
 </div>
@@ -796,9 +811,9 @@ const GOAL = 100;
 const THEME_KEY = "strwbereads_theme";
 const THEMES = ["light", "dark", "warm"];
 const THEME_META = {
-  light: { icon: "☀️", label: "Light mode", bg: "#EDF2E4" },
-  dark:  { icon: "🌙", label: "Dark mode", bg: "#1B1119" },
-  warm:  { icon: "🕯️", label: "Blue light filter", bg: "#F5EAD8" }
+  light: { icon: "☀", label: "Light mode", bg: "#EDF2E4" },
+  dark:  { icon: "⏾", label: "Dark mode", bg: "#1B1119" },
+  warm:  { icon: "☁︎", label: "Blue light filter", bg: "#F5EAD8" }
 };
 
 function getTheme(){
@@ -1284,9 +1299,13 @@ function openLogModal(bookId){
   document.getElementById("logModalSub").textContent = `${book.title} — currently on page ${book.lastPage} of ${book.total || "?"}`;
   document.getElementById("logTitleInput").value = book.title || "";
   document.getElementById("logAuthorInput").value = book.author || "";
-  document.getElementById("logPageInput").value = "";
+  document.getElementById("logPageInput").value = book.lastPage || "";
   openModal("logModal");
-  setTimeout(()=>document.getElementById("logPageInput").focus(), 50);
+  setTimeout(()=>{
+    const el = document.getElementById("logPageInput");
+    el.focus();
+    el.select();
+  }, 50);
 }
 
 function submitLog(){
@@ -1311,6 +1330,18 @@ function submitLog(){
   if(editedAuthor){ book.author = editedAuthor; } else { delete book.author; }
 
   const from = book.lastPage || 1;
+
+  // page field is prefilled with the current page now, so if it wasn't
+  // changed this was just a details edit — save it without logging a
+  // reading session or touching streaks/stats.
+  if(p === from){
+    save();
+    closeModal("logModal");
+    renderAll();
+    toast("Book updated");
+    return;
+  }
+
   const read = Math.max(0, p - from);
   const now = new Date();
   const wasComplete = todayTotal() >= s.goal;
@@ -1601,7 +1632,7 @@ function renderHome(){
     fg.style.strokeDasharray = circ;
     fg.style.strokeDashoffset = circ * (1-pct);
 
-    document.getElementById("ringNum").textContent = `${count} / ${goal}`;
+    document.getElementById("ringNum").innerHTML = `<span class="ring-num-achieved">${count}</span><span class="ring-num-sep">/</span><span class="ring-num-goal">${goal}</span>`;
     document.getElementById("ringLabel").textContent = count >= goal ? "goal complete! 🎉" : `books read in ${year}`;
     document.getElementById("ringLabel").className = "ring-label" + (count >= goal ? " ring-goal-complete" : "");
 
@@ -1614,7 +1645,7 @@ function renderHome(){
     fg.style.strokeDasharray = circ;
     fg.style.strokeDashoffset = circ * (1-pct);
 
-    document.getElementById("ringNum").textContent = `${total} / ${s.goal}`;
+    document.getElementById("ringNum").innerHTML = `<span class="ring-num-achieved">${total}</span><span class="ring-num-sep">/</span><span class="ring-num-goal">${s.goal}</span>`;
     document.getElementById("ringLabel").textContent = total >= s.goal ? "goal complete! 🎉" : "pages today";
     document.getElementById("ringLabel").className = "ring-label" + (total >= s.goal ? " ring-goal-complete" : "");
 
@@ -1714,6 +1745,7 @@ const PIXEL_SHAKE_SVG = `<svg class="greeting-icon" viewBox="0 0 22 26" xmlns="h
 
 /* cute pixel "surprise" gift box used when the TBR jar picks a title */
 const SURPRISE_SVG = `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="8" y="18" width="32" height="6" fill="#E0525F"/><rect x="8" y="24" width="32" height="18" fill="#F4838C"/><rect x="8" y="24" width="32" height="4" fill="#FFF0EE"/><rect x="20" y="18" width="8" height="24" fill="#F0C05A"/><rect x="16" y="8" width="8" height="10" fill="#7FA66A"/><rect x="24" y="8" width="8" height="10" fill="#7FA66A"/><rect x="18" y="10" width="4" height="6" fill="#A8C686"/><rect x="26" y="10" width="4" height="6" fill="#A8C686"/><rect x="10" y="10" width="3" height="3" fill="#F0C05A"/><rect x="35" y="30" width="3" height="3" fill="#F0C05A"/><rect x="6" y="34" width="3" height="3" fill="#F4838C"/></svg>`;
+
 
 function renderBooks(){
   const el = document.getElementById("bookBlock");
