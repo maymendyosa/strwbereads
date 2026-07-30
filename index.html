@@ -295,17 +295,55 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 
 .book-card{position:relative;background:var(--hue-soft,var(--pink-pale));border-radius:18px;padding:14px 16px;margin-bottom:12px}
 .book-card:last-child{margin-bottom:0}
-.book-card-inner{cursor:pointer}
-.book-info{flex:1;min-width:0}
+.book-card-inner{cursor:pointer;display:flex;align-items:flex-start;gap:12px}
+.book-info{flex:1 1 auto;min-width:0}
 .book-card .book-title{font-size:1.1rem;margin:0 22px 2px 0}
 .book-author{font-size:.85rem;font-style:italic;color:var(--muted);margin:0 22px 8px 0}
 .book-remove{
   position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;
   background:#fff;color:var(--muted);border:1px solid var(--line);
   display:flex;align-items:center;justify-content:center;
-  font-size:1rem;line-height:1;cursor:pointer;padding:0;
+  font-size:1rem;line-height:1;cursor:pointer;padding:0;z-index:2;
 }
 .book-remove:hover{background:var(--pink-dark);color:#fff}
+
+/* book cover thumbnail — scales with the card, portrait shaped, no filler when absent */
+.book-cover-thumb{
+  flex:0 0 24%;max-width:82px;min-width:42px;aspect-ratio:2/3;
+  border-radius:10px;overflow:hidden;position:relative;
+  background:rgba(0,0,0,.05);box-shadow:0 2px 6px rgba(75,58,51,.15);cursor:pointer;
+}
+.book-cover-thumb img{width:100%;height:100%;object-fit:cover;display:block;transform-origin:center center}
+.book-cover-thumb.cover-broken img{display:none}
+.book-cover-thumb.cover-broken{display:flex;align-items:center;justify-content:center;background:var(--pink-pale)}
+.book-cover-thumb.cover-broken::after{content:"⚠";font-size:1.1rem;color:var(--muted)}
+
+.cover-draft-row{display:flex;align-items:center;gap:10px;margin:8px 0 4px}
+.cover-draft-row .book-cover-thumb{flex:0 0 54px;max-width:54px;min-width:54px}
+.cover-draft-row button{white-space:nowrap}
+
+.cover-error{color:var(--pink-dark);font-size:.78rem;margin:2px 0 6px;line-height:1.3}
+
+.book-add-cover{
+  flex:0 0 auto;align-self:flex-start;margin-top:2px;
+  background:none;border:1px dashed var(--line);border-radius:8px;
+  color:var(--muted);font-size:.78rem;padding:5px 9px;cursor:pointer;white-space:nowrap;
+}
+.book-add-cover:hover{background:rgba(0,0,0,.04)}
+
+.crop-url-row{display:flex;gap:8px;align-items:center}
+.crop-url-row input{flex:1;min-width:0}
+.crop-url-row button{flex:0 0 auto}
+
+.crop-frame{
+  width:180px;aspect-ratio:2/3;margin:12px auto;border-radius:14px;overflow:hidden;
+  background:var(--pink-pale);position:relative;touch-action:none;cursor:grab;
+}
+.crop-frame:active{cursor:grabbing}
+.crop-frame img{
+  width:100%;height:100%;object-fit:cover;object-position:50% 50%;
+  display:block;user-select:none;-webkit-user-drag:none;transform-origin:center center;
+}
 
 .books-read-subtitle{
   display:flex;align-items:center;justify-content:center;gap:6px;
@@ -706,12 +744,60 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <input id="nbTotal" type="number" inputmode="numeric" placeholder="320">
     <label for="nbStart">Starting Page</label>
     <input id="nbStart" type="number" inputmode="numeric" placeholder="1">
+    <label for="nbCoverUrl">Cover Photo URL (optional)</label>
+    <input id="nbCoverUrl" type="url" placeholder="https://..." oninput="onCoverUrlInput()">
+    <div class="cover-draft-row" id="coverDraftRow" style="display:none">
+      <div class="book-cover-thumb" id="coverDraftThumb" onclick="openCoverAdjustModal(null)">
+        <img id="coverDraftImg" alt="" onerror="handleCoverImgError('draft')" onload="handleCoverImgLoad('draft')">
+      </div>
+      <button class="ghost small" type="button" onclick="openCoverAdjustModal(null)">Adjust Photo</button>
+      <button class="ghost small" type="button" onclick="clearCoverDraft()">Remove</button>
+    </div>
+    <div class="cover-error" id="coverDraftError" style="display:none">Couldn't load that image — check that the link points straight to an image file (ends in .jpg, .png, etc.), not a webpage.</div>
     <div class="row-buttons" style="margin-top:14px">
       <button class="ghost small" onclick="closeModal('bookModal')">Cancel</button>
       <button class="primary" style="flex:1" onclick="submitNewBook()">Next</button>
     </div>
   </div>
 </div>
+
+<!-- ============ COVER ADJUST MODAL ============ -->
+<div class="modal-backdrop" id="coverCropModal">
+  <div class="modal">
+    <h3>🖼 Adjust Cover</h3>
+    <div class="sub">Drag to reposition, scroll or use the slider to zoom</div>
+    <label for="cropUrlInput">Cover Photo URL</label>
+    <div class="crop-url-row">
+      <input id="cropUrlInput" type="url" placeholder="https://...">
+      <button class="ghost small" type="button" onclick="updateCropUrl()">Update</button>
+    </div>
+    <div class="crop-frame" id="cropFrame">
+      <img id="cropImg" alt="" draggable="false" onerror="handleCoverImgError('crop')" onload="handleCoverImgLoad('crop')">
+    </div>
+    <div class="cover-error" id="cropImgError" style="display:none">Couldn't load that image — check that the link points straight to an image file (ends in .jpg, .png, etc.), not a webpage.</div>
+    <input type="range" id="cropZoom" min="100" max="300" value="100" oninput="onCropZoomInput()">
+    <div class="row-buttons" style="margin-top:14px">
+      <button class="ghost small" onclick="closeModal('coverCropModal')">Cancel</button>
+      <button class="primary" style="flex:1" onclick="saveCoverAdjust()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADD COVER (EXISTING BOOK) MODAL ============ -->
+<div class="modal-backdrop" id="addCoverModal">
+  <div class="modal">
+    <h3>🖼 Add Cover Photo</h3>
+    <div class="sub">Paste a link to a photo of the cover</div>
+    <label for="acUrl">Cover Photo URL</label>
+    <input id="acUrl" type="url" placeholder="https://...">
+    <div class="cover-error" id="acUrlError" style="display:none">Please enter a valid image link (starting with http:// or https://).</div>
+    <div class="row-buttons" style="margin-top:14px">
+      <button class="ghost small" onclick="closeModal('addCoverModal')">Cancel</button>
+      <button class="primary" style="flex:1" onclick="submitAddCover()">Next</button>
+    </div>
+  </div>
+</div>
+
 
 <div id="toast"></div>
 <div id="celebrate-layer"></div>
@@ -1079,12 +1165,65 @@ function checkAchievements(ctx){
 let activeLogBookId = null;
 let pendingRemoveId = null;
 
+let nbCoverDraft = null;
+
 function openNewBookModal(){
   document.getElementById("nbTitle").value = "";
   document.getElementById("nbAuthor").value = "";
   document.getElementById("nbTotal").value = "";
   document.getElementById("nbStart").value = 1;
+  document.getElementById("nbCoverUrl").value = "";
+  document.getElementById("coverDraftError").style.display = "none";
+  nbCoverDraft = null;
+  updateCoverDraftUi();
   openModal("bookModal");
+}
+
+function isSafeImageUrl(url){
+  return /^https?:\/\//i.test(url);
+}
+
+let coverUrlDebounce = null;
+function onCoverUrlInput(){
+  clearTimeout(coverUrlDebounce);
+  coverUrlDebounce = setTimeout(() => {
+    const url = document.getElementById("nbCoverUrl").value.trim();
+    if(!url){ nbCoverDraft = null; updateCoverDraftUi(); return; }
+    if(!nbCoverDraft || nbCoverDraft.url !== url){
+      nbCoverDraft = isSafeImageUrl(url) ? { url, zoom: 1, posX: 50, posY: 50 } : null;
+    }
+    updateCoverDraftUi();
+  }, 400);
+}
+
+function handleCoverImgError(which){
+  const errEl = document.getElementById(which === "draft" ? "coverDraftError" : "cropImgError");
+  if(errEl) errEl.style.display = "block";
+}
+function handleCoverImgLoad(which){
+  const errEl = document.getElementById(which === "draft" ? "coverDraftError" : "cropImgError");
+  if(errEl) errEl.style.display = "none";
+}
+
+function clearCoverDraft(){
+  nbCoverDraft = null;
+  document.getElementById("nbCoverUrl").value = "";
+  document.getElementById("coverDraftError").style.display = "none";
+  updateCoverDraftUi();
+}
+
+function updateCoverDraftUi(){
+  const row = document.getElementById("coverDraftRow");
+  const img = document.getElementById("coverDraftImg");
+  if(nbCoverDraft && nbCoverDraft.url){
+    row.style.display = "flex";
+    img.src = nbCoverDraft.url;
+    img.style.objectPosition = `${nbCoverDraft.posX}% ${nbCoverDraft.posY}%`;
+    img.style.transform = `scale(${nbCoverDraft.zoom})`;
+  } else {
+    row.style.display = "none";
+    img.removeAttribute("src");
+  }
 }
 
 async function submitNewBook(){
@@ -1102,6 +1241,7 @@ async function submitNewBook(){
     lastPage: start
   };
   if(author) newBook.author = author;
+  if(nbCoverDraft && nbCoverDraft.url) newBook.cover = { ...nbCoverDraft };
 
   s.books.push(newBook);
   checkAchievements();
@@ -1109,6 +1249,129 @@ async function submitNewBook(){
   toast("New book started!");
   renderAll();
 }
+
+/* ============================================================
+   COVER CROP / ADJUST
+   ============================================================ */
+let cropState = { zoom: 1, posX: 50, posY: 50 };
+let cropTargetBookId = null; // null = editing the new-book draft
+let cropDrag = null;
+
+function openCoverAdjustModal(bookId){
+  cropTargetBookId = bookId;
+  let url, base;
+  if(bookId){
+    const book = s.books.find(b => b.id === bookId);
+    if(!book || !book.cover) return;
+    url = book.cover.url;
+    base = book.cover;
+  } else {
+    if(!nbCoverDraft) return;
+    url = nbCoverDraft.url;
+    base = nbCoverDraft;
+  }
+  cropState = { zoom: base.zoom || 1, posX: base.posX ?? 50, posY: base.posY ?? 50 };
+  const img = document.getElementById("cropImg");
+  document.getElementById("cropImgError").style.display = "none";
+  document.getElementById("cropUrlInput").value = url;
+  img.src = url;
+  document.getElementById("cropZoom").value = Math.round(cropState.zoom * 100);
+  applyCropTransform();
+  openModal("coverCropModal");
+}
+
+function updateCropUrl(){
+  const url = document.getElementById("cropUrlInput").value.trim();
+  if(!isSafeImageUrl(url)){
+    toast("Please enter a valid image URL (starting with http:// or https://)");
+    return;
+  }
+  document.getElementById("cropImgError").style.display = "none";
+  cropState = { zoom: 1, posX: 50, posY: 50 };
+  document.getElementById("cropZoom").value = 100;
+  document.getElementById("cropImg").src = url;
+  applyCropTransform();
+}
+
+/* ---- add cover to an existing book ---- */
+let acBookId = null;
+function openAddCoverModal(bookId){
+  acBookId = bookId;
+  document.getElementById("acUrl").value = "";
+  document.getElementById("acUrlError").style.display = "none";
+  openModal("addCoverModal");
+}
+function submitAddCover(){
+  const url = document.getElementById("acUrl").value.trim();
+  if(!isSafeImageUrl(url)){
+    document.getElementById("acUrlError").style.display = "block";
+    return;
+  }
+  const book = s.books.find(b => b.id === acBookId);
+  if(!book){ closeModal("addCoverModal"); return; }
+  book.cover = { url, zoom: 1, posX: 50, posY: 50 };
+  save();
+  closeModal("addCoverModal");
+  renderBooks();
+  openCoverAdjustModal(acBookId);
+}
+
+function applyCropTransform(){
+  const img = document.getElementById("cropImg");
+  img.style.objectPosition = `${cropState.posX}% ${cropState.posY}%`;
+  img.style.transform = `scale(${cropState.zoom})`;
+}
+
+function clampCropPos(){
+  cropState.posX = Math.max(0, Math.min(100, cropState.posX));
+  cropState.posY = Math.max(0, Math.min(100, cropState.posY));
+}
+
+function onCropZoomInput(){
+  cropState.zoom = parseInt(document.getElementById("cropZoom").value, 10) / 100;
+  applyCropTransform();
+}
+
+function saveCoverAdjust(){
+  const cover = { url: document.getElementById("cropImg").src, zoom: cropState.zoom, posX: cropState.posX, posY: cropState.posY };
+  if(cropTargetBookId){
+    const book = s.books.find(b => b.id === cropTargetBookId);
+    if(book){ book.cover = cover; save(); renderBooks(); }
+  } else {
+    nbCoverDraft = cover;
+    updateCoverDraftUi();
+  }
+  closeModal("coverCropModal");
+}
+
+(function initCropFrameEvents(){
+  document.addEventListener("DOMContentLoaded", () => {
+    const frame = document.getElementById("cropFrame");
+    if(!frame) return;
+    frame.addEventListener("pointerdown", e => {
+      cropDrag = { x: e.clientX, y: e.clientY, posX: cropState.posX, posY: cropState.posY };
+      frame.setPointerCapture(e.pointerId);
+    });
+    frame.addEventListener("pointermove", e => {
+      if(!cropDrag) return;
+      const rect = frame.getBoundingClientRect();
+      const dxPct = ((e.clientX - cropDrag.x) / rect.width) * 100 / cropState.zoom;
+      const dyPct = ((e.clientY - cropDrag.y) / rect.height) * 100 / cropState.zoom;
+      cropState.posX = cropDrag.posX - dxPct;
+      cropState.posY = cropDrag.posY - dyPct;
+      clampCropPos();
+      applyCropTransform();
+    });
+    frame.addEventListener("pointerup", () => { cropDrag = null; });
+    frame.addEventListener("pointercancel", () => { cropDrag = null; });
+    frame.addEventListener("wheel", e => {
+      e.preventDefault();
+      cropState.zoom = Math.min(3, Math.max(1, cropState.zoom - e.deltaY * 0.001));
+      document.getElementById("cropZoom").value = Math.round(cropState.zoom * 100);
+      applyCropTransform();
+    }, { passive: false });
+  });
+})();
 
 /* ============================================================
    TBR JAR
@@ -1756,10 +2019,17 @@ function renderBooks(){
   el.innerHTML = s.books.map((b, i) => {
     const total = b.total || 0;
     const pct = total ? Math.min(Math.round((b.lastPage/total)*100),100) : 0;
+    const cover = b.cover && b.cover.url;
+    const coverHtml = cover ? `
+          <div class="book-cover-thumb" onclick="event.stopPropagation();openCoverAdjustModal('${b.id}')" title="Adjust cover">
+            <img src="${escapeHtml(b.cover.url)}" alt="" style="object-position:${b.cover.posX ?? 50}% ${b.cover.posY ?? 50}%;transform:scale(${b.cover.zoom || 1})" onerror="this.closest('.book-cover-thumb').classList.add('cover-broken')">
+          </div>` : `
+          <button class="book-add-cover" onclick="event.stopPropagation();openAddCoverModal('${b.id}')">+ Add Cover</button>`;
     return `
       <div class="book-card hue-${i % 5}">
         <button class="book-remove" onclick="event.stopPropagation();openRemoveBookModal('${b.id}')" aria-label="Remove book">×</button>
         <div class="book-card-inner" onclick="openLogModal('${b.id}')">
+          ${coverHtml}
           <div class="book-info">
             <div class="book-title">${escapeHtml(b.title || "Untitled")}</div>
             ${b.author ? `<div class="book-author">by ${escapeHtml(b.author)}</div>` : ""}
