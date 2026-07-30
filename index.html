@@ -244,8 +244,10 @@ button{
 }
 button:active{transform:scale(.97)}
 .primary{background:var(--pink-dark);color:#fff;width:100%}
+.primary:disabled{opacity:.5;cursor:not-allowed}
 .secondary{background:var(--green-dark);color:#fff}
 .ghost{background:var(--ghost-bg);color:var(--ghost-text)}
+.ghost:disabled{opacity:.5;cursor:not-allowed}
 .ghost.small,.secondary.small{padding:9px 12px;font-size:.85rem}
 .danger{background:#D96B6B;color:#fff;width:100%}
 .danger.small{padding:9px 12px;font-size:.85rem;width:auto;flex:1}
@@ -323,10 +325,26 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .tbr-item .tbr-title{flex:1;word-break:break-word}
 .tbr-del{background:none;border:none;color:var(--muted);font-size:1.05rem;line-height:1;cursor:pointer;padding:0 2px}
 .tbr-pick-cover{
-  width:110px;height:154px;margin:14px auto 4px;border-radius:10px;overflow:hidden;
-  background:var(--pink-pale);box-shadow:0 6px 16px rgba(75,58,51,.15);display:flex;align-items:center;justify-content:center;
+  width:110px;height:154px;margin:14px auto 4px;display:flex;align-items:center;justify-content:center;
+  font-size:3.2rem;line-height:1;
 }
-.tbr-pick-cover svg{width:62%;height:62%}
+.tbr-pick-cover svg{width:100%;height:100%}
+.tbr-pick-cover.shaking{animation:jarShake .45s ease-in-out infinite}
+.tbr-pick-cover.reveal{animation:jarPopIn .4s ease-out}
+@keyframes jarShake{
+  0%,100%{transform:rotate(0deg) translateX(0)}
+  15%{transform:rotate(-9deg) translateX(-4px)}
+  30%{transform:rotate(8deg) translateX(4px)}
+  45%{transform:rotate(-7deg) translateX(-3px)}
+  60%{transform:rotate(6deg) translateX(3px)}
+  75%{transform:rotate(-4deg)}
+  90%{transform:rotate(2deg)}
+}
+@keyframes jarPopIn{
+  0%{transform:scale(.4) rotate(-8deg);opacity:0}
+  65%{transform:scale(1.15) rotate(3deg);opacity:1}
+  100%{transform:scale(1) rotate(0deg)}
+}
 .tbr-pick-title{font-family:"Ticketing","Pixelify Sans";font-weight:600;font-size:1.15rem;margin-top:8px}
 
 label{display:block;margin-top:12px;margin-bottom:6px;font-weight:700;font-size:.95rem}
@@ -758,8 +776,8 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <div class="tbr-pick-cover" id="tbrPickCover"></div>
     <div class="tbr-pick-title" id="tbrPickTitle"></div>
     <div class="row-buttons" style="margin-top:16px">
-      <button class="ghost small" onclick="shakeJar()">Shake Again</button>
-      <button class="primary" style="flex:1" onclick="readPickedBook()">Read This</button>
+      <button class="ghost small" id="tbrShakeAgainBtn" onclick="shakeJar()">Shake Again</button>
+      <button class="primary" id="tbrReadBtn" style="flex:1" onclick="readPickedBook()">Read This</button>
     </div>
     <button class="ghost small" style="width:100%;margin-top:10px" onclick="closeModal('tbrPickModal')">Exit</button>
   </div>
@@ -1143,10 +1161,33 @@ function shakeJar(){
   }
   const pick = items[Math.floor(Math.random() * items.length)];
   tbrPickedId = pick.id;
-  document.getElementById("tbrPickTitle").textContent = pick.title;
-  document.getElementById("tbrPickCover").innerHTML = SURPRISE_SVG;
+
   closeModal("tbrJarModal");
   openModal("tbrPickModal");
+
+  const cover = document.getElementById("tbrPickCover");
+  const titleEl = document.getElementById("tbrPickTitle");
+  const readBtn = document.getElementById("tbrReadBtn");
+  const shakeBtn = document.getElementById("tbrShakeAgainBtn");
+
+  cover.classList.remove("reveal");
+  cover.classList.add("shaking");
+  cover.textContent = "🫙";
+  titleEl.textContent = "Shaking the jar…";
+  if(readBtn) readBtn.disabled = true;
+  if(shakeBtn) shakeBtn.disabled = true;
+
+  setTimeout(() => {
+    // in case the modal was closed or re-shaken before this fired
+    if(tbrPickedId !== pick.id) return;
+    cover.classList.remove("shaking");
+    cover.innerHTML = SURPRISE_SVG;
+    cover.classList.add("reveal");
+    titleEl.textContent = pick.title;
+    if(readBtn) readBtn.disabled = false;
+    if(shakeBtn) shakeBtn.disabled = false;
+    spawnConfetti(10);
+  }, 900);
 }
 
 function readPickedBook(){
