@@ -922,6 +922,20 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   </div>
 </div>
 
+<!-- ============ BOOK COMPLETED CONFIRM MODAL ============ -->
+<div class="modal-backdrop" id="finishConfirmModal">
+  <div class="modal" style="text-align:center">
+    <h3>📖 Book Completed?</h3>
+    <div class="tbr-pick-cover" id="finishConfirmCover"></div>
+    <div class="tbr-pick-title" id="finishConfirmTitle"></div>
+    <div class="sub" id="finishConfirmSub"></div>
+    <div class="row-buttons" style="margin-top:16px">
+      <button class="ghost small" onclick="confirmFinishNo()">Not Yet</button>
+      <button class="primary" style="flex:1" onclick="confirmFinishYes()">Yes, Finished! 🎉</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ TBR JAR MODAL ============ -->
 <div class="modal-backdrop" id="tbrJarModal">
   <div class="modal">
@@ -1616,31 +1630,76 @@ function finishBookConfirm(){
   renderAll();
 }
 
+/* ---- "Book Completed?" popup — same visual language as the TBR jar
+   reveal, used both for the Log modal's Mark as Finished button and for
+   auto-detecting when someone logs their way to the last page. ---- */
+let pendingFinish = null; // { bookId, source: 'markButton' | 'autoPrompt', wasComplete, nowComplete, read }
+
+function openFinishConfirmModal(book, opts){
+  pendingFinish = { bookId: book.id, ...opts };
+  const cover = book.cover && book.cover.url;
+  document.getElementById("finishConfirmCover").innerHTML = cover
+    ? `<img src="${escapeHtml(book.cover.url)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;object-position:${book.cover.posX ?? 50}% ${book.cover.posY ?? 50}%;transform:scale(${book.cover.zoom || 1})" onerror="this.style.display='none'">`
+    : PIXEL_BERRY_SVG;
+  document.getElementById("finishConfirmTitle").textContent = book.title || "This book";
+  document.getElementById("finishConfirmSub").textContent = opts.source === "autoPrompt"
+    ? "You're on the last page — mark it as finished?"
+    : "Mark this book as finished?";
+  openModal("finishConfirmModal");
+}
+
+function confirmFinishYes(){
+  const ctx = pendingFinish;
+  pendingFinish = null;
+  closeModal("finishConfirmModal");
+  if(!ctx) return;
+
+  if(ctx.source === "markButton"){
+    const book = s.books.find(b=>b.id===ctx.bookId);
+    if(book){
+      ensureRollover();
+      const editedTitle = document.getElementById("logTitleInput").value.trim();
+      const editedAuthor = document.getElementById("logAuthorInput").value.trim();
+      if(editedTitle) book.title = editedTitle;
+      if(editedAuthor){ book.author = editedAuthor; } else { delete book.author; }
+
+      const p = parseInt(document.getElementById("logPageInput").value);
+      const from = book.lastPage || 1;
+      if(!isNaN(p) && p > from){
+        logReadingSession(book, from, p);
+      }
+      save();
+    }
+    closeModal("logModal");
+  }
+
+  finishBook(ctx.bookId);
+  renderAll();
+}
+
+function confirmFinishNo(){
+  const ctx = pendingFinish;
+  pendingFinish = null;
+  closeModal("finishConfirmModal");
+  if(!ctx) return;
+
+  // the autoPrompt path already logged & saved the page move before asking;
+  // if the person says "not yet" we still owe them the normal log feedback
+  if(ctx.source === "autoPrompt"){
+    if(!ctx.wasComplete && ctx.nowComplete){
+      celebrate();
+    } else {
+      toast(`+${ctx.read} page${ctx.read===1?"":"s"} logged`);
+    }
+  }
+}
+
 /* "Mark as Finished" inside the Log Reading modal — finish a book from
-   the same place you update its page, not just via the × / remove flow.
-   Any page change sitting in the input is saved as a session first so
-   the finish reflects the real last page read. */
+   the same place you update its page, not just via the × / remove flow. */
 function markFinishedFromLog(){
   const book = s.books.find(b=>b.id===activeLogBookId);
   if(!book){ toast("Pick a book first"); closeModal("logModal"); return; }
-  if(!confirm(`Mark "${book.title || "this book"}" as finished?`)) return;
-
-  const editedTitle = document.getElementById("logTitleInput").value.trim();
-  const editedAuthor = document.getElementById("logAuthorInput").value.trim();
-  if(editedTitle) book.title = editedTitle;
-  if(editedAuthor){ book.author = editedAuthor; } else { delete book.author; }
-
-  ensureRollover();
-  const p = parseInt(document.getElementById("logPageInput").value);
-  const from = book.lastPage || 1;
-  if(!isNaN(p) && p > from){
-    logReadingSession(book, from, p);
-  }
-
-  save();
-  closeModal("logModal");
-  finishBook(book.id);
-  renderAll();
+  openFinishConfirmModal(book, { source: "markButton" });
 }
 
 function removeBookConfirm(){
@@ -1781,11 +1840,9 @@ function submitLog(){
   // book — confirm before crediting it, since a mistyped page number
   // shouldn't silently pull a book out of Currently Reading.
   if(book.total > 0 && p >= book.total && from < book.total){
-    if(confirm(`Book completed?\n\n"${book.title || "This book"}" — you're on the last page. Mark it as finished?`)){
-      finishBook(book.id);
-      renderAll();
-      return;
-    }
+    const nowComplete = todayTotal() >= s.goal;
+    openFinishConfirmModal(book, { source: "autoPrompt", wasComplete, nowComplete, read });
+    return;
   }
 
   const nowComplete = todayTotal() >= s.goal;
