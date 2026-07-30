@@ -768,6 +768,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <input id="logAuthorInput" placeholder="e.g. James Clear">
     <label for="logPageInput">Current Page</label>
     <input id="logPageInput" type="number" inputmode="numeric" placeholder="e.g. 91">
+    <button class="ghost small" type="button" style="width:100%;margin-top:8px" onclick="markFinishedFromLog()">✓ Mark as Finished</button>
     <div class="row-buttons" style="margin-top:14px">
       <button class="ghost small" onclick="closeModal('logModal')">Cancel</button>
       <button class="primary" style="flex:1" onclick="submitLog()">Save</button>
@@ -1587,9 +1588,9 @@ function openRemoveBookModal(id){
   openModal("removeBookModal");
 }
 
-function finishBookConfirm(){
-  const book = s.books.find(b=>b.id===pendingRemoveId);
-  if(!book){ closeModal("removeBookModal"); return; }
+function finishBook(bookId){
+  const book = s.books.find(b=>b.id===bookId);
+  if(!book) return false;
   s.stats.booksFinished += 1;
   s.finishedLog = s.finishedLog || [];
   const entry = { id: genId(), title: book.title, date: todayStr() };
@@ -1598,13 +1599,48 @@ function finishBookConfirm(){
   if(book.lastPage) entry.lastPage = book.lastPage;
   if(book.cover) entry.cover = { ...book.cover };
   s.finishedLog.push(entry);
-  s.books = s.books.filter(b=>b.id!==pendingRemoveId);
+  // finishing is the only way a book leaves Currently Reading with credit —
+  // removeBookConfirm (below) is the no-credit path
+  s.books = s.books.filter(b=>b.id!==bookId);
   s.undo = null;
   checkAchievements();
   save();
-  closeModal("removeBookModal");
-  renderAll();
   celebrate(`You finished <strong>${escapeHtml(book.title || "your book")}</strong>! 🎉`);
+  return true;
+}
+
+function finishBookConfirm(){
+  const bookId = pendingRemoveId;
+  closeModal("removeBookModal");
+  finishBook(bookId);
+  renderAll();
+}
+
+/* "Mark as Finished" inside the Log Reading modal — finish a book from
+   the same place you update its page, not just via the × / remove flow.
+   Any page change sitting in the input is saved as a session first so
+   the finish reflects the real last page read. */
+function markFinishedFromLog(){
+  const book = s.books.find(b=>b.id===activeLogBookId);
+  if(!book){ toast("Pick a book first"); closeModal("logModal"); return; }
+  if(!confirm(`Mark "${book.title || "this book"}" as finished?`)) return;
+
+  const editedTitle = document.getElementById("logTitleInput").value.trim();
+  const editedAuthor = document.getElementById("logAuthorInput").value.trim();
+  if(editedTitle) book.title = editedTitle;
+  if(editedAuthor){ book.author = editedAuthor; } else { delete book.author; }
+
+  ensureRollover();
+  const p = parseInt(document.getElementById("logPageInput").value);
+  const from = book.lastPage || 1;
+  if(!isNaN(p) && p > from){
+    logReadingSession(book, from, p);
+  }
+
+  save();
+  closeModal("logModal");
+  finishBook(book.id);
+  renderAll();
 }
 
 function removeBookConfirm(){
@@ -1673,6 +1709,34 @@ function openLogModal(bookId){
   }, 50);
 }
 
+// Shared by submitLog() and markFinishedFromLog(): records a reading
+// session (today's log, lifetime stats, streak, achievements) for a page
+// move on `book`. Does not save() or render() — callers handle that.
+function logReadingSession(book, from, p){
+  const read = Math.max(0, p - from);
+  const now = new Date();
+  const isFirstToday = (s.today.log || []).length === 0;
+  const prevLastActive = s.streak.lastActiveDate;
+
+  book.lastPage = p;
+  s.today.log = s.today.log || [];
+  s.today.log.push({
+    time: now.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}),
+    ts: now.getTime(),
+    from, to:p, read, book: book.title, bookId: book.id
+  });
+  s.stats.sessionsCount += 1;
+  s.stats.totalPagesAllTime += read;
+
+  const gapDays = (isFirstToday && prevLastActive) ? dayDiff(prevLastActive, s.today.date) : null;
+
+  // streak counts today as active immediately too
+  updateStreak(s.today.date, todayTotal());
+  checkAchievements({ hourOfLog: now.getHours(), sessionRead: read, gapDays });
+
+  return read;
+}
+
 function submitLog(){
   ensureRollover();
   const book = s.books.find(b=>b.id===activeLogBookId);
@@ -1707,31 +1771,22 @@ function submitLog(){
     return;
   }
 
-  const read = Math.max(0, p - from);
-  const now = new Date();
   const wasComplete = todayTotal() >= s.goal;
-  const isFirstToday = (s.today.log || []).length === 0;
-  const prevLastActive = s.streak.lastActiveDate;
-
-  book.lastPage = p;
-  s.today.log = s.today.log || [];
-  s.today.log.push({
-    time: now.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}),
-    ts: now.getTime(),
-    from, to:p, read, book: book.title, bookId: book.id
-  });
-  s.stats.sessionsCount += 1;
-  s.stats.totalPagesAllTime += read;
-
-  const gapDays = (isFirstToday && prevLastActive) ? dayDiff(prevLastActive, s.today.date) : null;
-
-  // streak counts today as active immediately too
-  updateStreak(s.today.date, todayTotal());
-  checkAchievements({ hourOfLog: now.getHours(), sessionRead: read, gapDays });
-
+  const read = logReadingSession(book, from, p);
   save();
   closeModal("logModal");
   renderAll();
+
+  // reaching (or passing) the last page is the second way to finish a
+  // book — confirm before crediting it, since a mistyped page number
+  // shouldn't silently pull a book out of Currently Reading.
+  if(book.total > 0 && p >= book.total && from < book.total){
+    if(confirm(`Book completed?\n\n"${book.title || "This book"}" — you're on the last page. Mark it as finished?`)){
+      finishBook(book.id);
+      renderAll();
+      return;
+    }
+  }
 
   const nowComplete = todayTotal() >= s.goal;
   if(!wasComplete && nowComplete){
