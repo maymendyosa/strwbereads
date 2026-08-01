@@ -411,12 +411,17 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .tbr-summary{color:var(--muted);font-size:.92rem;text-align:center}
 .tbr-summary-main{font-family:"Ticketing","Pixelify Sans";font-weight:600;color:var(--text);font-size:1rem}
 .tbr-summary-sub{font-size:.82rem;color:var(--muted);margin-top:4px}
-.tbr-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.tbr-list{display:flex;flex-direction:column;gap:6px}
+.tbr-list.scrollable{max-height:560px;overflow-y:auto}
 .tbr-item{
   display:flex;justify-content:space-between;align-items:center;gap:8px;
   background:var(--hue-soft,var(--green-pale));border-radius:12px;padding:9px 10px;font-size:.92rem;
 }
+.tbr-item-cover{width:32px;height:46px;object-fit:cover;border-radius:4px;flex:0 0 auto;background:var(--empty-cell)}
+.tbr-item-cover-blank{background:var(--empty-cell)}
+.tbr-item-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .tbr-item .tbr-title{flex:1;word-break:break-word}
+.tbr-item-author{font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tbr-del{background:none;border:none;color:var(--muted);font-size:1.05rem;line-height:1;cursor:pointer;padding:0 2px}
 .tbr-pick-cover{
   width:110px;height:154px;margin:14px auto 4px;display:flex;align-items:center;justify-content:center;
@@ -848,7 +853,14 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 <div class="modal-backdrop" id="addCoverModal">
   <div class="modal">
     <h3>🖼 Add Cover Photo</h3>
-    <div class="sub">Paste a link to a photo of the cover</div>
+    <div class="sub">Search Open Library, or paste a link to a photo of the cover</div>
+    <label for="acOlSearch">Search Open Library</label>
+    <div class="crop-url-row">
+      <input id="acOlSearch" placeholder="Search by title or author..." onkeydown="if(event.key==='Enter'){event.preventDefault();runAddCoverSearch();}">
+      <button class="ghost small" type="button" onclick="runAddCoverSearch()">Search</button>
+    </div>
+    <div id="acOlResults" class="ol-results" style="display:none"></div>
+    <div id="acOlStatus" class="ol-status" style="display:none"></div>
     <label for="acUrl">Cover Photo URL</label>
     <input id="acUrl" type="url" placeholder="https://...">
     <div class="cover-error" id="acUrlError" style="display:none">Please enter a valid image link (starting with http:// or https://).</div>
@@ -958,8 +970,15 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <h3>🫙 TBR Jar</h3>
     <div class="sub">Add titles you want to read, then shake for a pick</div>
     <div class="tbr-list" id="tbrList"></div>
+    <label for="tbrOlSearch" style="margin-top:10px">Search Open Library</label>
+    <div class="crop-url-row">
+      <input id="tbrOlSearch" placeholder="Search by title or author..." onkeydown="if(event.key==='Enter'){event.preventDefault();runTbrSearch();}">
+      <button class="ghost small" type="button" onclick="runTbrSearch()">Search</button>
+    </div>
+    <div id="tbrOlResults" class="ol-results" style="display:none"></div>
+    <div id="tbrOlStatus" class="ol-status" style="display:none"></div>
     <div class="notes-add-row" style="margin-top:10px">
-      <input id="tbrInput" placeholder="Add a book title..." onkeydown="if(event.key==='Enter')addTbrTitle()">
+      <input id="tbrInput" placeholder="Or type a title manually..." onkeydown="if(event.key==='Enter')addTbrTitle()">
       <button onclick="addTbrTitle()" aria-label="Add title">+</button>
     </div>
     <div class="row-buttons" style="margin-top:14px">
@@ -1288,70 +1307,142 @@ function openNewBookModal(){
   openModal("bookModal");
 }
 
-let olSearchAbort = null;
-async function searchOpenLibrary(){
-  const q = document.getElementById("olSearch").value.trim();
-  const resultsEl = document.getElementById("olResults");
-  const statusEl = document.getElementById("olStatus");
-  if(!q){ toast("Type a title or author to search"); return; }
+/* ---- reusable Open Library search: wires up a search box + results list
+   for a given context, and hands the picked doc to an onPick callback ---- */
+function initOlSearch({inputId, resultsId, statusId, onPick}){
+  let abort = null;
+  let cache = [];
+  return async function run(){
+    const inputEl = document.getElementById(inputId);
+    const resultsEl = document.getElementById(resultsId);
+    const statusEl = document.getElementById(statusId);
+    const q = inputEl.value.trim();
+    if(!q){ toast("Type a title or author to search"); return; }
 
-  if(olSearchAbort) olSearchAbort.abort();
-  olSearchAbort = new AbortController();
+    if(abort) abort.abort();
+    abort = new AbortController();
 
-  statusEl.style.display = "block";
-  statusEl.textContent = "Searching Open Library…";
-  resultsEl.style.display = "none";
-  resultsEl.innerHTML = "";
+    statusEl.style.display = "block";
+    statusEl.textContent = "Searching Open Library…";
+    resultsEl.style.display = "none";
+    resultsEl.innerHTML = "";
 
-  try{
-    const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=8&fields=title,author_name,cover_i,edition_key`;
-    const res = await fetch(url, { signal: olSearchAbort.signal });
-    if(!res.ok) throw new Error("bad response");
-    const data = await res.json();
-    const docs = (data.docs || []).filter(d => d.title);
-    if(!docs.length){
-      statusEl.textContent = "No results — try a different search, or fill the details in manually.";
-      return;
+    try{
+      const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=8&fields=title,author_name,cover_i`;
+      const res = await fetch(url, { signal: abort.signal });
+      if(!res.ok) throw new Error("bad response");
+      const data = await res.json();
+      const docs = (data.docs || []).filter(d => d.title);
+      cache = docs;
+      if(!docs.length){
+        statusEl.textContent = "No results — try a different search, or fill the details in manually.";
+        return;
+      }
+      statusEl.style.display = "none";
+      resultsEl.style.display = "flex";
+      resultsEl.innerHTML = docs.map((d, i) => {
+        const author = (d.author_name && d.author_name[0]) || "";
+        const coverUrl = d.cover_i ? `https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg` : "";
+        return `<button type="button" class="ol-result" data-i="${i}">
+          ${coverUrl ? `<img src="${coverUrl}" alt="" loading="lazy">` : `<div class="book-cover-thumb" style="width:34px;height:50px"></div>`}
+          <div class="ol-result-text">
+            <div class="ol-result-title">${escapeHtml(d.title)}</div>
+            <div class="ol-result-author">${escapeHtml(author)}</div>
+          </div>
+        </button>`;
+      }).join("");
+      resultsEl.querySelectorAll(".ol-result").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const d = cache[parseInt(btn.dataset.i, 10)];
+          resultsEl.style.display = "none";
+          statusEl.style.display = "none";
+          onPick(d);
+        });
+      });
+    } catch(err){
+      if(err.name === "AbortError") return;
+      statusEl.textContent = "Couldn't reach Open Library — check your connection, or fill the details in manually.";
     }
-    statusEl.style.display = "none";
-    resultsEl.style.display = "flex";
-    resultsEl.innerHTML = docs.map((d, i) => {
-      const author = (d.author_name && d.author_name[0]) || "";
-      const coverUrl = d.cover_i ? `https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg` : "";
-      return `<button type="button" class="ol-result" onclick="pickOpenLibraryResult(${i})">
-        ${coverUrl ? `<img src="${coverUrl}" alt="" loading="lazy">` : `<div class="book-cover-thumb" style="width:34px;height:50px"></div>`}
-        <div class="ol-result-text">
-          <div class="ol-result-title">${escapeHtml(d.title)}</div>
-          <div class="ol-result-author">${escapeHtml(author)}</div>
-        </div>
-      </button>`;
-    }).join("");
-    window._olResultsCache = docs;
-  } catch(err){
-    if(err.name === "AbortError") return;
-    statusEl.textContent = "Couldn't reach Open Library — check your connection, or fill the details in manually.";
-  }
+  };
 }
 
-function pickOpenLibraryResult(i){
-  const d = (window._olResultsCache || [])[i];
-  if(!d) return;
+/* ---- context 1: New Book modal ---- */
+async function onPickNewBookCover(d){
   document.getElementById("nbTitle").value = d.title || "";
   document.getElementById("nbAuthor").value = (d.author_name && d.author_name[0]) || "";
   if(d.cover_i){
-    const coverUrl = `https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`;
-    document.getElementById("nbCoverUrl").value = coverUrl;
-    nbCoverDraft = { url: coverUrl, zoom: 1, posX: 50, posY: 50 };
+    toast("Filled in — compressing cover…");
+    const compressed = await compressImageUrl(`https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`);
+    document.getElementById("nbCoverUrl").value = compressed;
+    nbCoverDraft = { url: compressed, zoom: 1, posX: 50, posY: 50 };
     updateCoverDraftUi();
+    openCoverAdjustModal(null);
+  } else {
+    toast("Filled in from Open Library");
   }
-  document.getElementById("olResults").style.display = "none";
-  document.getElementById("olStatus").style.display = "none";
-  toast("Filled in from Open Library — adjust the cover if needed");
-  if(d.cover_i) openCoverAdjustModal(null);
 }
+const runNewBookSearch = initOlSearch({ inputId: "olSearch", resultsId: "olResults", statusId: "olStatus", onPick: onPickNewBookCover });
+function searchOpenLibrary(){ runNewBookSearch(); }
+
+/* ---- context 2: Add/Edit Cover modal (existing book) ---- */
+async function onPickAddCoverResult(d){
+  if(!d.cover_i){
+    toast("No cover photo for that result — try another, or paste a link");
+    return;
+  }
+  toast("Compressing cover…");
+  const compressed = await compressImageUrl(`https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`);
+  document.getElementById("acUrl").value = compressed;
+  submitAddCover();
+}
+const runAddCoverSearch = initOlSearch({ inputId: "acOlSearch", resultsId: "acOlResults", statusId: "acOlStatus", onPick: onPickAddCoverResult });
+
+/* ---- context 3: TBR jar add ---- */
+async function onPickTbrResult(d){
+  const entry = { id: genId(), title: d.title || "" };
+  if(d.author_name && d.author_name[0]) entry.author = d.author_name[0];
+  if(d.cover_i){
+    toast("Adding — compressing cover…");
+    entry.cover = { url: await compressImageUrl(`https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`), zoom: 1, posX: 50, posY: 50 };
+  }
+  s.tbr = s.tbr || [];
+  s.tbr.push(entry);
+  document.getElementById("tbrOlSearch").value = "";
+  save();
+  renderTbrList();
+  renderTbrSummary();
+  toast("Added to your jar!");
+}
+const runTbrSearch = initOlSearch({ inputId: "tbrOlSearch", resultsId: "tbrOlResults", statusId: "tbrOlStatus", onPick: onPickTbrResult });
 
 function isSafeImageUrl(url){
-  return /^https?:\/\//i.test(url);
+  return /^https?:\/\//i.test(url) || /^data:image\//i.test(url);
+}
+
+/* ---- compress a remote image down to a small, presentable JPEG data URL
+   so covers take up as little storage as possible ---- */
+function compressImageUrl(url, maxDim = 300, quality = 0.55){
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    const done = (result) => resolve(result);
+    img.onload = () => {
+      try{
+        let w = img.naturalWidth || maxDim, h = img.naturalHeight || maxDim;
+        if(w > h){ if(w > maxDim){ h = Math.round(h * maxDim / w); w = maxDim; } }
+        else { if(h > maxDim){ w = Math.round(w * maxDim / h); h = maxDim; } }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        done(canvas.toDataURL("image/jpeg", quality));
+      }catch(err){
+        done(url); // tainted canvas or other failure — fall back to the original url
+      }
+    };
+    img.onerror = () => done(url);
+    img.src = url;
+  });
 }
 
 let coverUrlDebounce = null;
@@ -1490,6 +1581,10 @@ function openAddCoverModal(bookId){
   acBookId = bookId;
   document.getElementById("acUrl").value = "";
   document.getElementById("acUrlError").style.display = "none";
+  document.getElementById("acOlSearch").value = "";
+  document.getElementById("acOlResults").style.display = "none";
+  document.getElementById("acOlResults").innerHTML = "";
+  document.getElementById("acOlStatus").style.display = "none";
   openModal("addCoverModal");
 }
 function submitAddCover(){
@@ -1580,13 +1675,18 @@ function openTbrJar(){
 function renderTbrList(){
   const el = document.getElementById("tbrList");
   const items = s.tbr || [];
+  el.classList.toggle("scrollable", items.length > 10);
   if(!items.length){
     el.innerHTML = `<div class="notes-empty">Your jar is empty — add a few titles</div>`;
     return;
   }
   el.innerHTML = items.map((t,i) => `
     <div class="tbr-item hue-${i % 5}">
-      <span class="tbr-title">${escapeHtml(t.title)}</span>
+      ${t.cover && t.cover.url ? `<img class="tbr-item-cover" src="${t.cover.url}" alt="">` : `<div class="tbr-item-cover tbr-item-cover-blank"></div>`}
+      <div class="tbr-item-text">
+        <span class="tbr-title">${escapeHtml(t.title)}</span>
+        ${t.author ? `<span class="tbr-item-author">${escapeHtml(t.author)}</span>` : ``}
+      </div>
       <button class="tbr-del" onclick="deleteTbrTitle('${t.id}')" aria-label="Remove">×</button>
     </div>
   `).join("");
@@ -1666,6 +1766,8 @@ function readPickedBook(){
   const picked = (s.tbr || []).find(t => t.id === tbrPickedId);
   if(!picked){ closeModal("tbrPickModal"); return; }
   const newBook = { id: genId(), title: picked.title, total: 0, lastPage: 1 };
+  if(picked.author) newBook.author = picked.author;
+  if(picked.cover) newBook.cover = { ...picked.cover };
   s.books.push(newBook);
   s.tbr = (s.tbr || []).filter(t => t.id !== tbrPickedId);
   checkAchievements();
