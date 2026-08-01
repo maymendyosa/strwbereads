@@ -1810,6 +1810,18 @@ function finishBook(bookId){
 function finishBookConfirm(){
   const bookId = pendingRemoveId;
   closeModal("removeBookModal");
+
+  // if the book is being marked finished without ever logging up to its
+  // last page, credit the remaining pages to today's log now — otherwise
+  // a book finished "in one go" silently contributes 0 pages to progress
+  const book = s.books.find(b => b.id === bookId);
+  if(book && book.total){
+    const from = book.lastPage || 1;
+    if(from < book.total){
+      logReadingSession(book, from, book.total);
+    }
+  }
+
   finishBook(bookId);
   renderAll();
 }
