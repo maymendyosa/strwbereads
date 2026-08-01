@@ -1372,7 +1372,7 @@ async function onPickNewBookCover(d){
   document.getElementById("nbAuthor").value = (d.author_name && d.author_name[0]) || "";
   if(d.cover_i){
     toast("Filled in — compressing cover…");
-    const compressed = await compressImageUrl(`https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`);
+    const compressed = await compressImageUrl(`https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg`);
     document.getElementById("nbCoverUrl").value = compressed;
     nbCoverDraft = { url: compressed, zoom: 1, posX: 50, posY: 50 };
     updateCoverDraftUi();
@@ -1391,7 +1391,7 @@ async function onPickAddCoverResult(d){
     return;
   }
   toast("Compressing cover…");
-  const compressed = await compressImageUrl(`https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`);
+  const compressed = await compressImageUrl(`https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg`);
   document.getElementById("acUrl").value = compressed;
   submitAddCover();
 }
@@ -1403,7 +1403,7 @@ async function onPickTbrResult(d){
   if(d.author_name && d.author_name[0]) entry.author = d.author_name[0];
   if(d.cover_i){
     toast("Adding — compressing cover…");
-    entry.cover = { url: await compressImageUrl(`https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`), zoom: 1, posX: 50, posY: 50 };
+    entry.cover = { url: await compressImageUrl(`https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg`), zoom: 1, posX: 50, posY: 50 };
   }
   s.tbr = s.tbr || [];
   s.tbr.push(entry);
