@@ -48,6 +48,9 @@
   --ghost-text:#7B6258;
   --icon:#8A6F66;
   --icon-active:#84867F;
+  --shelf-wood:#E7C99B;
+  --shelf-wood-dark:#D2AD79;
+  --shelf-edge:#C79A5F;
 }
 html[data-theme="dark"]{
   --cream:#241826;
@@ -73,6 +76,9 @@ html[data-theme="dark"]{
   --ghost-text:#F3E7E1;
   --icon:#C2A99E;
   --icon-active:#131A11;
+  --shelf-wood:#4A3221;
+  --shelf-wood-dark:#38240F;
+  --shelf-edge:#251708;
 }
 html[data-theme="warm"]{
   --cream:#FFF6E9;
@@ -98,6 +104,9 @@ html[data-theme="warm"]{
   --ghost-text:#7A6248;
   --icon:#8A7259;
   --icon-active:#858279;
+  --shelf-wood:#D9AF74;
+  --shelf-wood-dark:#C0925A;
+  --shelf-edge:#A97B45;
 }
 @font-face{
   font-family:"Ticketing";
@@ -375,19 +384,33 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .books-read-grid{display:flex;flex-wrap:nowrap;gap:9px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
 .books-read-grid::-webkit-scrollbar{height:6px}
 .books-read-grid::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px}
-.books-read-grid.grid-mode{display:flex;flex-wrap:wrap;justify-content:center;overflow-x:visible;scroll-snap-type:none}
+.books-read-grid.grid-mode{
+  display:flex;flex-wrap:wrap;justify-content:center;overflow-x:visible;scroll-snap-type:none;
+  row-gap:26px;padding:6px 8px 4px;
+}
 .books-read-cell{flex:0 0 96px;text-align:center;cursor:pointer;min-width:0;scroll-snap-align:start}
 .books-read-grid.grid-mode .books-read-cell{flex:0 0 auto;width:calc((100% - (var(--br-cols, 3) - 1) * 9px) / var(--br-cols, 3))}
+.books-read-grid.grid-mode .books-read-cell{transition:none}
+.books-read-grid.grid-mode .books-read-cover{transition:transform .15s ease}
+.books-read-grid.grid-mode .books-read-cell:hover .books-read-cover{transform:translateY(-4px)}
 .br-select-cols{flex:0 0 auto;margin-right:0}
 .books-read-cover{
-  width:100%;aspect-ratio:2/3;border-radius:8px;overflow:hidden;
+  width:100%;aspect-ratio:2/3;border-radius:9px 9px 3px 3px;overflow:hidden;position:relative;
   background:linear-gradient(135deg,var(--hue-a,#FFC9CF) 0%,var(--hue-b,#F4838C) 100%);
-  display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(75,58,51,.1);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 3px 6px rgba(75,58,51,.18),inset 0 0 0 1px rgba(255,255,255,.25);
+}
+.books-read-shelf{
+  /* the wooden shelf ledge — extends past each cell's edges to butt up
+     against its neighbors so a whole row shares one continuous plank */
+  height:10px;margin:0 -5px 12px;
+  background:linear-gradient(180deg,var(--shelf-wood) 0%,var(--shelf-wood-dark) 85%,var(--shelf-edge) 100%);
+  box-shadow:0 3px 4px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.35);
 }
 .books-read-cover svg{width:46%;height:46%}
 .books-read-cover img{width:100%;height:100%;object-fit:cover;display:block}
 .books-read-title{
-  font-size:.68rem;color:var(--muted);margin-top:5px;overflow:hidden;
+  font-size:.68rem;color:var(--muted);margin-top:0;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;
 }
 
@@ -2519,6 +2542,7 @@ function renderBooksReadCell(entry, i){
   return `
     <div class="books-read-cell" onclick="openBookReadDetail('${entry.id}')">
       <div class="books-read-cover hue-${i % 5}">${coverInner}</div>
+      <div class="books-read-shelf"></div>
       <div class="books-read-title">${escapeHtml(entry.title || "Untitled")}</div>
     </div>
   `;
