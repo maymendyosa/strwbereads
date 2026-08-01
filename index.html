@@ -1500,6 +1500,7 @@ async function submitNewBook(){
   if(nbCoverDraft && nbCoverDraft.url) newBook.cover = { ...nbCoverDraft };
 
   s.books.push(newBook);
+  logBookStarted(newBook);
   save();
   toast("New book started!");
   renderAll();
@@ -1800,6 +1801,7 @@ function readPickedBook(){
   if(picked.author) newBook.author = picked.author;
   if(picked.cover) newBook.cover = { ...picked.cover };
   s.books.push(newBook);
+  logBookStarted(newBook);
   s.tbr = (s.tbr || []).filter(t => t.id !== tbrPickedId);
   save();
   closeModal("tbrPickModal");
@@ -2017,6 +2019,21 @@ function openLogModal(bookId){
 // Shared by submitLog() and markFinishedFromLog(): records a reading
 // session (today's log, lifetime stats, streak) for a page
 // move on `book`. Does not save() or render() — callers handle that.
+// Records a "started reading" entry in today's journal log when a book is
+// added to Currently Reading. Uses from/to/read so it plays nicely with
+// existing sum/revert logic elsewhere (contributes 0 pages).
+function logBookStarted(book){
+  const now = new Date();
+  s.today.log = s.today.log || [];
+  s.today.log.push({
+    time: now.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}),
+    ts: now.getTime(),
+    type: "start",
+    book: book.title, bookId: book.id,
+    from: book.lastPage || 1, to: book.lastPage || 1, read: 0
+  });
+}
+
 function logReadingSession(book, from, p){
   const read = Math.max(0, p - from);
   const now = new Date();
@@ -2738,8 +2755,8 @@ function dayItemsHtml(log, notes, editKey){
     }
     return `
       <div class="history-item">
-        <div>${x.time}${x.book ? " • " + escapeHtml(x.book) : ""} • Page ${x.from} → ${x.to}${x.finished ? ' • <span class="badge-finished">Finished</span>' : ""}</div>
-        ${editKey ? `<button class="history-del" onclick="deleteJournalLog('${editKey}', ${x.idx})" aria-label="Delete entry">×</button>` : `<div class="badge">+${x.read}</div>`}
+        <div>${x.time}${x.book ? " • " + escapeHtml(x.book) : ""} • ${x.type === "start" ? "Started reading" : `Page ${x.from} → ${x.to}`}${x.finished ? ' • <span class="badge-finished">Finished</span>' : ""}</div>
+        ${editKey ? `<button class="history-del" onclick="deleteJournalLog('${editKey}', ${x.idx})" aria-label="Delete entry">×</button>` : (x.type === "start" ? `<span class="badge-finished">New</span>` : `<div class="badge">+${x.read}</div>`)}
       </div>
     `;
   }).join("");
@@ -2836,6 +2853,13 @@ function deleteJournalLog(dateKey, idx){
   if(!arr || !arr[idx]) return;
   const entry = arr[idx];
   arr.splice(idx, 1);
+
+  if(entry.type === "start"){
+    // undo starting the book — removes it from Currently Reading
+    s.books = s.books.filter(b => b.id !== entry.bookId);
+    renderJournal();
+    return;
+  }
 
   s.stats.totalPagesAllTime = Math.max(0, (s.stats.totalPagesAllTime || 0) - entry.read);
   s.stats.sessionsCount = Math.max(0, (s.stats.sessionsCount || 0) - 1);
