@@ -410,6 +410,18 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
   box-shadow:0 3px 4px rgba(0,0,0,.2);
 }
 .books-read-cover{position:relative;z-index:1}
+.books-read-cell .books-read-cover{
+  background:linear-gradient(135deg,var(--hue-a,#FFC9CF) 0%,var(--hue-b,#F4838C) 100%);
+}
+.books-read-cell .books-read-cover-art{
+  width:100%;height:100%;overflow:hidden;position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.books-read-cell .books-read-cover-art::before{
+  /* faint spine crease near the left edge */
+  content:"";position:absolute;top:0;bottom:0;left:9%;width:1px;
+  background:rgba(0,0,0,.18);box-shadow:1px 0 0 rgba(255,255,255,.15);
+}
 .books-read-cell-spacer{height:22px}
 .books-read-cover svg{width:46%;height:46%}
 .books-read-cover img{width:100%;height:100%;object-fit:cover;display:block}
@@ -1260,7 +1272,7 @@ function startNewDay(){
 }
 
 function resetToday(){
-  if(!confirm("Clear today's log? This resets today's pages logged and today's page changes, but won't touch past days.")) return;
+  if(!confirm("Clear today's log? This resets today's pages logged and any book finished today, but won't touch past days.")) return;
   const snap = s.today.startSnapshot;
   const entries = s.today.log || [];
 
@@ -1285,12 +1297,20 @@ function resetToday(){
     s.streak.lastActiveDate = snap.streakLastActiveDate;
   }
 
-  // undo only the stat contribution of today's cleared entries — leaves any
-  // book-finish credit or other changes made today untouched
+  // undo the stat contribution of today's cleared entries, including any
+  // book-finish credit earned today — same cleanup deleteJournalLog does
+  // for a single entry, just applied to all of today's entries at once
   const sessionsToRemove = entries.length;
   const pagesToRemove = entries.reduce((a,x) => a + x.read, 0);
   s.stats.sessionsCount = Math.max(0, s.stats.sessionsCount - sessionsToRemove);
   s.stats.totalPagesAllTime = Math.max(0, s.stats.totalPagesAllTime - pagesToRemove);
+
+  entries.forEach(e => {
+    if(e.finishedEntryId){
+      s.finishedLog = (s.finishedLog || []).filter(f => f.id !== e.finishedEntryId);
+      s.stats.booksFinished = Math.max(0, (s.stats.booksFinished || 0) - 1);
+    }
+  });
 
   s.today.log = [];
   s.today.startSnapshot = makeSnapshot();
@@ -2545,7 +2565,7 @@ function renderBooksReadCell(entry, i){
     : PIXEL_BERRY_SVG;
   return `
     <div class="books-read-cell" onclick="openBookReadDetail('${entry.id}')">
-      <div class="books-read-cover hue-${i % 5}">${coverInner}</div>
+      <div class="books-read-cover hue-${i % 5}"><div class="books-read-cover-art">${coverInner}</div></div>
       <div class="books-read-cell-spacer"></div>
       <div class="books-read-title">${escapeHtml(entry.title || "Untitled")}</div>
     </div>
