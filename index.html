@@ -418,9 +418,11 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
   display:flex;align-items:center;justify-content:center;
 }
 .books-read-cell .books-read-cover-art::before{
-  /* faint spine crease near the left edge */
-  content:"";position:absolute;top:0;bottom:0;left:9%;width:1px;
-  background:rgba(0,0,0,.18);box-shadow:1px 0 0 rgba(255,255,255,.15);
+  /* spine crease near the left edge — a soft shadowed groove with a thin
+     highlight beside it, like light catching the fold of a hardcover */
+  content:"";position:absolute;top:0;bottom:0;left:5.5%;width:4px;z-index:2;
+  background:linear-gradient(90deg,rgba(0,0,0,.32) 0%,rgba(0,0,0,.12) 40%,rgba(255,255,255,.35) 55%,rgba(255,255,255,0) 100%);
+  pointer-events:none;
 }
 .books-read-cell-spacer{height:22px}
 .books-read-cover svg{width:46%;height:46%}
