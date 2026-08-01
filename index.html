@@ -832,6 +832,13 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <div class="modal">
     <h3>🖼 Adjust Cover</h3>
     <div class="sub">Drag to reposition, scroll or use the slider to zoom</div>
+    <label for="cropOlSearch">Search Open Library</label>
+    <div class="crop-url-row">
+      <input id="cropOlSearch" placeholder="Search by title or author..." onkeydown="if(event.key==='Enter'){event.preventDefault();runCropSearch();}">
+      <button class="ghost small" type="button" onclick="runCropSearch()">Search</button>
+    </div>
+    <div id="cropOlResults" class="ol-results" style="display:none"></div>
+    <div id="cropOlStatus" class="ol-status" style="display:none"></div>
     <label for="cropUrlInput">Cover Photo URL</label>
     <div class="crop-url-row">
       <input id="cropUrlInput" type="url" placeholder="https://...">
@@ -1520,6 +1527,13 @@ let cropTargetBookId = null; // null = editing the new-book draft
 let cropTargetKind = "new"; // "new" | "active" | "finished"
 let cropDrag = null;
 
+function resetCropOlSearch(){
+  document.getElementById("cropOlSearch").value = "";
+  document.getElementById("cropOlResults").style.display = "none";
+  document.getElementById("cropOlResults").innerHTML = "";
+  document.getElementById("cropOlStatus").style.display = "none";
+}
+
 function openCoverAdjustModal(bookId){
   cropTargetKind = "active";
   cropTargetBookId = bookId;
@@ -1539,6 +1553,7 @@ function openCoverAdjustModal(bookId){
   const img = document.getElementById("cropImg");
   document.getElementById("cropImgError").style.display = "none";
   document.getElementById("cropUrlInput").value = url;
+  resetCropOlSearch();
   img.src = url;
   document.getElementById("cropZoom").value = Math.round(cropState.zoom * 100);
   applyCropTransform();
@@ -1556,6 +1571,7 @@ function openCoverAdjustModalFinished(){
   const img = document.getElementById("cropImg");
   document.getElementById("cropImgError").style.display = "none";
   document.getElementById("cropUrlInput").value = base.url;
+  resetCropOlSearch();
   img.src = base.url;
   document.getElementById("cropZoom").value = Math.round(cropState.zoom * 100);
   applyCropTransform();
@@ -1574,6 +1590,24 @@ function updateCropUrl(){
   document.getElementById("cropImg").src = url;
   applyCropTransform();
 }
+
+/* ---- context 4: shared cover crop/adjust modal (editing an existing
+   cover, whichever kind of book it belongs to) ---- */
+async function onPickCropResult(d){
+  if(!d.cover_i){
+    toast("No cover photo for that result — try another, or paste a link");
+    return;
+  }
+  toast("Compressing cover…");
+  const compressed = await compressImageUrl(`https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg`);
+  document.getElementById("cropUrlInput").value = compressed;
+  document.getElementById("cropImgError").style.display = "none";
+  cropState = { zoom: 1, posX: 50, posY: 50 };
+  document.getElementById("cropZoom").value = 100;
+  document.getElementById("cropImg").src = compressed;
+  applyCropTransform();
+}
+const runCropSearch = initOlSearch({ inputId: "cropOlSearch", resultsId: "cropOlResults", statusId: "cropOlStatus", onPick: onPickCropResult });
 
 /* ---- add cover to an existing book ---- */
 let acBookId = null;
