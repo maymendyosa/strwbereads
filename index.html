@@ -371,7 +371,10 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .books-read-grid{display:flex;flex-wrap:nowrap;gap:9px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
 .books-read-grid::-webkit-scrollbar{height:6px}
 .books-read-grid::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px}
+.books-read-grid.grid-mode{display:grid;grid-template-columns:repeat(var(--br-cols,3),1fr);flex-wrap:unset;overflow-x:visible;scroll-snap-type:none}
 .books-read-cell{flex:0 0 96px;text-align:center;cursor:pointer;min-width:0;scroll-snap-align:start}
+.books-read-grid.grid-mode .books-read-cell{flex:none;width:auto}
+.br-select-cols{flex:0 0 auto;margin-right:0}
 .books-read-cover{
   width:100%;aspect-ratio:2/3;border-radius:8px;overflow:hidden;
   background:linear-gradient(135deg,var(--hue-a,#FFC9CF) 0%,var(--hue-b,#F4838C) 100%);
@@ -697,21 +700,6 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <!-- ============ PROGRESS (streak / stats / books read / backup) ============ -->
   <div id="view-progress" class="view">
     <div class="card">
-      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Stats</div>
-      <div class="range-toggle" id="statsRangeToggle">
-        <button class="range-btn active" data-range="all" onclick="setStatsRange('all')">All Time</button>
-        <button class="range-btn" data-range="year" onclick="setStatsRange('year')">This Year</button>
-        <button class="range-btn" data-range="month" onclick="setStatsRange('month')">This Month</button>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-tile"><div class="stat-num" id="curStreak">0 days</div><div class="stat-lbl">Current Streak</div></div>
-        <div class="stat-tile green"><div class="stat-num" id="longStreak">0 days</div><div class="stat-lbl">Longest Streak</div></div>
-        <div class="stat-tile"><div class="stat-num" id="statBooks">0</div><div class="stat-lbl">Books Finished</div></div>
-        <div class="stat-tile green"><div class="stat-num" id="statAvg">0</div><div class="stat-lbl">Avg pages/day</div></div>
-      </div>
-    </div>
-
-    <div class="card">
       <div class="section-title br-title">
         <span class="br-title-label"><svg class="ti" viewBox="0 0 24 24"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>Books Read</span>
         <span class="br-count"><span id="booksReadCount">0</span> Books</span>
@@ -725,6 +713,11 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
           <option value="author_asc">Author A–Z</option>
           <option value="author_desc">Author Z–A</option>
         </select>
+        <select id="booksReadColsSelect" class="br-select br-select-cols" onchange="setBooksReadCols(this.value)" aria-label="Grid size" title="Grid size">
+          <option value="3">3 per row</option>
+          <option value="4">4 per row</option>
+          <option value="5">5 per row</option>
+        </select>
         <div class="brt-views" id="booksReadViewToggle">
           <button class="brt-view-btn active" data-view="cover" onclick="setBooksReadViewMode('cover')" title="Cover view" aria-label="Cover view">▦</button>
           <button class="brt-view-btn" data-view="list" onclick="setBooksReadViewMode('list')" title="List view" aria-label="List view">☰</button>
@@ -737,6 +730,21 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
       <div class="books-read-grid" id="booksReadGrid"></div>
       <div class="books-read-list" id="booksReadList" style="display:none"></div>
       <div class="brt-pager" id="booksReadPager"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Stats</div>
+      <div class="range-toggle" id="statsRangeToggle">
+        <button class="range-btn active" data-range="all" onclick="setStatsRange('all')">All Time</button>
+        <button class="range-btn" data-range="month" onclick="setStatsRange('month')">This Month</button>
+        <button class="range-btn" data-range="year" onclick="setStatsRange('year')">This Year</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-tile"><div class="stat-num" id="curStreak">0 days</div><div class="stat-lbl">Current Streak</div></div>
+        <div class="stat-tile green"><div class="stat-num" id="longStreak">0 days</div><div class="stat-lbl">Longest Streak</div></div>
+        <div class="stat-tile"><div class="stat-num" id="statBooks">0</div><div class="stat-lbl">Books Finished</div></div>
+        <div class="stat-tile green"><div class="stat-num" id="statAvg">0</div><div class="stat-lbl">Avg pages/day</div></div>
+      </div>
     </div>
 
     <div class="card">
@@ -2334,7 +2342,8 @@ function renderHome(){
    ============================================================ */
 let booksReadRange = "month";
 let booksReadSort = "date_desc";
-let booksReadPageSize = 12;
+let booksReadCols = 3;
+let booksReadPageSize = booksReadCols * 4;
 let booksReadPage = 0;
 let booksReadViewMode = "cover";
 
@@ -2353,10 +2362,19 @@ function setBooksReadSort(mode){
   renderBooksRead();
 }
 
+function setBooksReadCols(val){
+  booksReadCols = parseInt(val, 10) || 3;
+  booksReadPageSize = booksReadCols * 4;
+  booksReadPage = 0;
+  const select = document.getElementById("booksReadColsSelect");
+  if(select) select.value = String(booksReadCols);
+  renderBooksRead();
+}
+
 function setBooksReadViewMode(mode){
   booksReadViewMode = mode;
   document.querySelectorAll("#booksReadViewToggle .brt-view-btn").forEach(b => b.classList.toggle("active", b.dataset.view === mode));
-  document.getElementById("booksReadGrid").style.display = mode === "cover" ? "flex" : "none";
+  document.getElementById("booksReadGrid").style.display = mode === "cover" ? "grid" : "none";
   document.getElementById("booksReadList").style.display = mode === "list" ? "flex" : "none";
   renderBooksRead();
 }
@@ -2449,6 +2467,8 @@ function renderBooksRead(){
 
   const grid = document.getElementById("booksReadGrid");
   const listEl = document.getElementById("booksReadList");
+  grid.classList.add("grid-mode");
+  grid.style.setProperty("--br-cols", booksReadCols);
   if(booksReadViewMode === "cover"){
     grid.innerHTML = pageItems.length ? pageItems.map(renderBooksReadCell).join("") : emptyMsg;
   } else {
