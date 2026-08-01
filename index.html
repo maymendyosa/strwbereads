@@ -1161,7 +1161,7 @@ function defaultState(){
     journal: {},                      // "YYYY-MM-DD" -> [{time,from,to,read,book}]
     goalHistory: {},                  // "YYYY-MM-DD" -> goal that applied that day
     streak: { current:0, longest:0, lastActiveDate:null },
-    stats: { totalPagesAllTime:0, sessionsCount:0, booksFinished:0 },
+    stats: { booksFinished:0 },
     finishedLog: [],                  // [{id,title,date}] — for time-scoped stats
     undo: null
   };
@@ -1299,14 +1299,8 @@ function resetToday(){
     s.streak.lastActiveDate = snap.streakLastActiveDate;
   }
 
-  // undo the stat contribution of today's cleared entries, including any
-  // book-finish credit earned today — same cleanup deleteJournalLog does
-  // for a single entry, just applied to all of today's entries at once
-  const sessionsToRemove = entries.length;
-  const pagesToRemove = entries.reduce((a,x) => a + x.read, 0);
-  s.stats.sessionsCount = Math.max(0, s.stats.sessionsCount - sessionsToRemove);
-  s.stats.totalPagesAllTime = Math.max(0, s.stats.totalPagesAllTime - pagesToRemove);
-
+  // undo any book-finish credit earned today — same cleanup deleteJournalLog
+  // does for a single entry, just applied to all of today's entries at once
   entries.forEach(e => {
     if(e.finishedEntryId){
       s.finishedLog = (s.finishedLog || []).filter(f => f.id !== e.finishedEntryId);
@@ -2051,15 +2045,11 @@ function removeBookConfirm(){
   const bookId = pendingRemoveId;
 
   // "no credit" — strip any pages logged for this book today so the
-  // daily ring and lifetime stats don't keep counting a removed book
+  // daily ring doesn't keep counting a removed book
   const entries = s.today.log || [];
   const own = entries.filter(x => x.bookId === bookId);
   if(own.length){
-    const sessionsToRemove = own.length;
-    const pagesToRemove = own.reduce((a,x) => a + x.read, 0);
     s.today.log = entries.filter(x => x.bookId !== bookId);
-    s.stats.sessionsCount = Math.max(0, s.stats.sessionsCount - sessionsToRemove);
-    s.stats.totalPagesAllTime = Math.max(0, s.stats.totalPagesAllTime - pagesToRemove);
 
     // if today no longer meets the goal, undo today's streak credit
     if(todayTotal() < s.goal && s.today.startSnapshot){
@@ -2142,8 +2132,6 @@ function logReadingSession(book, from, p){
     ts: now.getTime(),
     from, to:p, read, book: book.title, bookId: book.id
   });
-  s.stats.sessionsCount += 1;
-  s.stats.totalPagesAllTime += read;
 
   // streak counts today as active immediately too
   updateStreak(s.today.date, todayTotal());
@@ -3015,9 +3003,6 @@ function deleteJournalLog(dateKey, idx){
     renderJournal();
     return;
   }
-
-  s.stats.totalPagesAllTime = Math.max(0, (s.stats.totalPagesAllTime || 0) - entry.read);
-  s.stats.sessionsCount = Math.max(0, (s.stats.sessionsCount || 0) - 1);
 
   // put the book's page count back where it was before this entry, if it's
   // still the book's current page (bulk-deleting older entries first is safest)
