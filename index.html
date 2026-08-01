@@ -477,6 +477,18 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 .journal-day-title{font-weight:700;color:var(--muted);font-size:.9rem;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.02em}
 .history-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line);font-size:.95rem}
 .history-item:last-child{border-bottom:none}
+.journal-title-row{justify-content:space-between}
+.journal-title-label{display:flex;align-items:center;gap:8px}
+.journal-edit-controls{display:flex;gap:4px}
+.journal-edit-btn{
+  background:none;border:none;color:var(--green-dark);font-size:1.05rem;line-height:1;
+  cursor:pointer;padding:4px 6px;font-family:"Ticketing","Pixelify Sans",sans-serif;
+}
+.history-del{
+  background:none;border:none;color:var(--muted);font-size:1.05rem;line-height:1;
+  cursor:pointer;padding:0 2px;flex:0 0 auto;
+}
+.badge-finished{color:var(--green-dark);font-weight:600;font-size:.8rem}
 .note-history-item{color:var(--green-dark);font-style:italic}
 .badge{background:var(--pink-pale);color:var(--pink-dark);padding:6px 10px;border-radius:999px;font-weight:700;font-size:.85rem;white-space:nowrap}
 .empty{color:var(--muted);font-size:.95rem;text-align:center;padding:6px 0}
@@ -648,7 +660,12 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     </div>
 
     <div class="card">
-      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Reading Journal</div>
+      <div class="section-title journal-title-row">
+        <span class="journal-title-label"><svg class="ti" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Reading Journal</span>
+        <span id="journalEditControls" class="journal-edit-controls">
+          <button class="journal-edit-btn" onclick="toggleJournalEdit()" aria-label="Edit journal entries">✎</button>
+        </span>
+      </div>
       <div id="journalToday"></div>
       <div id="journalYesterday"></div>
       <div class="journal-older-nudge" id="journalOlderNudge">
@@ -1811,6 +1828,19 @@ function finishBook(bookId){
   if(book.lastPage) entry.lastPage = book.lastPage;
   if(book.cover) entry.cover = { ...book.cover };
   s.finishedLog.push(entry);
+
+  // link this credit to the today's-log entry that finished the book, so
+  // deleting that entry via the journal bulk editor removes both the page
+  // count and the book count together
+  const todayEntries = s.today.log || [];
+  for(let i = todayEntries.length - 1; i >= 0; i--){
+    if(todayEntries[i].bookId === bookId && !todayEntries[i].finishedEntryId){
+      todayEntries[i].finished = true;
+      todayEntries[i].finishedEntryId = entry.id;
+      break;
+    }
+  }
+
   // finishing is the only way a book leaves Currently Reading with credit —
   // removeBookConfirm (below) is the no-credit path
   s.books = s.books.filter(b=>b.id!==bookId);
@@ -2690,9 +2720,9 @@ function notesForDate(dateStr){
   return (s.notes || []).filter(n => n.date === dateStr);
 }
 
-function dayItemsHtml(log, notes){
+function dayItemsHtml(log, notes, editKey){
   const items = [
-    ...(log || []).map(x => ({ ...x, kind: "log" })),
+    ...(log || []).map((x,i) => ({ ...x, kind: "log", idx: i })),
     ...(notes || []).map(x => ({ ...x, kind: "note" }))
   ];
   if(!items.length) return `<div class="empty">Nothing logged.</div>`;
@@ -2702,13 +2732,14 @@ function dayItemsHtml(log, notes){
       return `
         <div class="history-item note-history-item">
           <div>${x.time || ""} • ${escapeHtml(x.text)}</div>
+          ${editKey ? `<button class="history-del" onclick="deleteJournalNote('${x.id}')" aria-label="Delete note">×</button>` : ""}
         </div>
       `;
     }
     return `
       <div class="history-item">
-        <div>${x.time}${x.book ? " • " + escapeHtml(x.book) : ""} • Page ${x.from} → ${x.to}</div>
-        <div class="badge">+${x.read}</div>
+        <div>${x.time}${x.book ? " • " + escapeHtml(x.book) : ""} • Page ${x.from} → ${x.to}${x.finished ? ' • <span class="badge-finished">Finished</span>' : ""}</div>
+        ${editKey ? `<button class="history-del" onclick="deleteJournalLog('${editKey}', ${x.idx})" aria-label="Delete entry">×</button>` : `<div class="badge">+${x.read}</div>`}
       </div>
     `;
   }).join("");
@@ -2721,15 +2752,15 @@ function renderJournal(){
 
   document.getElementById("journalToday").innerHTML = `
     <div class="journal-day-title">🍓 Today</div>
-    ${dayItemsHtml(s.today.log, notesForDate(s.today.date))}
+    ${dayItemsHtml(s.today.log, notesForDate(s.today.date), journalEditing ? "today" : null)}
   `;
 
   const yKey = todayStr(new Date(Date.now() - 86400000));
   const yLog = s.journal[yKey];
   const yNotes = notesForDate(yKey);
-  document.getElementById("journalYesterday").innerHTML = (yLog || yNotes.length) ? `
+  document.getElementById("journalYesterday").innerHTML = (yLog || yNotes.length || journalEditing) ? `
     <div class="journal-day-title">🍓 Yesterday</div>
-    ${dayItemsHtml(yLog, yNotes)}
+    ${dayItemsHtml(yLog, yNotes, journalEditing ? yKey : null)}
   ` : "";
 
   const noteDates = new Set((s.notes || []).map(n => n.date));
@@ -2740,6 +2771,99 @@ function renderJournal(){
 
   const nudge = document.getElementById("journalOlderNudge");
   nudge.style.display = allDates.size === 0 ? "none" : "";
+
+  renderJournalEditControls();
+}
+
+/* ============================================================
+   JOURNAL BULK EDIT
+   Lets someone delete today's/yesterday's journal entries in bulk.
+   Deleting a page-log entry removes its page credit (and, if that
+   session was the one that finished a book, its book credit too).
+   Changes are staged against a snapshot until Save/Discard is pressed.
+   ============================================================ */
+let journalEditing = false;
+let journalEditSnapshot = null;
+
+function renderJournalEditControls(){
+  const el = document.getElementById("journalEditControls");
+  if(!el) return;
+  el.innerHTML = journalEditing
+    ? `<button class="journal-edit-btn" onclick="saveJournalEdits()" aria-label="Save journal changes">✓</button>
+       <button class="journal-edit-btn" onclick="cancelJournalEdits()" aria-label="Discard journal changes">✕</button>`
+    : `<button class="journal-edit-btn" onclick="toggleJournalEdit()" aria-label="Edit journal entries">✎</button>`;
+}
+
+function toggleJournalEdit(){
+  journalEditSnapshot = {
+    today: JSON.parse(JSON.stringify(s.today)),
+    journal: JSON.parse(JSON.stringify(s.journal)),
+    notes: JSON.parse(JSON.stringify(s.notes || [])),
+    books: JSON.parse(JSON.stringify(s.books)),
+    stats: JSON.parse(JSON.stringify(s.stats)),
+    finishedLog: JSON.parse(JSON.stringify(s.finishedLog || [])),
+    streak: JSON.parse(JSON.stringify(s.streak))
+  };
+  journalEditing = true;
+  renderJournal();
+}
+
+function saveJournalEdits(){
+  journalEditing = false;
+  journalEditSnapshot = null;
+  save();
+  toast("Journal updated");
+  renderAll();
+}
+
+function cancelJournalEdits(){
+  if(journalEditSnapshot){
+    s.today = journalEditSnapshot.today;
+    s.journal = journalEditSnapshot.journal;
+    s.notes = journalEditSnapshot.notes;
+    s.books = journalEditSnapshot.books;
+    s.stats = journalEditSnapshot.stats;
+    s.finishedLog = journalEditSnapshot.finishedLog;
+    s.streak = journalEditSnapshot.streak;
+  }
+  journalEditing = false;
+  journalEditSnapshot = null;
+  renderAll();
+}
+
+function deleteJournalLog(dateKey, idx){
+  const arr = dateKey === "today" ? s.today.log : s.journal[dateKey];
+  if(!arr || !arr[idx]) return;
+  const entry = arr[idx];
+  arr.splice(idx, 1);
+
+  s.stats.totalPagesAllTime = Math.max(0, (s.stats.totalPagesAllTime || 0) - entry.read);
+  s.stats.sessionsCount = Math.max(0, (s.stats.sessionsCount || 0) - 1);
+
+  // put the book's page count back where it was before this entry, if it's
+  // still the book's current page (bulk-deleting older entries first is safest)
+  const book = s.books.find(b => b.id === entry.bookId);
+  if(book && book.lastPage === entry.to) book.lastPage = entry.from;
+
+  // this session finished a book — remove that book credit too
+  if(entry.finishedEntryId){
+    s.finishedLog = (s.finishedLog || []).filter(f => f.id !== entry.finishedEntryId);
+    s.stats.booksFinished = Math.max(0, (s.stats.booksFinished || 0) - 1);
+  }
+
+  if(dateKey === "today"){
+    const tot = todayTotal();
+    if(tot < s.goal && s.streak.lastActiveDate === s.today.date && s.streak.current > 0){
+      s.streak.current = Math.max(0, s.streak.current - 1);
+    }
+  }
+
+  renderJournal();
+}
+
+function deleteJournalNote(id){
+  s.notes = (s.notes || []).filter(n => n.id !== id);
+  renderJournal();
 }
 
 function formatDate(iso){
