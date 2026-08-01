@@ -895,9 +895,17 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
       <button class="ghost small" type="button" onclick="updateFinishedCoverUrl()">Update</button>
     </div>
     <div class="cover-error" id="brdUrlError" style="display:none">Please enter a valid image link (starting with http:// or https://).</div>
+    <label for="brdTitleInput">Book Title</label>
+    <input id="brdTitleInput" placeholder="e.g. Atomic Habits">
+    <label for="brdAuthorInput">Author (optional)</label>
+    <input id="brdAuthorInput" placeholder="e.g. James Clear">
+    <label for="brdDateInput">Date Finished</label>
+    <input id="brdDateInput" type="date">
     <div class="row-buttons" style="margin-top:14px">
-      <button class="primary" style="flex:1" onclick="closeModal('bookReadDetailModal')">Close</button>
+      <button class="ghost small" onclick="closeModal('bookReadDetailModal')">Cancel</button>
+      <button class="primary" style="flex:1" onclick="saveBrdEdits()">Save Changes</button>
     </div>
+    <button class="danger small" style="width:100%;margin-top:10px" onclick="removeFinishedBook()">Remove Book</button>
   </div>
 </div>
 
@@ -1383,7 +1391,7 @@ async function onPickNewBookCover(d){
     document.getElementById("nbCoverUrl").value = compressed;
     nbCoverDraft = { url: compressed, zoom: 1, posX: 50, posY: 50 };
     updateCoverDraftUi();
-    openCoverAdjustModal(null);
+    toast("Cover added — use Adjust Photo if you'd like to reposition it");
   } else {
     toast("Filled in from Open Library");
   }
@@ -1895,8 +1903,14 @@ function confirmFinishYes(){
 
       const p = parseInt(document.getElementById("logPageInput").value);
       const from = book.lastPage || 1;
-      if(!isNaN(p) && p > from){
-        logReadingSession(book, from, p);
+      // whatever page was typed, finishing a book means it's been read to
+      // the end — credit through book.total (if known) so the session
+      // shows up in the log and stats even if the page field was left
+      // untouched, same as the Remove-modal "Mark as Finished" path.
+      let to = (!isNaN(p) && p > from) ? p : from;
+      if(book.total && to < book.total) to = book.total;
+      if(to > from){
+        logReadingSession(book, from, to);
       }
       save();
     }
@@ -2506,6 +2520,52 @@ function populateBrdModal(entry){
 
   document.getElementById("brdUrlInput").value = (entry.cover && entry.cover.url) || "";
   document.getElementById("brdUrlError").style.display = "none";
+
+  document.getElementById("brdTitleInput").value = entry.title || "";
+  document.getElementById("brdAuthorInput").value = entry.author || "";
+  document.getElementById("brdDateInput").value = entry.date || "";
+}
+
+function saveBrdEdits(){
+  if(!currentBrdEntryId) return;
+  const entry = (s.finishedLog || []).find(f => f.id === currentBrdEntryId);
+  if(!entry) return;
+
+  const title = document.getElementById("brdTitleInput").value.trim();
+  const author = document.getElementById("brdAuthorInput").value.trim();
+  const date = document.getElementById("brdDateInput").value;
+
+  if(!title){ toast("Give the book a title"); return; }
+  if(!date){ toast("Pick a date finished"); return; }
+
+  entry.title = title;
+  if(author) entry.author = author; else delete entry.author;
+  entry.date = date;
+
+  save();
+  populateBrdModal(entry);
+  renderBooksRead();
+  renderProgress();
+  toast("Book updated");
+}
+
+// Removing a finished book undoes its credit entirely — it's taken out of
+// finishedLog (so it no longer counts toward booksFinished/stats in any
+// time range) as if it had never been marked finished.
+function removeFinishedBook(){
+  if(!currentBrdEntryId) return;
+  const entry = (s.finishedLog || []).find(f => f.id === currentBrdEntryId);
+  if(!entry) return;
+  if(!confirm(`Remove "${entry.title || "this book"}" from your finished books? This can't be undone.`)) return;
+
+  s.finishedLog = (s.finishedLog || []).filter(f => f.id !== currentBrdEntryId);
+  s.stats.booksFinished = Math.max(0, (s.stats.booksFinished || 0) - 1);
+
+  currentBrdEntryId = null;
+  save();
+  closeModal("bookReadDetailModal");
+  renderAll();
+  toast("Book removed");
 }
 
 function updateFinishedCoverUrl(){
