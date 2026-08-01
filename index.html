@@ -168,7 +168,8 @@ html[data-theme="dark"] .card{
 .greeting-icon{width:15px;height:18px;flex:0 0 auto;image-rendering:pixelated}
 .strawberry{width:48px;height:60px;flex:0 0 auto;position:absolute;right:0;top:-6px;image-rendering:pixelated}
 .theme-toggle-wrap{
-  flex:0 1 60px;min-width:0;align-self:flex-start;display:flex;flex-direction:column;align-items:center;
+  position:absolute;left:0;top:-6px;
+  min-width:0;display:flex;flex-direction:column;align-items:center;
   gap:2px;padding:6px 2px;
 }
 .theme-toggle{
@@ -182,6 +183,14 @@ html[data-theme="dark"] .card{
 .theme-toggle-label{
   color:var(--muted);font-family:"Ticketing","Pixelify Sans";font-size:.72rem;font-weight:600;
 }
+.ol-status{font-size:.85rem;color:var(--muted);margin:6px 0}
+.ol-results{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin:6px 0 4px;border:1px solid var(--empty-cell);border-radius:10px;padding:6px}
+.ol-result{display:flex;align-items:center;gap:10px;padding:6px;border-radius:8px;cursor:pointer;background:transparent;border:none;text-align:left;width:100%;font:inherit;color:inherit}
+.ol-result:hover{background:var(--ghost-bg)}
+.ol-result img{width:34px;height:50px;object-fit:cover;border-radius:3px;flex:0 0 auto;background:var(--empty-cell)}
+.ol-result-text{min-width:0}
+.ol-result-title{font-weight:600;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ol-result-author{font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sparkle{color:#F0C05A;font-size:.8em;vertical-align:middle}
 @media (prefers-reduced-motion:no-preference){
   .strawberry{animation:bob 3.2s ease-in-out infinite}
@@ -569,6 +578,10 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <div id="view-home" class="view active">
     <div class="card">
       <div class="header">
+        <div class="theme-toggle-wrap">
+          <button class="theme-toggle" id="themeToggle" onclick="cycleTheme()" aria-label="Toggle light, dark, or blue light mode" title="Toggle theme">☀</button>
+          <span class="theme-toggle-label">Mode</span>
+        </div>
         <div style="width:100%">
           <h1><span class="sparkle" aria-hidden="true">✦</span> Reading Tracker <span class="sparkle" aria-hidden="true">✦</span></h1>
           <div id="greeting" class="greeting"></div>
@@ -751,10 +764,6 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <button class="tab-btn" data-view="journal" onclick="switchTab('journal')"><span class="ic">📖</span>Books</button>
   <button class="tab-btn" data-view="calendar" onclick="switchTab('calendar')"><span class="ic">📅</span>Calendar</button>
   <button class="tab-btn" data-view="progress" onclick="switchTab('progress')"><span class="ic">🏅</span>Progress</button>
-  <div class="theme-toggle-wrap">
-    <button class="theme-toggle" id="themeToggle" onclick="cycleTheme()" aria-label="Toggle light, dark, or blue light mode" title="Toggle theme">☀</button>
-    <span class="theme-toggle-label">Mode</span>
-  </div>
 </div>
 
 <!-- ============ LOG READING MODAL ============ -->
@@ -781,6 +790,13 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <div class="modal">
     <h3>📚 Start a New Book</h3>
     <div class="sub">What are you reading next?</div>
+    <label for="olSearch">Search Open Library</label>
+    <div class="crop-url-row">
+      <input id="olSearch" placeholder="Search by title or author..." onkeydown="if(event.key==='Enter'){event.preventDefault();searchOpenLibrary();}">
+      <button class="ghost small" type="button" onclick="searchOpenLibrary()">Search</button>
+    </div>
+    <div id="olResults" class="ol-results" style="display:none"></div>
+    <div id="olStatus" class="ol-status" style="display:none"></div>
     <label for="nbTitle">Book Title</label>
     <input id="nbTitle" placeholder="e.g. Atomic Habits">
     <label for="nbAuthor">Author (optional)</label>
@@ -1263,9 +1279,75 @@ function openNewBookModal(){
   document.getElementById("nbStart").value = 1;
   document.getElementById("nbCoverUrl").value = "";
   document.getElementById("coverDraftError").style.display = "none";
+  document.getElementById("olSearch").value = "";
+  document.getElementById("olResults").style.display = "none";
+  document.getElementById("olResults").innerHTML = "";
+  document.getElementById("olStatus").style.display = "none";
   nbCoverDraft = null;
   updateCoverDraftUi();
   openModal("bookModal");
+}
+
+let olSearchAbort = null;
+async function searchOpenLibrary(){
+  const q = document.getElementById("olSearch").value.trim();
+  const resultsEl = document.getElementById("olResults");
+  const statusEl = document.getElementById("olStatus");
+  if(!q){ toast("Type a title or author to search"); return; }
+
+  if(olSearchAbort) olSearchAbort.abort();
+  olSearchAbort = new AbortController();
+
+  statusEl.style.display = "block";
+  statusEl.textContent = "Searching Open Library…";
+  resultsEl.style.display = "none";
+  resultsEl.innerHTML = "";
+
+  try{
+    const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=8&fields=title,author_name,cover_i,edition_key`;
+    const res = await fetch(url, { signal: olSearchAbort.signal });
+    if(!res.ok) throw new Error("bad response");
+    const data = await res.json();
+    const docs = (data.docs || []).filter(d => d.title);
+    if(!docs.length){
+      statusEl.textContent = "No results — try a different search, or fill the details in manually.";
+      return;
+    }
+    statusEl.style.display = "none";
+    resultsEl.style.display = "flex";
+    resultsEl.innerHTML = docs.map((d, i) => {
+      const author = (d.author_name && d.author_name[0]) || "";
+      const coverUrl = d.cover_i ? `https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg` : "";
+      return `<button type="button" class="ol-result" onclick="pickOpenLibraryResult(${i})">
+        ${coverUrl ? `<img src="${coverUrl}" alt="" loading="lazy">` : `<div class="book-cover-thumb" style="width:34px;height:50px"></div>`}
+        <div class="ol-result-text">
+          <div class="ol-result-title">${escapeHtml(d.title)}</div>
+          <div class="ol-result-author">${escapeHtml(author)}</div>
+        </div>
+      </button>`;
+    }).join("");
+    window._olResultsCache = docs;
+  } catch(err){
+    if(err.name === "AbortError") return;
+    statusEl.textContent = "Couldn't reach Open Library — check your connection, or fill the details in manually.";
+  }
+}
+
+function pickOpenLibraryResult(i){
+  const d = (window._olResultsCache || [])[i];
+  if(!d) return;
+  document.getElementById("nbTitle").value = d.title || "";
+  document.getElementById("nbAuthor").value = (d.author_name && d.author_name[0]) || "";
+  if(d.cover_i){
+    const coverUrl = `https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`;
+    document.getElementById("nbCoverUrl").value = coverUrl;
+    nbCoverDraft = { url: coverUrl, zoom: 1, posX: 50, posY: 50 };
+    updateCoverDraftUi();
+  }
+  document.getElementById("olResults").style.display = "none";
+  document.getElementById("olStatus").style.display = "none";
+  toast("Filled in from Open Library — adjust the cover if needed");
+  if(d.cover_i) openCoverAdjustModal(null);
 }
 
 function isSafeImageUrl(url){
