@@ -464,6 +464,10 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
   100%{transform:scale(1) rotate(0deg)}
 }
 .tbr-pick-title{font-family:"Ticketing","Pixelify Sans";font-weight:600;font-size:1.15rem;margin-top:8px}
+.tbr-pick-summary{
+  color:var(--muted);font-size:.85rem;line-height:1.45;text-align:left;
+  margin-top:10px;max-height:130px;overflow-y:auto;padding:0 2px;
+}
 
 label{display:block;margin-top:12px;margin-bottom:6px;font-weight:700;font-size:.95rem}
 input{
@@ -1035,6 +1039,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <h3>The Jar Picked...</h3>
     <div class="tbr-pick-cover" id="tbrPickCover"></div>
     <div class="tbr-pick-title" id="tbrPickTitle"></div>
+    <div class="tbr-pick-summary" id="tbrPickSummary" style="display:none"></div>
     <div class="row-buttons" style="margin-top:16px">
       <button class="ghost small" id="tbrShakeAgainBtn" onclick="shakeJar()">Shake Again</button>
       <button class="primary" id="tbrReadBtn" style="flex:1" onclick="readPickedBook()">Read This</button>
@@ -1322,7 +1327,7 @@ function initOlSearch({inputId, resultsId, statusId, onPick}){
     resultsEl.innerHTML = "";
 
     try{
-      const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=8&fields=title,author_name,cover_i`;
+      const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=8&fields=title,author_name,cover_i,key`;
       const res = await fetch(url, { signal: abort.signal });
       if(!res.ok) throw new Error("bad response");
       const data = await res.json();
@@ -1395,6 +1400,7 @@ const runAddCoverSearch = initOlSearch({ inputId: "acOlSearch", resultsId: "acOl
 async function onPickTbrResult(d){
   const entry = { id: genId(), title: d.title || "" };
   if(d.author_name && d.author_name[0]) entry.author = d.author_name[0];
+  if(d.key) entry.workKey = d.key;
   if(d.cover_i){
     toast("Adding — compressing cover…");
     entry.cover = { url: await compressImageUrl(`https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg`), zoom: 1, posX: 50, posY: 50 };
@@ -1768,6 +1774,7 @@ function shakeJar(){
 
   const cover = document.getElementById("tbrPickCover");
   const titleEl = document.getElementById("tbrPickTitle");
+  const summaryEl = document.getElementById("tbrPickSummary");
   const readBtn = document.getElementById("tbrReadBtn");
   const shakeBtn = document.getElementById("tbrShakeAgainBtn");
 
@@ -1775,6 +1782,7 @@ function shakeJar(){
   cover.classList.add("shaking");
   cover.textContent = "🫙";
   titleEl.textContent = "Shaking the jar…";
+  if(summaryEl){ summaryEl.style.display = "none"; summaryEl.textContent = ""; }
   if(readBtn) readBtn.disabled = true;
   if(shakeBtn) shakeBtn.disabled = true;
 
@@ -1791,7 +1799,47 @@ function shakeJar(){
     if(readBtn) readBtn.disabled = false;
     if(shakeBtn) shakeBtn.disabled = false;
     spawnConfetti(18, "pastel");
+    loadTbrPickSummary(pick);
   }, 900);
+}
+
+// Fetches a book's summary from Open Library, but only once it's actually
+// been picked by the jar (not while browsing search results). Caches the
+// result on the TBR entry so re-picking the same book later is instant.
+async function loadTbrPickSummary(pick){
+  const summaryEl = document.getElementById("tbrPickSummary");
+  if(!summaryEl) return;
+
+  if(pick.summary){
+    summaryEl.textContent = pick.summary;
+    summaryEl.style.display = "block";
+    return;
+  }
+  if(!pick.workKey){
+    summaryEl.style.display = "none";
+    return;
+  }
+
+  summaryEl.style.display = "block";
+  summaryEl.textContent = "Loading summary…";
+  try{
+    const res = await fetch(`https://openlibrary.org${pick.workKey}.json`);
+    if(!res.ok) throw new Error("bad response");
+    const data = await res.json();
+    let desc = data.description;
+    if(desc && typeof desc === "object") desc = desc.value;
+    if(tbrPickedId !== pick.id) return; // modal moved on while this was in flight
+    if(desc){
+      pick.summary = desc;
+      save();
+      summaryEl.textContent = desc;
+    } else {
+      summaryEl.style.display = "none";
+    }
+  } catch(err){
+    if(tbrPickedId !== pick.id) return;
+    summaryEl.style.display = "none";
+  }
 }
 
 function readPickedBook(){
