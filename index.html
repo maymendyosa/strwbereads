@@ -400,13 +400,17 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 3px 6px rgba(75,58,51,.18),inset 0 0 0 1px rgba(255,255,255,.25);
 }
-.books-read-shelf{
-  /* the wooden shelf ledge — extends past each cell's edges to butt up
-     against its neighbors so a whole row shares one continuous plank */
-  height:10px;margin:0 -5px 12px;
+/* the wooden shelf ledge — one element per row, sized and positioned in JS
+   from the actual rendered cell edges so it's a single continuous plank
+   instead of per-cover segments that have to line up via CSS math */
+.books-read-grid{position:relative}
+.books-read-shelf-row{
+  position:absolute;height:20px;z-index:0;pointer-events:none;
   background:linear-gradient(180deg,var(--shelf-wood) 0%,var(--shelf-wood-dark) 85%,var(--shelf-edge) 100%);
-  box-shadow:0 3px 4px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.35);
+  box-shadow:0 3px 4px rgba(0,0,0,.2);
 }
+.books-read-cover{position:relative;z-index:1}
+.books-read-cell-spacer{height:22px}
 .books-read-cover svg{width:46%;height:46%}
 .books-read-cover img{width:100%;height:100%;object-fit:cover;display:block}
 .books-read-title{
@@ -2542,7 +2546,7 @@ function renderBooksReadCell(entry, i){
   return `
     <div class="books-read-cell" onclick="openBookReadDetail('${entry.id}')">
       <div class="books-read-cover hue-${i % 5}">${coverInner}</div>
-      <div class="books-read-shelf"></div>
+      <div class="books-read-cell-spacer"></div>
       <div class="books-read-title">${escapeHtml(entry.title || "Untitled")}</div>
     </div>
   `;
@@ -2596,6 +2600,43 @@ function sortBooksRead(list){
   }
 }
 
+function positionBookShelves(){
+  const grid = document.getElementById("booksReadGrid");
+  if(!grid) return;
+  grid.querySelectorAll(".books-read-shelf-row").forEach(el => el.remove());
+  const covers = [...grid.querySelectorAll(".books-read-cover")];
+  if(!covers.length) return;
+  const gridRect = grid.getBoundingClientRect();
+  const rows = new Map();
+  covers.forEach(cover => {
+    const r = cover.getBoundingClientRect();
+    const top = Math.round(r.bottom - gridRect.top);
+    const left = r.left - gridRect.left;
+    const right = r.right - gridRect.left;
+    const row = rows.get(top) || { top, left: Infinity, right: -Infinity };
+    row.left = Math.min(row.left, left);
+    row.right = Math.max(row.right, right);
+    rows.set(top, row);
+  });
+  const frag = document.createDocumentFragment();
+  rows.forEach(row => {
+    const shelf = document.createElement("div");
+    shelf.className = "books-read-shelf-row";
+    shelf.style.top = (row.top - 10) + "px";
+    shelf.style.left = (row.left - 6) + "px";
+    shelf.style.width = (row.right - row.left + 12) + "px";
+    frag.appendChild(shelf);
+  });
+  grid.appendChild(frag);
+}
+let booksReadShelfObserver = null;
+function watchBooksReadShelves(){
+  const grid = document.getElementById("booksReadGrid");
+  if(!grid || booksReadShelfObserver) return;
+  booksReadShelfObserver = new ResizeObserver(() => positionBookShelves());
+  booksReadShelfObserver.observe(grid);
+}
+
 function renderBooksRead(){
   const list = sortBooksRead(
     (s.finishedLog || []).filter(f => inStatsRange(f.date, booksReadRange))
@@ -2617,6 +2658,8 @@ function renderBooksRead(){
   grid.style.setProperty("--br-cols", booksReadCols);
   if(booksReadViewMode === "cover"){
     grid.innerHTML = pageItems.length ? pageItems.map(renderBooksReadCell).join("") : emptyMsg;
+    requestAnimationFrame(positionBookShelves);
+    watchBooksReadShelves();
   } else {
     listEl.innerHTML = pageItems.length ? pageItems.map(renderBooksReadRow).join("") : emptyMsg;
   }
