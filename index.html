@@ -2764,6 +2764,20 @@ function populateBrdModal(entry){
   document.getElementById("brdDateInput").value = entry.date || "";
 }
 
+// Keeps the journal entry that recorded a finish in sync with Books Read —
+// used both when editing a finished book's title and when removing it.
+function syncLinkedJournalEntry(finishedId, updates){
+  const apply = (arr) => {
+    if(!arr) return;
+    const e = arr.find(x => x.finishedEntryId === finishedId);
+    if(!e) return;
+    if(updates.title !== undefined) e.book = updates.title;
+    if(updates.unlink){ delete e.finished; delete e.finishedEntryId; }
+  };
+  apply(s.today.log);
+  Object.values(s.journal || {}).forEach(apply);
+}
+
 function saveBrdEdits(){
   if(!currentBrdEntryId) return;
   const entry = (s.finishedLog || []).find(f => f.id === currentBrdEntryId);
@@ -2779,6 +2793,7 @@ function saveBrdEdits(){
   entry.title = title;
   if(author) entry.author = author; else delete entry.author;
   entry.date = date;
+  syncLinkedJournalEntry(currentBrdEntryId, { title });
 
   save();
   populateBrdModal(entry);
@@ -2789,13 +2804,16 @@ function saveBrdEdits(){
 
 // Removing a finished book undoes its credit entirely — it's taken out of
 // finishedLog (so it no longer counts toward booksFinished/stats in any
-// time range) as if it had never been marked finished.
+// time range) as if it had never been marked finished. The journal entry
+// that originally recorded the finish stays, but loses its "Finished"
+// badge and link, since the thing it pointed to no longer exists.
 function removeFinishedBook(){
   if(!currentBrdEntryId) return;
   const entry = (s.finishedLog || []).find(f => f.id === currentBrdEntryId);
   if(!entry) return;
   if(!confirm(`Remove "${entry.title || "this book"}" from your finished books? This can't be undone.`)) return;
 
+  syncLinkedJournalEntry(currentBrdEntryId, { unlink: true });
   s.finishedLog = (s.finishedLog || []).filter(f => f.id !== currentBrdEntryId);
   s.stats.booksFinished = Math.max(0, (s.stats.booksFinished || 0) - 1);
 
