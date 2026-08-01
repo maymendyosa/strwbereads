@@ -369,8 +369,8 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 }
 .br-select-sm{flex:0 1 90px}
 
-.books-read-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
-.books-read-cell{text-align:center;cursor:pointer;min-width:0}
+.books-read-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:9px}
+.books-read-cell{flex:0 0 calc(25% - 6.75px);text-align:center;cursor:pointer;min-width:0}
 .books-read-cover{
   width:100%;aspect-ratio:2/3;border-radius:8px;overflow:hidden;
   background:linear-gradient(135deg,var(--hue-a,#FFC9CF) 0%,var(--hue-b,#F4838C) 100%);
@@ -2522,7 +2522,7 @@ function renderBooksRead(){
 
   const start = booksReadPage * booksReadPageSize;
   const pageItems = list.slice(start, start + booksReadPageSize);
-  const emptyMsg = `<div class="empty" style="grid-column:1/-1">No books finished ${booksReadRange==='month' ? 'this month' : 'this year'} yet.</div>`;
+  const emptyMsg = `<div class="empty" style="width:100%">No books finished ${booksReadRange==='month' ? 'this month' : 'this year'} yet.</div>`;
 
   const grid = document.getElementById("booksReadGrid");
   const listEl = document.getElementById("booksReadList");
