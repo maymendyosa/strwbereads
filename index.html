@@ -688,6 +688,17 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
         <span id="booksReadCount">0</span> Books
         <svg class="ti" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>
       </div>
+      <div class="brt-pagesize" style="margin-bottom:10px">
+        <label for="booksReadSortSelect">Sort by</label>
+        <select id="booksReadSortSelect" onchange="setBooksReadSort(this.value)">
+          <option value="date_desc">Latest Finished</option>
+          <option value="date_asc">Oldest Finished</option>
+          <option value="title_asc">Title (A–Z)</option>
+          <option value="title_desc">Title (Z–A)</option>
+          <option value="author_asc">Author (A–Z)</option>
+          <option value="author_desc">Author (Z–A)</option>
+        </select>
+      </div>
       <div class="books-read-grid" id="booksReadGrid"></div>
       <div class="books-read-list" id="booksReadList" style="display:none"></div>
       <div class="books-read-toolbar">
@@ -2387,6 +2398,7 @@ function renderHome(){
    BOOKS READ GRID
    ============================================================ */
 let booksReadRange = "month";
+let booksReadSort = "date_desc";
 let booksReadPageSize = 12;
 let booksReadPage = 0;
 let booksReadViewMode = "cover";
@@ -2403,6 +2415,14 @@ function setBooksReadPageSize(n){
   booksReadPage = 0;
   const select = document.getElementById("booksReadPageSizeSelect");
   if(select) select.value = String(n);
+  renderBooksRead();
+}
+
+function setBooksReadSort(mode){
+  booksReadSort = mode;
+  booksReadPage = 0;
+  const select = document.getElementById("booksReadSortSelect");
+  if(select) select.value = mode;
   renderBooksRead();
 }
 
@@ -2442,16 +2462,48 @@ function renderBooksReadRow(entry, i){
       <div class="books-read-row-cover hue-${i % 5}">${coverInner}</div>
       <div class="books-read-row-info">
         <div class="books-read-row-title">${escapeHtml(entry.title || "Untitled")}</div>
-        <div class="books-read-row-date">Finished ${formatDisplayDate(entry.date)}</div>
+        <div class="books-read-row-date">${entry.author ? escapeHtml(entry.author) + " • " : ""}Finished ${formatDisplayDate(entry.date)}</div>
       </div>
     </div>
   `;
 }
 
+function sortBooksRead(list){
+  const collator = new Intl.Collator(undefined, { sensitivity: "base" });
+  const byDateDesc = (a,b) => b.date.localeCompare(a.date);
+  const byDateAsc = (a,b) => a.date.localeCompare(b.date);
+
+  switch(booksReadSort){
+    case "date_asc":
+      return list.sort(byDateAsc);
+    case "title_asc":
+      return list.sort((a,b) => collator.compare(a.title || "", b.title || "") || byDateDesc(a,b));
+    case "title_desc":
+      return list.sort((a,b) => collator.compare(b.title || "", a.title || "") || byDateDesc(a,b));
+    case "author_asc":
+      return list.sort((a,b) => {
+        if(!a.author && !b.author) return byDateDesc(a,b);
+        if(!a.author) return 1;
+        if(!b.author) return -1;
+        return collator.compare(a.author, b.author) || byDateDesc(a,b);
+      });
+    case "author_desc":
+      return list.sort((a,b) => {
+        if(!a.author && !b.author) return byDateDesc(a,b);
+        if(!a.author) return 1;
+        if(!b.author) return -1;
+        return collator.compare(b.author, a.author) || byDateDesc(a,b);
+      });
+    case "date_desc":
+    default:
+      return list.sort(byDateDesc);
+  }
+}
+
 function renderBooksRead(){
-  const list = (s.finishedLog || [])
-    .filter(f => inStatsRange(f.date, booksReadRange))
-    .sort((a,b) => b.date.localeCompare(a.date));
+  const list = sortBooksRead(
+    (s.finishedLog || []).filter(f => inStatsRange(f.date, booksReadRange))
+  );
 
   document.getElementById("booksReadCount").textContent = list.length;
 
