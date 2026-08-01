@@ -2330,16 +2330,18 @@ function spawnConfetti(count, type){
     particles.push({x:Math.random()*canvas.width,y:-20-Math.random()*canvas.height,w:6+Math.random()*6,h:6+Math.random()*10,
       color:colors[Math.floor(Math.random()*colors.length)],speed:2+Math.random()*4,drift:-2+Math.random()*4,rot:Math.random()*360,rotSpeed:-6+Math.random()*12});
   }
-  let frame=0; const maxFrames=200;
+  let frame=0; const maxFrames=600; // safety cap only, shouldn't normally be hit
   function animate(){
     frame++;
     ctx.clearRect(0,0,canvas.width,canvas.height);
+    let anyVisible = false;
     particles.forEach(p=>{
       p.y+=p.speed; p.x+=p.drift; p.rot+=p.rotSpeed;
+      if(p.y - p.h < canvas.height) anyVisible = true;
       ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
       ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
     });
-    if(frame<maxFrames) requestAnimationFrame(animate); else ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(anyVisible && frame<maxFrames) requestAnimationFrame(animate); else ctx.clearRect(0,0,canvas.width,canvas.height);
   }
   animate();
 }
