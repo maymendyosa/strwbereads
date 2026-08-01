@@ -1810,7 +1810,10 @@ function shakeJar(){
     // in case the modal was closed or re-shaken before this fired
     if(tbrPickedId !== pick.id) return;
     cover.classList.remove("shaking");
-    cover.innerHTML = SURPRISE_SVG;
+    const c = pick.cover && pick.cover.url;
+    cover.innerHTML = c
+      ? `<img src="${escapeHtml(pick.cover.url)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px;box-shadow:0 6px 16px rgba(75,58,51,.2);object-position:${pick.cover.posX ?? 50}% ${pick.cover.posY ?? 50}%;transform:scale(${pick.cover.zoom || 1})" onerror="this.outerHTML='${PIXEL_BERRY_SVG.replace(/'/g,"\\'")}'">`
+      : PIXEL_BERRY_SVG;
     cover.classList.add("reveal");
     titleEl.textContent = pick.title;
     if(readBtn) readBtn.disabled = false;
@@ -2678,8 +2681,7 @@ const PIXEL_BERRY_SVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/
 /* cute pixel strawberry shake used on the home greeting instead of emoji */
 const PIXEL_SHAKE_SVG = `<svg class="greeting-icon" viewBox="0 0 22 26" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="10" y="0" width="2" height="2" fill="#7FA66A"/><rect x="8" y="2" width="6" height="2" fill="#E0525F"/><rect x="4" y="4" width="14" height="2" fill="#FFFDF9"/><rect x="14" y="4" width="2" height="2" fill="#F4838C"/><rect x="2" y="6" width="18" height="2" fill="#FFFDF9"/><rect x="14" y="6" width="2" height="2" fill="#F4838C"/><rect x="1" y="8" width="20" height="2" fill="#F0C05A"/><rect x="14" y="8" width="2" height="2" fill="#fff"/><rect x="1" y="10" width="20" height="2" fill="#FFC9CF"/><rect x="14" y="10" width="2" height="2" fill="#F4838C"/><rect x="2" y="12" width="18" height="2" fill="#F4838C"/><rect x="3" y="14" width="16" height="2" fill="#E0525F"/><rect x="9" y="14" width="2" height="2" fill="#FFF3C9"/><rect x="4" y="16" width="14" height="2" fill="#F4838C"/><rect x="5" y="18" width="12" height="2" fill="#FFC9CF"/><rect x="6" y="20" width="10" height="2" fill="#F0C05A"/><rect x="7" y="22" width="8" height="2" fill="#E0A83E"/><rect x="8" y="24" width="6" height="2" fill="#C97A2B"/></svg>`;
 
-/* cute pixel "surprise" gift box used when the TBR jar picks a title */
-const SURPRISE_SVG = `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="8" y="18" width="32" height="6" fill="#E0525F"/><rect x="8" y="24" width="32" height="18" fill="#F4838C"/><rect x="8" y="24" width="32" height="4" fill="#FFF0EE"/><rect x="20" y="18" width="8" height="24" fill="#F0C05A"/><rect x="16" y="8" width="8" height="10" fill="#7FA66A"/><rect x="24" y="8" width="8" height="10" fill="#7FA66A"/><rect x="18" y="10" width="4" height="6" fill="#A8C686"/><rect x="26" y="10" width="4" height="6" fill="#A8C686"/><rect x="10" y="10" width="3" height="3" fill="#F0C05A"/><rect x="35" y="30" width="3" height="3" fill="#F0C05A"/><rect x="6" y="34" width="3" height="3" fill="#F4838C"/></svg>`;
+
 
 
 function renderBooks(){
