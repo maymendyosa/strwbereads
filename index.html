@@ -127,6 +127,27 @@ body{
 h1,h2,.section-title,.fredoka{font-family:"Ticketing","Pixelify Sans",-apple-system,BlinkMacSystemFont,sans-serif;font-weight:600}
 .wrapper{max-width:480px;margin:0 auto}
 
+@media (min-width:860px){
+  body{padding:32px 32px calc(120px + env(safe-area-inset-bottom))}
+  .wrapper{max-width:1100px}
+  .view.active{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(400px,1fr));
+    align-items:start;
+    gap:20px;
+  }
+  .view.active > .card{margin-bottom:0}
+  .view.active > .footer-note{grid-column:1/-1}
+  /* home's first card (profile/ring/streaks) reads better a touch narrower
+     than the journal card beside it, so give it less of the row */
+  #view-home.active{grid-template-columns:minmax(360px,440px) minmax(400px,1fr)}
+  .tabbar{padding-top:10px}
+}
+
+@media (min-width:1300px){
+  .wrapper{max-width:1280px}
+}
+
 /* ---------- cards ---------- */
 .card{
   background:var(--card);
@@ -354,10 +375,21 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
   display:block;user-select:none;-webkit-user-drag:none;transform-origin:center center;
 }
 
-.books-read-subtitle{
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  font-family:"Ticketing","Pixelify Sans";font-weight:600;color:var(--muted);font-size:.9rem;margin-bottom:12px;
+.br-title{justify-content:space-between}
+.br-title-label{display:flex;align-items:center;gap:8px}
+.br-count{
+  font-family:"Ticketing","Pixelify Sans";font-weight:600;color:var(--muted);
+  font-size:.72rem;background:var(--empty-cell);border-radius:999px;
+  padding:4px 10px;white-space:nowrap;flex:0 0 auto;
 }
+.br-toolbar{display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.br-select{
+  font-family:inherit;font-size:.72rem;font-weight:600;border-radius:999px;
+  border:1px solid var(--line);padding:6px 10px;background:var(--card);
+  color:var(--text);cursor:pointer;flex:1 1 120px;min-width:0;
+}
+.br-select-sm{flex:0 1 90px}
+
 .books-read-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
 .books-read-cell{text-align:center;cursor:pointer;min-width:0}
 .books-read-cover{
@@ -388,20 +420,20 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .books-read-row-title{font-size:.92rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .books-read-row-date{font-size:.78rem;color:var(--muted)}
 
-.books-read-toolbar{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:14px}
 .brt-views{display:flex;gap:3px;background:var(--empty-cell);border-radius:10px;padding:3px;flex:0 0 auto}
 .brt-view-btn{background:none;border:none;padding:5px 9px;border-radius:8px;font-size:.95rem;line-height:1;color:var(--muted);cursor:pointer}
 .brt-view-btn.active{background:var(--card);color:var(--pink-dark);box-shadow:0 2px 6px rgba(35,28,25,.14)}
-.brt-pager{display:flex;align-items:center;justify-content:center;gap:6px;flex:1 1 auto;min-width:0}
-.brt-pager button{background:none;border:none;font-size:1.05rem;color:var(--pink-dark);padding:2px 5px;cursor:pointer}
-.brt-pager button:disabled{opacity:.3;cursor:default}
-.brt-pager span{font-family:"Ticketing","Pixelify Sans";font-weight:600;color:var(--muted);font-size:.78rem;white-space:nowrap}
-.brt-pagesize{display:flex;align-items:center;gap:5px;flex:0 0 auto}
-.brt-pagesize label{font-size:.7rem;color:var(--muted);white-space:nowrap}
-.brt-pagesize select{
-  font-family:inherit;font-size:.78rem;border-radius:8px;border:1px solid var(--line);
-  padding:3px 5px;background:var(--card);color:var(--text);cursor:pointer;
+
+.brt-pager{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;margin-top:14px}
+.brp-arrow,.brp-num{
+  font-family:"Ticketing","Pixelify Sans";font-weight:600;background:var(--empty-cell);
+  border:none;min-width:24px;height:24px;padding:0 6px;border-radius:8px;
+  font-size:.75rem;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;
 }
+.brp-arrow{color:var(--pink-dark)}
+.brp-arrow:disabled{opacity:.3;cursor:default}
+.brp-num.active{background:var(--pink-dark);color:#fff}
+.brp-ellipsis{color:var(--muted);font-size:.75rem;padding:0 2px;user-select:none}
 
 .brd-cover-wrap{display:flex;justify-content:center;margin:8px 0 12px}
 .brd-cover{flex:0 0 130px;width:130px;max-width:130px;min-width:130px;cursor:pointer}
@@ -679,43 +711,37 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     </div>
 
     <div class="card">
-      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>Books Read</div>
-      <div class="range-toggle" id="booksReadRangeToggle">
-        <button class="range-btn active" data-range="month" onclick="setBooksReadRange('month')">This Month</button>
-        <button class="range-btn" data-range="year" onclick="setBooksReadRange('year')">This Year</button>
+      <div class="section-title br-title">
+        <span class="br-title-label"><svg class="ti" viewBox="0 0 24 24"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>Books Read</span>
+        <span class="br-count"><span id="booksReadCount">0</span> Books</span>
       </div>
-      <div class="books-read-subtitle">
-        <span id="booksReadCount">0</span> Books
-        <svg class="ti" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>
-      </div>
-      <div class="brt-pagesize" style="margin-bottom:10px">
-        <label for="booksReadSortSelect">Sort by</label>
-        <select id="booksReadSortSelect" onchange="setBooksReadSort(this.value)">
-          <option value="date_desc">Latest Finished</option>
-          <option value="date_asc">Oldest Finished</option>
-          <option value="title_asc">Title (A–Z)</option>
-          <option value="title_desc">Title (Z–A)</option>
-          <option value="author_asc">Author (A–Z)</option>
-          <option value="author_desc">Author (Z–A)</option>
+      <div class="br-toolbar">
+        <select id="booksReadSortSelect" class="br-select" onchange="setBooksReadSort(this.value)" aria-label="Sort by" title="Sort by">
+          <option value="date_desc">🕐 Latest</option>
+          <option value="date_asc">🕐 Oldest</option>
+          <option value="title_asc">🔤 Title A–Z</option>
+          <option value="title_desc">🔤 Title Z–A</option>
+          <option value="author_asc">✍️ Author A–Z</option>
+          <option value="author_desc">✍️ Author Z–A</option>
         </select>
-      </div>
-      <div class="books-read-grid" id="booksReadGrid"></div>
-      <div class="books-read-list" id="booksReadList" style="display:none"></div>
-      <div class="books-read-toolbar">
+        <select id="booksReadPageSizeSelect" class="br-select br-select-sm" onchange="setBooksReadPageSize(parseInt(this.value,10))" aria-label="Books per page" title="Books per page">
+          <option value="8">Show 8</option>
+          <option value="12" selected>Show 12</option>
+          <option value="16">Show 16</option>
+          <option value="20">Show 20</option>
+        </select>
         <div class="brt-views" id="booksReadViewToggle">
           <button class="brt-view-btn active" data-view="cover" onclick="setBooksReadViewMode('cover')" title="Cover view" aria-label="Cover view">▦</button>
           <button class="brt-view-btn" data-view="list" onclick="setBooksReadViewMode('list')" title="List view" aria-label="List view">☰</button>
         </div>
-        <div class="brt-pager" id="booksReadPager"></div>
-        <div class="brt-pagesize">
-          <label for="booksReadPageSizeSelect">View up to</label>
-          <select id="booksReadPageSizeSelect" onchange="setBooksReadPageSize(parseInt(this.value,10))">
-            <option value="12">12</option>
-            <option value="16">16</option>
-            <option value="20">20</option>
-          </select>
-        </div>
       </div>
+      <div class="range-toggle" id="booksReadRangeToggle">
+        <button class="range-btn active" data-range="month" onclick="setBooksReadRange('month')">This Month</button>
+        <button class="range-btn" data-range="year" onclick="setBooksReadRange('year')">This Year</button>
+      </div>
+      <div class="books-read-grid" id="booksReadGrid"></div>
+      <div class="books-read-list" id="booksReadList" style="display:none"></div>
+      <div class="brt-pager" id="booksReadPager"></div>
     </div>
   </div>
 
@@ -2439,6 +2465,11 @@ function booksReadShiftPage(delta){
   renderBooksRead();
 }
 
+function booksReadGoToPage(pageIndex){
+  booksReadPage = pageIndex;
+  renderBooksRead();
+}
+
 function renderBooksReadCell(entry, i){
   const cover = entry.cover && entry.cover.url;
   const coverInner = cover
@@ -2526,15 +2557,38 @@ function renderBooksRead(){
   const pager = document.getElementById("booksReadPager");
   if(list.length > booksReadPageSize){
     pager.style.display = "flex";
+    const current = booksReadPage + 1;
+    const items = booksReadPagerItems(current, totalPages);
+    const numsHtml = items.map(it => it === "…"
+      ? `<span class="brp-ellipsis">…</span>`
+      : `<button class="brp-num ${it === current ? "active" : ""}" onclick="booksReadGoToPage(${it - 1})">${it}</button>`
+    ).join("");
     pager.innerHTML = `
-      <button onclick="booksReadShiftPage(-1)" ${booksReadPage===0 ? "disabled" : ""}>‹</button>
-      <span>${booksReadPage+1} / ${totalPages}</span>
-      <button onclick="booksReadShiftPage(1)" ${booksReadPage>=totalPages-1 ? "disabled" : ""}>›</button>
+      <button class="brp-arrow" onclick="booksReadShiftPage(-1)" ${booksReadPage===0 ? "disabled" : ""} aria-label="Previous page">‹</button>
+      ${numsHtml}
+      <button class="brp-arrow" onclick="booksReadShiftPage(1)" ${booksReadPage>=totalPages-1 ? "disabled" : ""} aria-label="Next page">›</button>
     `;
   } else {
     pager.style.display = "none";
     pager.innerHTML = "";
   }
+}
+
+/* builds a compact page list like [1,2,3,4,'…',10] — always keeps first,
+   last, and a small window around the current page; collapses the rest
+   into a single ellipsis once there are more than 5 pages */
+function booksReadPagerItems(current, total){
+  if(total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+  const keep = new Set([1, total, current - 1, current, current + 1]);
+  const sorted = [...keep].filter(p => p >= 1 && p <= total).sort((a,b) => a - b);
+  const items = [];
+  let prev = 0;
+  sorted.forEach(p => {
+    if(prev && p - prev > 1) items.push("…");
+    items.push(p);
+    prev = p;
+  });
+  return items;
 }
 
 /* ---- finished book detail modal ---- */
