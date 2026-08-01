@@ -261,6 +261,9 @@ html[data-theme="dark"] .card{
 .buttons{display:flex;flex-direction:column;gap:10px;margin-top:14px}
 .row-buttons{display:flex;gap:10px;margin-top:14px}
 .row-buttons button{flex:1}
+.backup-compact{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.backup-compact button{flex:1 1 calc(50% - 4px);min-width:110px;margin:0}
+.backup-compact .danger.small{flex:1 1 calc(50% - 4px);width:auto}
 button{
   padding:13px;border:none;border-radius:16px;font-size:1rem;font-weight:600;
   font-family:"Ticketing","Pixelify Sans",sans-serif;cursor:pointer;transition:transform .08s ease,opacity .2s ease;
@@ -371,9 +374,9 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .books-read-grid{display:flex;flex-wrap:nowrap;gap:9px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
 .books-read-grid::-webkit-scrollbar{height:6px}
 .books-read-grid::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px}
-.books-read-grid.grid-mode{display:grid;grid-template-columns:repeat(var(--br-cols,3),1fr);flex-wrap:unset;overflow-x:visible;scroll-snap-type:none}
+.books-read-grid.grid-mode{display:flex;flex-wrap:wrap;justify-content:center;overflow-x:visible;scroll-snap-type:none}
 .books-read-cell{flex:0 0 96px;text-align:center;cursor:pointer;min-width:0;scroll-snap-align:start}
-.books-read-grid.grid-mode .books-read-cell{flex:none;width:auto}
+.books-read-grid.grid-mode .books-read-cell{flex:0 0 auto;width:calc((100% - (var(--br-cols, 3) - 1) * 9px) / var(--br-cols, 3))}
 .br-select-cols{flex:0 0 auto;margin-right:0}
 .books-read-cover{
   width:100%;aspect-ratio:2/3;border-radius:8px;overflow:hidden;
@@ -745,17 +748,13 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
         <div class="stat-tile"><div class="stat-num" id="statBooks">0</div><div class="stat-lbl">Books Finished</div></div>
         <div class="stat-tile green"><div class="stat-num" id="statAvg">0</div><div class="stat-lbl">Avg pages/day</div></div>
       </div>
-    </div>
-
-    <div class="card">
-      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1-1-7.87A5 5 0 0 1 15.9 8.5 4.5 4.5 0 0 1 17.5 18H7z"/></svg>Backup</div>
-      <div class="row-buttons">
+      <div class="backup-compact">
         <button class="ghost small" onclick="exportData()">Export Data</button>
         <button class="ghost small" onclick="document.getElementById('importFile').click()">Import Backup</button>
+        <button class="ghost small" onclick="exportCSV()">Export CSV</button>
+        <button class="danger small" onclick="clearAllData()">Clear All Data</button>
       </div>
       <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
-      <button class="ghost small" style="width:100%;margin-top:10px" onclick="exportCSV()">Export CSV (spreadsheet)</button>
-      <button class="danger" style="margin-top:12px" onclick="clearAllData()">Clear All Data</button>
       <div class="footer-note" style="margin-top:6px">Wipes your books, journal, streaks, and stats. Export a backup first if you might want it back.</div>
     </div>
 
@@ -2374,7 +2373,7 @@ function setBooksReadCols(val){
 function setBooksReadViewMode(mode){
   booksReadViewMode = mode;
   document.querySelectorAll("#booksReadViewToggle .brt-view-btn").forEach(b => b.classList.toggle("active", b.dataset.view === mode));
-  document.getElementById("booksReadGrid").style.display = mode === "cover" ? "grid" : "none";
+  document.getElementById("booksReadGrid").style.display = mode === "cover" ? "flex" : "none";
   document.getElementById("booksReadList").style.display = mode === "list" ? "flex" : "none";
   renderBooksRead();
 }
