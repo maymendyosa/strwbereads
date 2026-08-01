@@ -261,7 +261,7 @@ html[data-theme="dark"] .card{
 .buttons{display:flex;flex-direction:column;gap:10px;margin-top:14px}
 .row-buttons{display:flex;gap:10px;margin-top:14px}
 .row-buttons button{flex:1}
-.backup-compact{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.backup-compact{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .backup-compact button{flex:1 1 calc(50% - 3px);min-width:110px;margin:0}
 .backup-compact .danger.small{flex:1 1 calc(50% - 3px);width:auto}
 button{
@@ -726,13 +726,6 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
           <button class="brt-view-btn" data-view="list" onclick="setBooksReadViewMode('list')" title="List view" aria-label="List view">☰</button>
         </div>
       </div>
-      <div class="backup-compact">
-        <button class="ghost small" onclick="exportData()">Export Data</button>
-        <button class="ghost small" onclick="document.getElementById('importFile').click()">Import Backup</button>
-        <button class="ghost small" onclick="exportCSV()">Export CSV</button>
-        <button class="danger small" onclick="clearAllData()" title="Wipes your books, journal, streaks, and stats. Export a backup first if you might want it back.">Clear All Data</button>
-      </div>
-      <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
       <div class="range-toggle" id="booksReadRangeToggle">
         <button class="range-btn active" data-range="month" onclick="setBooksReadRange('month')">This Month</button>
         <button class="range-btn" data-range="year" onclick="setBooksReadRange('year')">This Year</button>
@@ -756,6 +749,14 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
         <div class="stat-tile green"><div class="stat-num" id="statAvg">0</div><div class="stat-lbl">Avg pages/day</div></div>
       </div>
     </div>
+
+    <div class="backup-compact">
+      <button class="ghost small" onclick="exportData()">Export Data</button>
+      <button class="ghost small" onclick="document.getElementById('importFile').click()">Import Backup</button>
+      <button class="ghost small" onclick="exportCSV()">Export CSV</button>
+      <button class="danger small" onclick="clearAllData()" title="Wipes your books, journal, streaks, and stats. Export a backup first if you might want it back.">Clear All Data</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
 
     <div class="footer-note">°𖦹｡ made for the love of strawberries and reading ｡𖦹°</div>
   </div>
