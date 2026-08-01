@@ -361,16 +361,17 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
   font-size:.72rem;background:var(--empty-cell);border-radius:999px;
   padding:4px 10px;white-space:nowrap;flex:0 0 auto;
 }
-.br-toolbar{display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.br-toolbar{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:12px}
 .br-select{
   font-family:inherit;font-size:.72rem;font-weight:600;border-radius:999px;
   border:1px solid var(--line);padding:6px 10px;background:var(--card);
-  color:var(--text);cursor:pointer;flex:1 1 120px;min-width:0;
+  color:var(--text);cursor:pointer;flex:0 1 auto;min-width:0;margin-right:auto;
 }
-.br-select-sm{flex:0 1 90px}
 
-.books-read-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:9px}
-.books-read-cell{flex:0 0 calc(25% - 6.75px);text-align:center;cursor:pointer;min-width:0}
+.books-read-grid{display:flex;flex-wrap:nowrap;gap:9px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.books-read-grid::-webkit-scrollbar{height:6px}
+.books-read-grid::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px}
+.books-read-cell{flex:0 0 96px;text-align:center;cursor:pointer;min-width:0;scroll-snap-align:start}
 .books-read-cover{
   width:100%;aspect-ratio:2/3;border-radius:8px;overflow:hidden;
   background:linear-gradient(135deg,var(--hue-a,#FFC9CF) 0%,var(--hue-b,#F4838C) 100%);
@@ -514,17 +515,6 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 .stat-num{font-family:"Ticketing","Pixelify Sans";font-weight:600;font-size:1.4rem;color:var(--pink-dark)}
 .stat-tile.green .stat-num{color:var(--green-dark)}
 .stat-lbl{font-size:.8rem;color:var(--muted);margin-top:2px}
-
-/* ---------- achievements ---------- */
-.ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.ach{
-  border-radius:16px;padding:12px 6px;text-align:center;background:var(--empty-cell);
-  filter:grayscale(1);opacity:.55;transition:filter .2s,opacity .2s,transform .2s;
-}
-.ach.unlocked{background:linear-gradient(160deg,#FFF6E0,#FFE9C2);filter:none;opacity:1}
-.ach .ach-emoji{font-size:1.6rem;display:block}
-.ach .ach-name{font-size:.72rem;font-weight:700;margin-top:4px;color:var(--muted)}
-.ach.unlocked .ach-name{color:#B8791E}
 
 /* ---------- tabbar ---------- */
 .tabbar{
@@ -688,39 +678,6 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
       </div>
     </div>
 
-    <div class="card">
-      <div class="section-title br-title">
-        <span class="br-title-label"><svg class="ti" viewBox="0 0 24 24"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>Books Read</span>
-        <span class="br-count"><span id="booksReadCount">0</span> Books</span>
-      </div>
-      <div class="br-toolbar">
-        <select id="booksReadSortSelect" class="br-select" onchange="setBooksReadSort(this.value)" aria-label="Sort by" title="Sort by">
-          <option value="date_desc">Latest</option>
-          <option value="date_asc">Oldest</option>
-          <option value="title_asc">Title A–Z</option>
-          <option value="title_desc">Title Z–A</option>
-          <option value="author_asc">Author A–Z</option>
-          <option value="author_desc">Author Z–A</option>
-        </select>
-        <select id="booksReadPageSizeSelect" class="br-select br-select-sm" onchange="setBooksReadPageSize(parseInt(this.value,10))" aria-label="Books per page" title="Books per page">
-          <option value="8">Show 8</option>
-          <option value="12" selected>Show 12</option>
-          <option value="16">Show 16</option>
-          <option value="20">Show 20</option>
-        </select>
-        <div class="brt-views" id="booksReadViewToggle">
-          <button class="brt-view-btn active" data-view="cover" onclick="setBooksReadViewMode('cover')" title="Cover view" aria-label="Cover view">▦</button>
-          <button class="brt-view-btn" data-view="list" onclick="setBooksReadViewMode('list')" title="List view" aria-label="List view">☰</button>
-        </div>
-      </div>
-      <div class="range-toggle" id="booksReadRangeToggle">
-        <button class="range-btn active" data-range="month" onclick="setBooksReadRange('month')">This Month</button>
-        <button class="range-btn" data-range="year" onclick="setBooksReadRange('year')">This Year</button>
-      </div>
-      <div class="books-read-grid" id="booksReadGrid"></div>
-      <div class="books-read-list" id="booksReadList" style="display:none"></div>
-      <div class="brt-pager" id="booksReadPager"></div>
-    </div>
   </div>
 
   <!-- ============ CALENDAR ============ -->
@@ -737,7 +694,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     </div>
   </div>
 
-  <!-- ============ PROGRESS (streak / stats / achievements / backup) ============ -->
+  <!-- ============ PROGRESS (streak / stats / books read / backup) ============ -->
   <div id="view-progress" class="view">
     <div class="card">
       <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Stats</div>
@@ -750,15 +707,36 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
         <div class="stat-tile"><div class="stat-num" id="curStreak">0 days</div><div class="stat-lbl">Current Streak</div></div>
         <div class="stat-tile green"><div class="stat-num" id="longStreak">0 days</div><div class="stat-lbl">Longest Streak</div></div>
         <div class="stat-tile"><div class="stat-num" id="statBooks">0</div><div class="stat-lbl">Books Finished</div></div>
-        <div class="stat-tile green"><div class="stat-num" id="statPages">0</div><div class="stat-lbl">Pages Read</div></div>
-        <div class="stat-tile"><div class="stat-num" id="statAvg">0</div><div class="stat-lbl">Avg pages/day</div></div>
-        <div class="stat-tile green"><div class="stat-num" id="statSessions">0</div><div class="stat-lbl">Sessions</div></div>
+        <div class="stat-tile green"><div class="stat-num" id="statAvg">0</div><div class="stat-lbl">Avg pages/day</div></div>
       </div>
     </div>
 
     <div class="card">
-      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><circle cx="12" cy="9" r="5"/><path d="M9 13.5 7.5 21 12 18.5 16.5 21 15 13.5"/></svg>Achievements</div>
-      <div class="ach-grid" id="achGrid"></div>
+      <div class="section-title br-title">
+        <span class="br-title-label"><svg class="ti" viewBox="0 0 24 24"><path d="M4 9h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c.5 1-.5 1.5 0 3M12 3c.5 1-.5 1.5 0 3"/></svg>Books Read</span>
+        <span class="br-count"><span id="booksReadCount">0</span> Books</span>
+      </div>
+      <div class="br-toolbar">
+        <select id="booksReadSortSelect" class="br-select" onchange="setBooksReadSort(this.value)" aria-label="Sort by" title="Sort by">
+          <option value="date_desc">Latest</option>
+          <option value="date_asc">Oldest</option>
+          <option value="title_asc">Title A–Z</option>
+          <option value="title_desc">Title Z–A</option>
+          <option value="author_asc">Author A–Z</option>
+          <option value="author_desc">Author Z–A</option>
+        </select>
+        <div class="brt-views" id="booksReadViewToggle">
+          <button class="brt-view-btn active" data-view="cover" onclick="setBooksReadViewMode('cover')" title="Cover view" aria-label="Cover view">▦</button>
+          <button class="brt-view-btn" data-view="list" onclick="setBooksReadViewMode('list')" title="List view" aria-label="List view">☰</button>
+        </div>
+      </div>
+      <div class="range-toggle" id="booksReadRangeToggle">
+        <button class="range-btn active" data-range="month" onclick="setBooksReadRange('month')">This Month</button>
+        <button class="range-btn" data-range="year" onclick="setBooksReadRange('year')">This Year</button>
+      </div>
+      <div class="books-read-grid" id="booksReadGrid"></div>
+      <div class="books-read-list" id="booksReadList" style="display:none"></div>
+      <div class="brt-pager" id="booksReadPager"></div>
     </div>
 
     <div class="card">
@@ -770,7 +748,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
       <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
       <button class="ghost small" style="width:100%;margin-top:10px" onclick="exportCSV()">Export CSV (spreadsheet)</button>
       <button class="danger" style="margin-top:12px" onclick="clearAllData()">Clear All Data</button>
-      <div class="footer-note" style="margin-top:6px">Wipes your books, journal, streaks, stats, and achievements. Export a backup first if you might want it back.</div>
+      <div class="footer-note" style="margin-top:6px">Wipes your books, journal, streaks, and stats. Export a backup first if you might want it back.</div>
     </div>
 
     <div class="footer-note">°𖦹｡ made for the love of strawberries and reading ｡𖦹°</div>
@@ -1106,7 +1084,6 @@ function defaultState(){
     streak: { current:0, longest:0, lastActiveDate:null },
     stats: { totalPagesAllTime:0, sessionsCount:0, booksFinished:0 },
     finishedLog: [],                  // [{id,title,date}] — for time-scoped stats
-    achievements: {},                 // id -> {date}
     undo: null
   };
 }
@@ -1259,58 +1236,12 @@ function resetToday(){
 }
 
 function clearAllData(){
-  if(!confirm("Clear ALL data? This deletes your books, journal history, streaks, stats, and achievements. This cannot be undone.")) return;
+  if(!confirm("Clear ALL data? This deletes your books, journal history, streaks, and stats. This cannot be undone.")) return;
   if(!confirm("Are you absolutely sure? Consider exporting a backup first.")) return;
   s = defaultState();
   save();
   toast("🧹 All data cleared");
   renderAll();
-}
-
-/* ============================================================
-   ACHIEVEMENTS
-   ============================================================ */
-const ACHIEVEMENTS = [
-  { id:"first_session", emoji:"🍓", name:"First Session" },
-  { id:"hundred_pages", emoji:"📖", name:"100 Pages" },
-  { id:"first_book",    emoji:"📚", name:"First Book" },
-  { id:"streak_7",      emoji:"🌸", name:"7 Day Streak" },
-  { id:"night_owl",     emoji:"☕", name:"Night Owl" },
-  { id:"early_bird",    emoji:"🌅", name:"Early Bird" },
-  { id:"speed_reader",  emoji:"⚡", name:"Speed Reader" },
-  { id:"marathoner",    emoji:"🏃", name:"Marathoner" },
-  { id:"double_booked", emoji:"🍇", name:"Double Booked" },
-  { id:"well_read",     emoji:"🎓", name:"Well Read" },
-  { id:"thousand_club", emoji:"💯", name:"Thousand Club" },
-  { id:"note_taker",    emoji:"📝", name:"Note to Self" },
-  { id:"comeback",      emoji:"🌱", name:"Welcome Back" }
-];
-
-function unlock(id){
-  if(s.achievements[id]) return;
-  s.achievements[id] = { date: todayStr() };
-  const a = ACHIEVEMENTS.find(x=>x.id===id);
-  if(a){
-    spawnConfetti(16);
-    toast(`${a.emoji} Achievement unlocked: ${a.name}!`);
-  }
-}
-
-function checkAchievements(ctx){
-  ctx = ctx || {};
-  if(s.stats.sessionsCount >= 1) unlock("first_session");
-  if(todayTotal() >= s.goal) unlock("hundred_pages");
-  if(s.stats.booksFinished >= 1) unlock("first_book");
-  if(s.stats.booksFinished >= 5) unlock("well_read");
-  if(s.stats.totalPagesAllTime >= 1000) unlock("thousand_club");
-  if(s.streak.current >= 7) unlock("streak_7");
-  if(s.books.length >= 3) unlock("double_booked");
-  if((s.notes||[]).length >= 1) unlock("note_taker");
-  if((s.today.log||[]).length >= 3) unlock("marathoner");
-  if(typeof ctx.hourOfLog === "number" && (ctx.hourOfLog >= 21 || ctx.hourOfLog < 5)) unlock("night_owl");
-  if(typeof ctx.hourOfLog === "number" && (ctx.hourOfLog >= 5 && ctx.hourOfLog < 7)) unlock("early_bird");
-  if(typeof ctx.sessionRead === "number" && ctx.sessionRead >= 50) unlock("speed_reader");
-  if(typeof ctx.gapDays === "number" && ctx.gapDays >= 7) unlock("comeback");
 }
 
 /* ============================================================
@@ -1536,7 +1467,6 @@ async function submitNewBook(){
   if(nbCoverDraft && nbCoverDraft.url) newBook.cover = { ...nbCoverDraft };
 
   s.books.push(newBook);
-  checkAchievements();
   save();
   toast("New book started!");
   renderAll();
@@ -1782,6 +1712,14 @@ function deleteTbrTitle(id){
   renderTbrSummary();
 }
 
+// used by the TBR pick reveal's <img onerror>: swaps a broken cover image
+// for the placeholder SVG. Kept as a real function (rather than inlining
+// the SVG string into the onerror="..." attribute) because PIXEL_BERRY_SVG
+// contains double quotes that would otherwise terminate the attribute early.
+function tbrCoverImgError(imgEl){
+  imgEl.outerHTML = PIXEL_BERRY_SVG;
+}
+
 function shakeJar(){
   const items = s.tbr || [];
   if(!items.length){
@@ -1812,7 +1750,7 @@ function shakeJar(){
     cover.classList.remove("shaking");
     const c = pick.cover && pick.cover.url;
     cover.innerHTML = c
-      ? `<img src="${escapeHtml(pick.cover.url)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px;box-shadow:0 6px 16px rgba(75,58,51,.2);object-position:${pick.cover.posX ?? 50}% ${pick.cover.posY ?? 50}%;transform:scale(${pick.cover.zoom || 1})" onerror="this.outerHTML='${PIXEL_BERRY_SVG.replace(/'/g,"\\'")}'">`
+      ? `<img src="${escapeHtml(pick.cover.url)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px;box-shadow:0 6px 16px rgba(75,58,51,.2);object-position:${pick.cover.posX ?? 50}% ${pick.cover.posY ?? 50}%;transform:scale(${pick.cover.zoom || 1})" onerror="tbrCoverImgError(this)">`
       : PIXEL_BERRY_SVG;
     cover.classList.add("reveal");
     titleEl.textContent = pick.title;
@@ -1830,7 +1768,6 @@ function readPickedBook(){
   if(picked.cover) newBook.cover = { ...picked.cover };
   s.books.push(newBook);
   s.tbr = (s.tbr || []).filter(t => t.id !== tbrPickedId);
-  checkAchievements();
   save();
   closeModal("tbrPickModal");
   tbrPickedId = null;
@@ -1861,7 +1798,6 @@ function finishBook(bookId){
   // removeBookConfirm (below) is the no-credit path
   s.books = s.books.filter(b=>b.id!==bookId);
   s.undo = null;
-  checkAchievements();
   save();
   celebrate(`You finished <strong>${escapeHtml(book.title || "your book")}</strong>! 🎉`);
   return true;
@@ -2031,13 +1967,11 @@ function openLogModal(bookId){
 }
 
 // Shared by submitLog() and markFinishedFromLog(): records a reading
-// session (today's log, lifetime stats, streak, achievements) for a page
+// session (today's log, lifetime stats, streak) for a page
 // move on `book`. Does not save() or render() — callers handle that.
 function logReadingSession(book, from, p){
   const read = Math.max(0, p - from);
   const now = new Date();
-  const isFirstToday = (s.today.log || []).length === 0;
-  const prevLastActive = s.streak.lastActiveDate;
 
   book.lastPage = p;
   s.today.log = s.today.log || [];
@@ -2049,11 +1983,8 @@ function logReadingSession(book, from, p){
   s.stats.sessionsCount += 1;
   s.stats.totalPagesAllTime += read;
 
-  const gapDays = (isFirstToday && prevLastActive) ? dayDiff(prevLastActive, s.today.date) : null;
-
   // streak counts today as active immediately too
   updateStreak(s.today.date, todayTotal());
-  checkAchievements({ hourOfLog: now.getHours(), sessionRead: read, gapDays });
 
   return read;
 }
@@ -2072,8 +2003,7 @@ function submitLog(){
     books: JSON.parse(JSON.stringify(s.books)),
     today: JSON.parse(JSON.stringify(s.today)),
     streak: { ...s.streak },
-    stats: { ...s.stats },
-    achievements: JSON.parse(JSON.stringify(s.achievements))
+    stats: { ...s.stats }
   };
 
   if(editedTitle) book.title = editedTitle;
@@ -2121,7 +2051,6 @@ function undo(){
   s.today = s.undo.today;
   s.streak = s.undo.streak;
   s.stats = s.undo.stats;
-  s.achievements = s.undo.achievements;
   s.undo = null;
   save();
   toast("Last log undone");
@@ -2309,7 +2238,6 @@ function addNote(){
     ts: now.getTime()
   });
   input.value = "";
-  checkAchievements();
   save();
   renderAll();
 }
@@ -2417,14 +2345,6 @@ function setBooksReadRange(r){
   renderBooksRead();
 }
 
-function setBooksReadPageSize(n){
-  booksReadPageSize = n;
-  booksReadPage = 0;
-  const select = document.getElementById("booksReadPageSizeSelect");
-  if(select) select.value = String(n);
-  renderBooksRead();
-}
-
 function setBooksReadSort(mode){
   booksReadSort = mode;
   booksReadPage = 0;
@@ -2436,7 +2356,7 @@ function setBooksReadSort(mode){
 function setBooksReadViewMode(mode){
   booksReadViewMode = mode;
   document.querySelectorAll("#booksReadViewToggle .brt-view-btn").forEach(b => b.classList.toggle("active", b.dataset.view === mode));
-  document.getElementById("booksReadGrid").style.display = mode === "cover" ? "grid" : "none";
+  document.getElementById("booksReadGrid").style.display = mode === "cover" ? "flex" : "none";
   document.getElementById("booksReadList").style.display = mode === "list" ? "flex" : "none";
   renderBooksRead();
 }
@@ -2912,19 +2832,9 @@ function renderProgress(){
 
   const st = computeStats(statsRange);
   document.getElementById("statBooks").textContent = st.booksFinished;
-  document.getElementById("statPages").textContent = st.pages;
-  document.getElementById("statSessions").textContent = st.sessions;
   document.getElementById("statAvg").textContent = st.avg;
 
-  document.getElementById("achGrid").innerHTML = ACHIEVEMENTS.map(a => {
-    const unlocked = !!s.achievements[a.id];
-    return `
-      <div class="ach ${unlocked?"unlocked":""}" title="${unlocked ? "Unlocked " + s.achievements[a.id].date : "Locked"}">
-        <span class="ach-emoji">${a.emoji}</span>
-        <span class="ach-name">${a.name}</span>
-      </div>
-    `;
-  }).join("");
+  renderBooksRead();
 }
 
 /* ============================================================
