@@ -565,17 +565,15 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 
 /* ---------- celebration ---------- */
 #celebrate-layer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:300}
-.confetti-piece{position:absolute;top:-30px;font-size:1.4rem;animation:fall linear forwards}
+.confetti-piece{position:absolute;top:-30px;animation:fall linear forwards}
+.confetti-piece.confetti-emoji{font-size:1.4rem}
+.confetti-piece.confetti-dot{box-shadow:0 1px 2px rgba(75,58,51,.15)}
+.confetti-piece.confetti-cake{filter:drop-shadow(0 1px 2px rgba(75,58,51,.2))}
 @keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:.9}}
-.celebrate-card{
-  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.9);
-  background:var(--card);padding:28px 24px;border-radius:24px;text-align:center;
-  box-shadow:0 20px 60px rgba(0,0,0,.25);z-index:310;opacity:0;transition:opacity .3s,transform .3s;
-  max-width:320px;
-}
-.celebrate-card.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.celebrate-card .big{font-size:2.4rem;margin-bottom:6px}
-.celebrate-card p{margin:6px 0 0;font-family:"Ticketing","Pixelify Sans";font-weight:600;color:var(--pink-dark)}
+
+.celebrate-modal .celebrate-emoji{font-size:2.6rem;line-height:1;margin-bottom:6px}
+.celebrate-modal .celebrate-title{margin:0 0 8px;font-size:1.2rem;color:var(--pink-dark)}
+.celebrate-modal .sub{margin:0}
 
 @media (prefers-reduced-motion:reduce){
   .confetti-piece{animation:none;display:none}
@@ -914,6 +912,16 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 
 <div id="toast"></div>
 <div id="celebrate-layer"></div>
+
+<!-- ============ CELEBRATE MODAL (goal achieved / book finished) ============ -->
+<div class="modal-backdrop" id="celebrateModal">
+  <div class="modal celebrate-modal" style="text-align:center">
+    <div class="celebrate-emoji">🌟</div>
+    <h3 class="celebrate-title" id="celebrateTitle">Goal Achieved!</h3>
+    <div class="sub">Keep up the good work! (ﾉ´ヮ´)ﾉ*:･ﾟ✧</div>
+    <button class="primary" style="margin-top:16px" onclick="celebrateThanks()">Thank you</button>
+  </div>
+</div>
 
 <!-- ============ CHANGE GOAL MODAL ============ -->
 <div class="modal-backdrop" id="goalModal">
@@ -1764,7 +1772,7 @@ function shakeJar(){
     titleEl.textContent = pick.title;
     if(readBtn) readBtn.disabled = false;
     if(shakeBtn) shakeBtn.disabled = false;
-    spawnConfetti(10);
+    spawnConfetti(18, "pastel");
   }, 900);
 }
 
@@ -1794,6 +1802,7 @@ function openRemoveBookModal(id){
 function finishBook(bookId){
   const book = s.books.find(b=>b.id===bookId);
   if(!book) return false;
+  const wasBookGoalMet = booksReadThisYear() >= s.bookGoal;
   s.stats.booksFinished += 1;
   s.finishedLog = s.finishedLog || [];
   const entry = { id: genId(), title: book.title, date: todayStr() };
@@ -1807,7 +1816,8 @@ function finishBook(bookId){
   s.books = s.books.filter(b=>b.id!==bookId);
   s.undo = null;
   save();
-  celebrate(`You finished <strong>${escapeHtml(book.title || "your book")}</strong>! 🎉`);
+  const nowBookGoalMet = booksReadThisYear() >= s.bookGoal;
+  openCelebrateModal(!wasBookGoalMet && nowBookGoalMet ? "book_goal" : "book_finished");
   return true;
 }
 
@@ -1893,7 +1903,7 @@ function confirmFinishNo(){
   // if the person says "not yet" we still owe them the normal log feedback
   if(ctx.source === "autoPrompt"){
     if(!ctx.wasComplete && ctx.nowComplete){
-      celebrate();
+      openCelebrateModal("page");
     } else {
       toast(`+${ctx.read} page${ctx.read===1?"":"s"} logged`);
     }
@@ -2047,7 +2057,7 @@ function submitLog(){
 
   const nowComplete = todayTotal() >= s.goal;
   if(!wasComplete && nowComplete){
-    celebrate();
+    openCelebrateModal("page");
   } else {
     toast(`+${read} page${read===1?"":"s"} logged`);
   }
@@ -2175,35 +2185,58 @@ function importData(evt){
 /* ============================================================
    CELEBRATION
    ============================================================ */
-function spawnConfetti(count){
+const PASTEL_CONFETTI_COLORS = ["#FFD1DC","#FFE8B8","#C9E4B0","#BEE3DB","#D6C9F0","#FFC9CF","#FFF3C9"];
+
+function spawnConfetti(count, type){
+  type = type || "pastel";
   const layer = document.getElementById("celebrate-layer");
   const emojis = ["🍓","✨","🎉","🍓","🌸","✨"];
   for(let i=0;i<count;i++){
     const el = document.createElement("div");
-    el.className = "confetti-piece";
-    el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
     el.style.left = Math.random()*100 + "vw";
-    el.style.fontSize = (1 + Math.random()*1.2) + "rem";
     const dur = 2.2 + Math.random()*1.8;
     el.style.animationDuration = dur + "s";
     el.style.animationDelay = (Math.random()*0.6) + "s";
+
+    if(type === "cake"){
+      el.className = "confetti-piece confetti-cake";
+      el.innerHTML = PIXEL_BERRY_SVG;
+      const size = 14 + Math.random()*12;
+      el.style.width = size + "px";
+      el.style.height = size + "px";
+    } else if(type === "emoji"){
+      el.className = "confetti-piece confetti-emoji";
+      el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      el.style.fontSize = (1 + Math.random()*1.2) + "rem";
+    } else {
+      el.className = "confetti-piece confetti-dot";
+      const size = 6 + Math.random()*6;
+      el.style.width = size + "px";
+      el.style.height = size + "px";
+      el.style.background = PASTEL_CONFETTI_COLORS[Math.floor(Math.random()*PASTEL_CONFETTI_COLORS.length)];
+      el.style.borderRadius = Math.random() > .5 ? "50%" : "3px";
+    }
+
     layer.appendChild(el);
     setTimeout(()=>el.remove(), (dur+1)*1000);
   }
 }
 
-function celebrate(message){
-  const layer = document.getElementById("celebrate-layer");
-  spawnConfetti(28);
-  const card = document.createElement("div");
-  card.className = "celebrate-card";
-  card.innerHTML = `<div class="big">🍓📚✨</div><p>${message || "Amazing job! You reached your reading goal today!"}</p>`;
-  layer.appendChild(card);
-  requestAnimationFrame(()=>card.classList.add("show"));
-  setTimeout(()=>{
-    card.classList.remove("show");
-    setTimeout(()=>card.remove(), 400);
-  }, 2800);
+const CELEBRATE_TITLES = {
+  page: "Page Goal Achieved!",
+  book_goal: "Book Goal Achieved!",
+  book_finished: "You Finished a Book!"
+};
+
+function openCelebrateModal(type){
+  spawnConfetti(28, "pastel");
+  document.getElementById("celebrateTitle").textContent = CELEBRATE_TITLES[type] || CELEBRATE_TITLES.book_finished;
+  openModal("celebrateModal");
+}
+
+function celebrateThanks(){
+  closeModal("celebrateModal");
+  spawnConfetti(24, "cake");
 }
 
 function toast(msg){
