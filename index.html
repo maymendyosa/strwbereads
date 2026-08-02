@@ -262,7 +262,7 @@ html[data-theme="dark"] .card{
 .notes-add-row input{flex:1;padding:11px 13px;border-radius:14px;margin:0}
 .notes-add-row button{
   width:44px;flex:0 0 auto;border-radius:14px;background:var(--pink-dark);color:#fff;
-  border:none;font-size:1.3rem;cursor:pointer;font-family:"Ticketing","Pixelify Sans",sans-serif;
+  border:none;font-size:.9rem;cursor:pointer;font-family:"Ticketing","Pixelify Sans",sans-serif;
 }
 .notes-hint{color:var(--muted);font-size:.78rem;text-align:center;margin-top:6px}
 
@@ -707,7 +707,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
         <div id="notesList" class="notes-list"></div>
         <div class="notes-add-row">
           <input id="noteInput" placeholder="Add a note..." onkeydown="if(event.key==='Enter')addNote()">
-          <button onclick="addNote()" aria-label="Add note">+</button>
+          <button onclick="addNote()" aria-label="Add note">✔</button>
         </div>
       </div>
     </div>
@@ -1073,7 +1073,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <div id="tbrOlStatus" class="ol-status" style="display:none"></div>
     <div class="notes-add-row" style="margin-top:10px">
       <input id="tbrInput" placeholder="Or type a title manually..." onkeydown="if(event.key==='Enter')addTbrTitle()">
-      <button onclick="addTbrTitle()" aria-label="Add title">+</button>
+      <button onclick="addTbrTitle()" aria-label="Add title">✔</button>
     </div>
     <div class="row-buttons" style="margin-top:14px">
       <button class="ghost small" onclick="closeModal('tbrJarModal')">Close</button>
