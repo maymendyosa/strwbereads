@@ -266,6 +266,13 @@ html[data-theme="dark"] .card{
 }
 .notes-hint{color:var(--muted);font-size:.78rem;text-align:center;margin-top:6px}
 
+.quote-box{
+  margin-top:16px;padding:0 10px;text-align:center;
+}
+.quote-text{font-size:.92rem;font-style:italic;color:var(--text)}
+.quote-author{font-size:.8rem;color:var(--muted);margin-top:6px}
+.quote-loading{color:var(--muted);font-size:.85rem}
+
 /* ---------- buttons ---------- */
 .buttons{display:flex;flex-direction:column;gap:10px;margin-top:14px}
 .row-buttons{display:flex;gap:10px;margin-top:14px}
@@ -692,16 +699,17 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
         </div>
       </div>
 
+      <button class="primary" style="margin-top:16px" onclick="openLogModal()">Log Reading ✎</button>
+
+      <div class="quote-box" id="dailyQuoteBox"><div class="quote-loading">Fetching today's quote…</div></div>
+
       <div class="notes-box">
         <div id="notesList" class="notes-list"></div>
         <div class="notes-add-row">
           <input id="noteInput" placeholder="Add a note..." onkeydown="if(event.key==='Enter')addNote()">
           <button onclick="addNote()" aria-label="Add note">+</button>
         </div>
-        <div class="notes-hint">Older notes live in your Journal</div>
       </div>
-
-      <button class="primary" style="margin-top:16px" onclick="openLogModal()">Log Reading ✎</button>
     </div>
 
     <div class="card">
@@ -1204,6 +1212,7 @@ if(!s.finishedLog) s.finishedLog = [];
 if(!s.tbr) s.tbr = [];
 if(!s.goalHistory) s.goalHistory = {};
 if(!s.bookGoal) s.bookGoal = 24;
+if(!s.dailyQuote) s.dailyQuote = null;
 
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
 
@@ -2447,10 +2456,67 @@ function booksReadThisYear(){
   return (s.finishedLog || []).filter(f => new Date(f.date + "T00:00:00").getFullYear() === year).length;
 }
 
+/* ============================================================
+   DAILY QUOTE
+   Fetches one quote per calendar day and caches it, so it stays
+   the same all day and doesn't re-fetch on every render. Falls
+   back to a small offline-safe curated list (picked deterministically
+   by date) if the network request fails, so the app never breaks
+   without a connection.
+   ============================================================ */
+const QUOTE_FALLBACKS = [
+  { text: "A room without books is like a body without a soul.", author: "Cicero" },
+  { text: "The only thing that you absolutely have to know is the location of the library.", author: "Albert Einstein" },
+  { text: "Once you learn to read, you will be forever free.", author: "Frederick Douglass" },
+  { text: "Books are a uniquely portable magic.", author: "Stephen King" },
+  { text: "There is no friend as loyal as a book.", author: "Ernest Hemingway" },
+  { text: "Reading is a discount ticket to everywhere.", author: "Mary Schmich" },
+  { text: "I have always imagined that Paradise will be a kind of library.", author: "Jorge Luis Borges" },
+  { text: "So many books, so little time.", author: "Frank Zappa" },
+  { text: "A book is a dream that you hold in your hand.", author: "Neil Gaiman" },
+  { text: "Never trust anyone who has not brought a book with them.", author: "Lemony Snicket" }
+];
+
+function hashStr(str){
+  let h = 0;
+  for(let i = 0; i < str.length; i++){ h = (h * 31 + str.charCodeAt(i)) | 0; }
+  return Math.abs(h);
+}
+
+function renderDailyQuote(q){
+  const el = document.getElementById("dailyQuoteBox");
+  if(!el) return;
+  if(!q){ el.innerHTML = `<div class="quote-loading">Couldn't load today's quote</div>`; return; }
+  el.innerHTML = `<div class="quote-text">"${escapeHtml(q.text)}"</div><div class="quote-author">— ${escapeHtml(q.author)}</div>`;
+}
+
+async function fetchDailyQuote(){
+  const t = todayStr();
+  if(s.dailyQuote && s.dailyQuote.date === t){
+    renderDailyQuote(s.dailyQuote);
+    return;
+  }
+  try{
+    const res = await fetch("https://api.quotable.io/random?tags=literature|books|reading");
+    if(!res.ok) throw new Error("bad response");
+    const data = await res.json();
+    if(!data.content || !data.author) throw new Error("malformed response");
+    s.dailyQuote = { date: t, text: data.content, author: data.author };
+    save();
+  }catch(e){
+    const pick = QUOTE_FALLBACKS[hashStr(t) % QUOTE_FALLBACKS.length];
+    s.dailyQuote = { date: t, text: pick.text, author: pick.author };
+    save();
+  }
+  renderDailyQuote(s.dailyQuote);
+}
+
 function renderHome(){
   const h = new Date().getHours();
   const greetText = h < 12 ? "Good morning!" : h < 18 ? "Good afternoon!" : "Good evening!";
   document.getElementById("greeting").innerHTML = `${PIXEL_SHAKE_SVG}<span>${greetText}</span>`;
+
+  fetchDailyQuote();
 
   document.querySelectorAll("#goalToggle .range-btn").forEach(b => {
     b.classList.toggle("active", b.dataset.view === homeGoalView);
