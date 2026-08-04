@@ -443,6 +443,22 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .books-read-grid.grid-mode .books-read-cover{transition:transform .15s ease}
 .books-read-grid.grid-mode .books-read-cell:hover .books-read-cover{transform:translateY(-4px)}
 .br-select-cols{flex:0 0 auto;margin-right:0}
+.br-rating-filter-wrap{position:relative;flex:0 0 auto}
+.br-rating-popover{
+  position:absolute;top:calc(100% + 6px);left:0;z-index:20;background:var(--card);
+  border:1px solid var(--line);border-radius:14px;padding:12px 14px;
+  box-shadow:0 8px 20px rgba(0,0,0,.18);display:none;flex-direction:column;gap:10px;width:270px;
+}
+.br-rating-popover.open{display:flex}
+.br-rating-popover-row{display:flex;align-items:center;gap:10px}
+.br-rating-popover input[type="range"]{flex:1;min-width:160px;accent-color:var(--pink-dark);height:4px;cursor:pointer}
+.br-rating-label{font-size:.78rem;font-weight:600;color:var(--muted);min-width:56px;text-align:right;white-space:nowrap}
+.br-rating-btn-row{display:flex;gap:8px;justify-content:center}
+.br-rating-unrated-btn{
+  font-family:inherit;font-size:.72rem;font-weight:600;border-radius:999px;border:1px solid var(--line);
+  padding:5px 12px;background:var(--card);color:var(--muted);cursor:pointer;flex:0 0 auto;white-space:nowrap;
+}
+.br-rating-unrated-btn.active{background:var(--pink-dark);color:#fff;border-color:var(--pink-dark)}
 .books-read-cover{
   width:100%;aspect-ratio:2/3;border-radius:9px 9px 3px 3px;overflow:hidden;position:relative;
   background:linear-gradient(135deg,var(--hue-a,#FFC9CF) 0%,var(--hue-b,#F4838C) 100%);
@@ -878,20 +894,19 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
           <option value="rating_desc">Rating High–Low</option>
           <option value="rating_asc">Rating Low–High</option>
         </select>
-        <select id="booksReadRatingSelect" class="br-select" onchange="setBooksReadRatingFilter(this.value)" aria-label="Filter by rating" title="Filter by rating">
-          <option value="all">All Ratings</option>
-          <option value="5">★★★★★ (5)</option>
-          <option value="4.5">★★★★✩ (4.5)</option>
-          <option value="4">★★★★ (4)</option>
-          <option value="3.5">★★★✩ (3.5)</option>
-          <option value="3">★★★ (3)</option>
-          <option value="2.5">★★✩ (2.5)</option>
-          <option value="2">★★ (2)</option>
-          <option value="1.5">★✩ (1.5)</option>
-          <option value="1">★ (1)</option>
-          <option value="0.5">✩ (0.5)</option>
-          <option value="unrated">Unrated</option>
-        </select>
+        <div class="br-rating-filter-wrap">
+          <button type="button" class="br-select" id="booksReadRatingBtn" onclick="toggleRatingPopover(event)">All Ratings ▾</button>
+          <div class="br-rating-popover" id="booksReadRatingPopover">
+            <div class="br-rating-popover-row">
+              <input type="range" id="booksReadRatingSlider" min="0.5" max="5" step="0.5" value="3" oninput="setBooksReadRatingSlider(this.value)" aria-label="Filter by rating">
+              <span class="br-rating-label" id="booksReadRatingLabel">3 ★</span>
+            </div>
+            <div class="br-rating-btn-row">
+              <button type="button" class="br-rating-unrated-btn active" id="booksReadAllToggle" onclick="setBooksReadAllFilter()">All</button>
+              <button type="button" class="br-rating-unrated-btn" id="booksReadUnratedToggle" onclick="toggleBooksReadUnratedFilter()">Unrated</button>
+            </div>
+          </div>
+        </div>
         <select id="booksReadColsSelect" class="br-select br-select-cols" onchange="setBooksReadCols(this.value)" aria-label="Grid size" title="Grid size">
           <option value="3">3 per row</option>
           <option value="4">4 per row</option>
@@ -2917,11 +2932,53 @@ function setBooksReadSort(mode){
   renderBooksRead();
 }
 
-function setBooksReadRatingFilter(val){
-  booksReadRatingFilter = val;
+function toggleRatingPopover(e){
+  if(e) e.stopPropagation();
+  const pop = document.getElementById("booksReadRatingPopover");
+  pop.classList.toggle("open");
+}
+document.addEventListener("click", (e) => {
+  const wrap = document.getElementById("booksReadRatingPopover");
+  const btn = document.getElementById("booksReadRatingBtn");
+  if(!wrap || !wrap.classList.contains("open")) return;
+  if(wrap.contains(e.target) || (btn && btn.contains(e.target))) return;
+  wrap.classList.remove("open");
+});
+
+function setBooksReadRatingSlider(val){
+  const v = parseFloat(val);
+  booksReadRatingFilter = String(v);
   booksReadPage = 0;
-  const select = document.getElementById("booksReadRatingSelect");
-  if(select) select.value = val;
+  document.getElementById("booksReadUnratedToggle").classList.remove("active");
+  document.getElementById("booksReadAllToggle").classList.remove("active");
+  const full = Math.floor(v);
+  const half = v - full === 0.5;
+  const summary = `${"★".repeat(full)}${half ? "✩" : ""} ${v}`;
+  document.getElementById("booksReadRatingLabel").textContent = summary;
+  document.getElementById("booksReadRatingBtn").textContent = summary + " ▾";
+  renderBooksRead();
+}
+
+function setBooksReadAllFilter(){
+  booksReadRatingFilter = "all";
+  booksReadPage = 0;
+  document.getElementById("booksReadUnratedToggle").classList.remove("active");
+  document.getElementById("booksReadAllToggle").classList.add("active");
+  document.getElementById("booksReadRatingBtn").textContent = "All Ratings ▾";
+  renderBooksRead();
+}
+
+function toggleBooksReadUnratedFilter(){
+  const btn = document.getElementById("booksReadUnratedToggle");
+  if(btn.classList.contains("active")){
+    setBooksReadAllFilter();
+    return;
+  }
+  btn.classList.add("active");
+  document.getElementById("booksReadAllToggle").classList.remove("active");
+  booksReadRatingFilter = "unrated";
+  booksReadPage = 0;
+  document.getElementById("booksReadRatingBtn").textContent = "Unrated ▾";
   renderBooksRead();
 }
 
