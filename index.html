@@ -423,11 +423,13 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
   font-size:.72rem;background:var(--empty-cell);border-radius:999px;
   padding:4px 10px;white-space:nowrap;flex:0 0 auto;
 }
-.br-toolbar{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:12px}
+.br-toolbar{display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:nowrap}
+.br-toolbar-label{font-size:.78rem;font-weight:700;color:var(--muted);flex:0 0 auto;white-space:nowrap}
+.br-toolbar-spacer{flex:1 1 auto}
 .br-select{
   font-family:inherit;font-size:.72rem;font-weight:600;border-radius:999px;
   border:1px solid var(--line);padding:6px 10px;background:var(--card);
-  color:var(--text);cursor:pointer;flex:0 1 auto;min-width:0;margin-right:auto;
+  color:var(--text);cursor:pointer;flex:0 1 auto;min-width:0;
 }
 
 .books-read-grid{display:flex;flex-wrap:nowrap;gap:9px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
@@ -446,14 +448,14 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .br-rating-filter-wrap{position:relative;flex:0 0 auto}
 .br-rating-popover{
   position:absolute;top:calc(100% + 6px);left:0;z-index:20;background:var(--card);
-  border:1px solid var(--line);border-radius:14px;padding:12px 14px;
-  box-shadow:0 8px 20px rgba(0,0,0,.18);display:none;flex-direction:column;gap:10px;width:270px;
+  border:1px solid var(--line);border-radius:14px;padding:14px 16px;
+  box-shadow:0 8px 20px rgba(0,0,0,.18);display:none;flex-direction:column;gap:8px;width:270px;
 }
 .br-rating-popover.open{display:flex}
-.br-rating-popover-row{display:flex;align-items:center;gap:10px}
-.br-rating-popover input[type="range"]{flex:1;min-width:160px;accent-color:var(--pink-dark);height:4px;cursor:pointer}
-.br-rating-label{font-size:.78rem;font-weight:600;color:var(--muted);min-width:56px;text-align:right;white-space:nowrap}
-.br-rating-btn-row{display:flex;gap:8px;justify-content:center}
+.br-rating-popover-row{display:flex;align-items:center}
+.br-rating-popover input[type="range"]{width:100%;accent-color:var(--pink-dark);height:4px;cursor:pointer;margin:0}
+.br-rating-label{font-size:.82rem;font-weight:700;color:var(--text);text-align:center}
+.br-rating-btn-row{display:flex;gap:8px;justify-content:center;margin-top:2px}
 .br-rating-unrated-btn{
   font-family:inherit;font-size:.72rem;font-weight:600;border-radius:999px;border:1px solid var(--line);
   padding:5px 12px;background:var(--card);color:var(--muted);cursor:pointer;flex:0 0 auto;white-space:nowrap;
@@ -884,6 +886,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
         <span class="br-count"><span id="booksReadCount">0</span> Books</span>
       </div>
       <div class="br-toolbar">
+        <span class="br-toolbar-label">View by</span>
         <select id="booksReadSortSelect" class="br-select" onchange="setBooksReadSort(this.value)" aria-label="Sort by" title="Sort by">
           <option value="date_desc">Latest</option>
           <option value="date_asc">Oldest</option>
@@ -895,18 +898,19 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
           <option value="rating_asc">Rating Low–High</option>
         </select>
         <div class="br-rating-filter-wrap">
-          <button type="button" class="br-select" id="booksReadRatingBtn" onclick="toggleRatingPopover(event)">All Ratings ▾</button>
+          <button type="button" class="br-select" id="booksReadRatingBtn" onclick="toggleRatingPopover(event)">By Rating ▾</button>
           <div class="br-rating-popover" id="booksReadRatingPopover">
             <div class="br-rating-popover-row">
               <input type="range" id="booksReadRatingSlider" min="0.5" max="5" step="0.5" value="3" oninput="setBooksReadRatingSlider(this.value)" aria-label="Filter by rating">
-              <span class="br-rating-label" id="booksReadRatingLabel">3 ★</span>
             </div>
+            <div class="br-rating-label" id="booksReadRatingLabel">3 ★</div>
             <div class="br-rating-btn-row">
               <button type="button" class="br-rating-unrated-btn active" id="booksReadAllToggle" onclick="setBooksReadAllFilter()">All</button>
               <button type="button" class="br-rating-unrated-btn" id="booksReadUnratedToggle" onclick="toggleBooksReadUnratedFilter()">Unrated</button>
             </div>
           </div>
         </div>
+        <div class="br-toolbar-spacer"></div>
         <select id="booksReadColsSelect" class="br-select br-select-cols" onchange="setBooksReadCols(this.value)" aria-label="Grid size" title="Grid size">
           <option value="3">3 per row</option>
           <option value="4">4 per row</option>
@@ -2964,7 +2968,7 @@ function setBooksReadAllFilter(){
   booksReadPage = 0;
   document.getElementById("booksReadUnratedToggle").classList.remove("active");
   document.getElementById("booksReadAllToggle").classList.add("active");
-  document.getElementById("booksReadRatingBtn").textContent = "All Ratings ▾";
+  document.getElementById("booksReadRatingBtn").textContent = "By Rating ▾";
   renderBooksRead();
 }
 
