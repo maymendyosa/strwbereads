@@ -514,6 +514,10 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .brd-meta{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:10px;line-height:1.5}
 .brd-meta strong{color:var(--text)}
 
+.tbr-slideshow{position:relative;width:100%;height:120px;margin-bottom:10px;border-radius:8px;overflow:hidden;background:var(--empty-cell)}
+.tbr-slideshow.empty{display:none}
+.tbr-slideshow-img{position:absolute;top:0;left:50%;transform:translateX(-50%);height:100%;width:auto;max-width:none;object-fit:cover;opacity:0;transition:opacity 1.2s ease-in-out}
+.tbr-slideshow-img.active{opacity:1}
 .tbr-summary{color:var(--muted);font-size:.92rem;text-align:center}
 .tbr-summary-main{font-family:"Ticketing","Pixelify Sans";font-weight:600;color:var(--text);font-size:1rem}
 .tbr-summary-sub{font-size:.82rem;color:var(--muted);margin-top:4px}
@@ -790,6 +794,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 
     <div class="card">
       <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><path d="M8 4h8v3H8z"/><path d="M7 7h10l1 12.5a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z"/></svg>TBR Jar</div>
+      <div class="tbr-slideshow" id="tbrSlideshow"></div>
       <div class="tbr-summary">
         <div class="tbr-summary-main" id="tbrSummaryMain">Can't decide what to read? Shake me now!</div>
         <div class="tbr-summary-sub" id="tbrSummarySub">0 book choices</div>
@@ -1861,6 +1866,35 @@ function renderTbrSummary(){
   } else {
     main.textContent = "Can't decide what to read? Shake me now!";
     sub.textContent = `${n} book choice${n===1?"":"s"}`;
+  }
+  renderTbrSlideshow();
+}
+
+let tbrSlideshowTimer = null;
+let tbrSlideshowIndex = 0;
+function renderTbrSlideshow(){
+  const el = document.getElementById("tbrSlideshow");
+  if(!el) return;
+  if(tbrSlideshowTimer){ clearInterval(tbrSlideshowTimer); tbrSlideshowTimer = null; }
+  const covers = (s.tbr || []).filter(t => t.cover && t.cover.url).map(t => t.cover.url);
+  if(covers.length === 0){
+    el.classList.add("empty");
+    el.innerHTML = "";
+    return;
+  }
+  el.classList.remove("empty");
+  el.innerHTML = covers.map((url, i) =>
+    `<img class="tbr-slideshow-img${i===0?" active":""}" src="${url}" alt="">`
+  ).join("");
+  if(covers.length > 1){
+    tbrSlideshowIndex = 0;
+    tbrSlideshowTimer = setInterval(() => {
+      const imgs = el.querySelectorAll(".tbr-slideshow-img");
+      if(!imgs.length) return;
+      imgs[tbrSlideshowIndex].classList.remove("active");
+      tbrSlideshowIndex = (tbrSlideshowIndex + 1) % imgs.length;
+      imgs[tbrSlideshowIndex].classList.add("active");
+    }, 3000);
   }
 }
 
