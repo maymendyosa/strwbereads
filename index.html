@@ -514,10 +514,11 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .brd-meta{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:10px;line-height:1.5}
 .brd-meta strong{color:var(--text)}
 
-.tbr-slideshow{position:relative;width:100%;height:120px;margin-bottom:10px;border-radius:8px;overflow:hidden;background:var(--empty-cell)}
+.tbr-slideshow{position:relative;width:100%;height:120px;margin-bottom:10px;border-radius:8px;overflow:hidden}
 .tbr-slideshow.empty{display:none}
-.tbr-slideshow-img{position:absolute;top:0;left:50%;transform:translateX(-50%);height:100%;width:auto;max-width:none;object-fit:cover;opacity:0;transition:opacity 1.2s ease-in-out}
-.tbr-slideshow-img.active{opacity:1}
+.tbr-slideshow-track{display:flex;align-items:center;gap:10px;height:100%;width:max-content;animation:tbrSlide linear infinite}
+.tbr-slideshow-img{height:100%;width:auto;flex:0 0 auto;object-fit:cover;border-radius:6px}
+@keyframes tbrSlide{from{transform:translateX(0)}to{transform:translateX(var(--tbr-slide-distance,-50%))}}
 .tbr-summary{color:var(--muted);font-size:.92rem;text-align:center}
 .tbr-summary-main{font-family:"Ticketing","Pixelify Sans";font-weight:600;color:var(--text);font-size:1rem}
 .tbr-summary-sub{font-size:.82rem;color:var(--muted);margin-top:4px}
@@ -1871,7 +1872,6 @@ function renderTbrSummary(){
 }
 
 let tbrSlideshowTimer = null;
-let tbrSlideshowIndex = 0;
 function renderTbrSlideshow(){
   const el = document.getElementById("tbrSlideshow");
   if(!el) return;
@@ -1883,19 +1883,27 @@ function renderTbrSlideshow(){
     return;
   }
   el.classList.remove("empty");
-  el.innerHTML = covers.map((url, i) =>
-    `<img class="tbr-slideshow-img${i===0?" active":""}" src="${url}" alt="">`
-  ).join("");
-  if(covers.length > 1){
-    tbrSlideshowIndex = 0;
-    tbrSlideshowTimer = setInterval(() => {
-      const imgs = el.querySelectorAll(".tbr-slideshow-img");
-      if(!imgs.length) return;
-      imgs[tbrSlideshowIndex].classList.remove("active");
-      tbrSlideshowIndex = (tbrSlideshowIndex + 1) % imgs.length;
-      imgs[tbrSlideshowIndex].classList.add("active");
-    }, 3000);
-  }
+  // duplicate the list so the strip can loop seamlessly
+  const doubled = covers.concat(covers);
+  el.innerHTML = `<div class="tbr-slideshow-track" id="tbrSlideshowTrack">${
+    doubled.map(url => `<img class="tbr-slideshow-img" src="${url}" alt="">`).join("")
+  }</div>`;
+  const track = document.getElementById("tbrSlideshowTrack");
+  // set animation duration based on number of covers so speed stays consistent
+  const duration = Math.max(covers.length * 4, 8);
+  track.style.animationDuration = `${duration}s`;
+  // after images load, measure half the track width (one full set) to slide exactly that distance
+  const imgs = track.querySelectorAll("img");
+  let loaded = 0;
+  const setDistance = () => {
+    const half = track.scrollWidth / 2;
+    track.style.setProperty("--tbr-slide-distance", `-${half}px`);
+  };
+  imgs.forEach(img => {
+    if(img.complete){ loaded++; }
+    else img.addEventListener("load", () => { loaded++; if(loaded===imgs.length) setDistance(); });
+  });
+  if(loaded === imgs.length) setDistance();
 }
 
 function addTbrTitle(){
