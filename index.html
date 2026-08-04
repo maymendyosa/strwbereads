@@ -517,9 +517,9 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 
 .tbr-slideshow{position:relative;width:100%;height:168px;margin-bottom:10px;overflow:hidden}
 .tbr-slideshow.empty{display:none}
-.tbr-slideshow-track{display:flex;align-items:center;height:100%;transition:transform 3s cubic-bezier(.65,0,.35,1)}
+.tbr-slideshow-track{display:flex;align-items:center;height:100%;transition:transform 2.5s cubic-bezier(.65,0,.35,1)}
 .tbr-slideshow-slide{display:flex;align-items:center;justify-content:center;height:100%;box-sizing:border-box;padding:0 5px}
-.tbr-slideshow-img{width:100%;height:78%;object-fit:contain;border-radius:8px;opacity:.5;transform:scale(.82);transition:transform 3s cubic-bezier(.65,0,.35,1),opacity 3s,height 3s;box-shadow:0 4px 10px rgba(0,0,0,.15)}
+.tbr-slideshow-img{width:auto;max-width:100%;height:78%;object-fit:contain;border-radius:8px;opacity:.5;transform:scale(.82);transition:transform 2.5s cubic-bezier(.65,0,.35,1),opacity 2.5s,height 2.5s;box-shadow:0 4px 10px rgba(0,0,0,.15)}
 .tbr-slideshow-slide.active .tbr-slideshow-img{opacity:1;transform:scale(1);height:88%;box-shadow:0 8px 18px rgba(0,0,0,.28)}
 .tbr-summary{color:var(--muted);font-size:.92rem;text-align:center}
 .tbr-summary-main{font-family:"Ticketing","Pixelify Sans";font-weight:600;color:var(--text);font-size:1rem}
@@ -1976,7 +1976,7 @@ function renderTbrSlideshow(){
   tbrSlideshowTimer = setInterval(() => {
     index++;
     layout(true);
-  }, 4500);
+  }, 4000);
 
   tbrSlideshowResizeHandler = () => layout(false);
   window.addEventListener("resize", tbrSlideshowResizeHandler);
