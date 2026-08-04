@@ -514,6 +514,12 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .brd-cover{flex:0 0 130px;width:130px;max-width:130px;min-width:130px;cursor:pointer}
 .brd-meta{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:10px;line-height:1.5}
 .brd-meta strong{color:var(--text)}
+.star-picker{display:flex;justify-content:center;gap:5px;font-size:2rem;margin:14px 0;user-select:none;line-height:1}
+.star-picker .star{position:relative;width:1em;height:1em;cursor:pointer;color:var(--line)}
+.star-picker .star-fill{position:absolute;top:0;left:0;height:100%;overflow:hidden;color:var(--gold);white-space:nowrap;pointer-events:none}
+.star-picker.small{font-size:1.1rem;gap:2px;margin:6px 0}
+.books-read-rating{font-size:.78rem;color:var(--muted);margin-top:1px}
+.books-read-row-rating{font-size:.78rem;color:var(--muted)}
 
 .tbr-slideshow{position:relative;width:100%;height:168px;margin-bottom:10px;overflow:hidden}
 .tbr-slideshow.empty{display:none}
@@ -867,6 +873,22 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
           <option value="title_desc">Title Z–A</option>
           <option value="author_asc">Author A–Z</option>
           <option value="author_desc">Author Z–A</option>
+          <option value="rating_desc">Rating High–Low</option>
+          <option value="rating_asc">Rating Low–High</option>
+        </select>
+        <select id="booksReadRatingSelect" class="br-select" onchange="setBooksReadRatingFilter(this.value)" aria-label="Filter by rating" title="Filter by rating">
+          <option value="all">All Ratings</option>
+          <option value="5">★★★★★ (5)</option>
+          <option value="4.5">★★★★✩ (4.5)</option>
+          <option value="4">★★★★ (4)</option>
+          <option value="3.5">★★★✩ (3.5)</option>
+          <option value="3">★★★ (3)</option>
+          <option value="2.5">★★✩ (2.5)</option>
+          <option value="2">★★ (2)</option>
+          <option value="1.5">★✩ (1.5)</option>
+          <option value="1">★ (1)</option>
+          <option value="0.5">✩ (0.5)</option>
+          <option value="unrated">Unrated</option>
         </select>
         <select id="booksReadColsSelect" class="br-select br-select-cols" onchange="setBooksReadCols(this.value)" aria-label="Grid size" title="Grid size">
           <option value="3">3 per row</option>
@@ -899,6 +921,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
         <div class="stat-tile green"><div class="stat-num" id="longStreak">0 days</div><div class="stat-lbl">Longest Streak</div></div>
         <div class="stat-tile"><div class="stat-num" id="statBooks">0</div><div class="stat-lbl">Books Finished</div></div>
         <div class="stat-tile green"><div class="stat-num" id="statAvg">0</div><div class="stat-lbl">Avg pages/day</div></div>
+        <div class="stat-tile"><div class="stat-num" id="statDnf">0</div><div class="stat-lbl">DNF'd</div></div>
       </div>
     </div>
 
@@ -1041,6 +1064,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
       </div>
     </div>
     <div class="brd-meta" id="brdMeta"></div>
+    <div class="star-picker small" id="brdStarPicker" role="radiogroup" aria-label="Star rating" style="margin-bottom:10px"></div>
     <label for="brdUrlInput">Cover Photo URL</label>
     <div class="crop-url-row">
       <input id="brdUrlInput" type="url" placeholder="https://...">
@@ -1121,6 +1145,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <div class="sub">What would you like to do with this book?</div>
     <div class="buttons">
       <button class="secondary" onclick="finishBookConfirm()">Mark as Finished</button>
+      <button class="ghost" onclick="dnfBookConfirm()">DNF (no credit)</button>
       <button class="ghost" onclick="removeBookConfirm()">Remove (no credit)</button>
       <button class="ghost" onclick="closeModal('removeBookModal')">Cancel</button>
     </div>
@@ -1137,6 +1162,19 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <div class="row-buttons" style="margin-top:16px">
       <button class="ghost small" onclick="confirmFinishNo()">Not Yet</button>
       <button class="primary" style="flex:1" onclick="confirmFinishYes()">Yes, Finished! 🎉</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RATE FINISHED BOOK MODAL ============ -->
+<div class="modal-backdrop" id="ratingModal">
+  <div class="modal" style="text-align:center">
+    <h3>How was it?</h3>
+    <div class="sub" id="ratingBookTitle"></div>
+    <div class="star-picker" id="starPicker" role="radiogroup" aria-label="Star rating"></div>
+    <div class="row-buttons" style="margin-top:14px">
+      <button class="ghost small" onclick="skipRating()">Skip</button>
+      <button class="primary" style="flex:1" onclick="confirmRating()">Save Rating</button>
     </div>
   </div>
 </div>
@@ -1303,6 +1341,7 @@ function defaultState(){
     streak: { current:0, longest:0, lastActiveDate:null },
     stats: { booksFinished:0 },
     finishedLog: [],                  // [{id,title,date}] — for time-scoped stats
+    dnfLog: [],                       // [{id,title,date}] — did-not-finish, no credit but tracked for stats
     undo: null
   };
 }
@@ -1341,6 +1380,7 @@ if(s.book !== undefined){
 if(!s.books) s.books = [];
 if(!s.notes) s.notes = [];
 if(!s.finishedLog) s.finishedLog = [];
+if(!s.dnfLog) s.dnfLog = [];
 if(!s.tbr) s.tbr = [];
 if(!s.goalHistory) s.goalHistory = {};
 if(!s.bookGoal) s.bookGoal = 24;
@@ -2107,6 +2147,65 @@ function readPickedBook(){
   renderAll();
 }
 
+/* ---- generic half-star picker: renders into any container, calls
+   onPick(value) whenever the user clicks a star (left half = X.5, right
+   half = X). Used by both the rating modal and the finished-book detail. ---- */
+function renderStarPicker(containerId, value, onPick, small){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.className = small ? "star-picker small" : "star-picker";
+  el.innerHTML = "";
+  for(let i=1;i<=5;i++){
+    const full = value >= i;
+    const half = !full && value >= i - 0.5;
+    const pct = full ? 100 : half ? 50 : 0;
+    const star = document.createElement("span");
+    star.className = "star";
+    star.innerHTML = `★<span class="star-fill" style="width:${pct}%">★</span>`;
+    star.addEventListener("click", (e) => {
+      const rect = star.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const newValue = clickX < rect.width / 2 ? i - 0.5 : i;
+      onPick(newValue);
+    });
+    el.appendChild(star);
+  }
+}
+
+let pendingRatingBookId = null;
+let currentRatingValue = 0;
+
+function openRatingModal(bookId){
+  pendingRatingBookId = bookId;
+  currentRatingValue = 0;
+  const book = s.books.find(b => b.id === bookId);
+  document.getElementById("ratingBookTitle").textContent = book ? (book.title || "This book") : "This book";
+  const pick = (v) => {
+    currentRatingValue = v;
+    renderStarPicker("starPicker", v, pick);
+  };
+  renderStarPicker("starPicker", 0, pick);
+  openModal("ratingModal");
+}
+
+function confirmRating(){
+  const bookId = pendingRatingBookId;
+  pendingRatingBookId = null;
+  closeModal("ratingModal");
+  if(!bookId) return;
+  finishBook(bookId, currentRatingValue || null);
+  renderAll();
+}
+
+function skipRating(){
+  const bookId = pendingRatingBookId;
+  pendingRatingBookId = null;
+  closeModal("ratingModal");
+  if(!bookId) return;
+  finishBook(bookId, null);
+  renderAll();
+}
+
 function openRemoveBookModal(id){
   const book = s.books.find(b=>b.id===id);
   if(!book) return;
@@ -2115,7 +2214,7 @@ function openRemoveBookModal(id){
   openModal("removeBookModal");
 }
 
-function finishBook(bookId){
+function finishBook(bookId, rating){
   const book = s.books.find(b=>b.id===bookId);
   if(!book) return false;
   const wasBookGoalMet = booksReadThisYear() >= s.bookGoal;
@@ -2126,6 +2225,7 @@ function finishBook(bookId){
   if(book.total) entry.total = book.total;
   if(book.lastPage) entry.lastPage = book.lastPage;
   if(book.cover) entry.cover = { ...book.cover };
+  if(rating) entry.rating = rating;
   s.finishedLog.push(entry);
 
   // link this credit to the today's-log entry that finished the book, so
@@ -2165,8 +2265,7 @@ function finishBookConfirm(){
     }
   }
 
-  finishBook(bookId);
-  renderAll();
+  openRatingModal(bookId);
 }
 
 /* ---- "Book Completed?" popup — same visual language as the TBR jar
@@ -2218,8 +2317,7 @@ function confirmFinishYes(){
     closeModal("logModal");
   }
 
-  finishBook(ctx.bookId);
-  renderAll();
+  openRatingModal(ctx.bookId);
 }
 
 function confirmFinishNo(){
@@ -2245,6 +2343,34 @@ function markFinishedFromLog(){
   const book = s.books.find(b=>b.id===activeLogBookId);
   if(!book){ toast("Pick a book first"); closeModal("logModal"); return; }
   openFinishConfirmModal(book, { source: "markButton" });
+}
+
+function dnfBookConfirm(){
+  const bookId = pendingRemoveId;
+  const book = s.books.find(b=>b.id===bookId);
+
+  // same "no credit" cleanup as Remove — strip any pages logged for this
+  // book today so the daily ring doesn't keep counting a dropped book
+  const entries = s.today.log || [];
+  const own = entries.filter(x => x.bookId === bookId);
+  if(own.length){
+    s.today.log = entries.filter(x => x.bookId !== bookId);
+
+    if(todayTotal() < s.goal && s.today.startSnapshot){
+      s.streak.current = s.today.startSnapshot.streakCurrent;
+      s.streak.lastActiveDate = s.today.startSnapshot.streakLastActiveDate;
+    }
+  }
+
+  s.dnfLog = s.dnfLog || [];
+  s.dnfLog.push({ id: genId(), title: book ? book.title : "", date: todayStr() });
+
+  s.books = s.books.filter(b=>b.id!==bookId);
+  s.undo = null;
+  save();
+  closeModal("removeBookModal");
+  toast("Marked as DNF");
+  renderAll();
 }
 
 function removeBookConfirm(){
@@ -2766,6 +2892,7 @@ function renderHome(){
    ============================================================ */
 let booksReadRange = "month";
 let booksReadSort = "date_desc";
+let booksReadRatingFilter = "all";
 let booksReadCols = 3;
 let booksReadPageSize = booksReadCols * 4;
 let booksReadPage = 0;
@@ -2783,6 +2910,14 @@ function setBooksReadSort(mode){
   booksReadPage = 0;
   const select = document.getElementById("booksReadSortSelect");
   if(select) select.value = mode;
+  renderBooksRead();
+}
+
+function setBooksReadRatingFilter(val){
+  booksReadRatingFilter = val;
+  booksReadPage = 0;
+  const select = document.getElementById("booksReadRatingSelect");
+  if(select) select.value = val;
   renderBooksRead();
 }
 
@@ -2813,6 +2948,13 @@ function booksReadGoToPage(pageIndex){
   renderBooksRead();
 }
 
+function starDisplayHtml(rating){
+  if(!rating) return "";
+  const full = Math.floor(rating);
+  const half = rating - full === 0.5;
+  return `<span class="books-read-rating">${"★".repeat(full)}${half ? "✩" : ""} ${rating}</span>`;
+}
+
 function renderBooksReadCell(entry, i){
   const cover = entry.cover && entry.cover.url;
   const coverInner = cover
@@ -2823,6 +2965,7 @@ function renderBooksReadCell(entry, i){
       <div class="books-read-cover hue-${i % 5}"><div class="books-read-cover-art">${coverInner}</div></div>
       <div class="books-read-cell-spacer"></div>
       <div class="books-read-title">${escapeHtml(entry.title || "Untitled")}</div>
+      ${starDisplayHtml(entry.rating)}
     </div>
   `;
 }
@@ -2838,6 +2981,7 @@ function renderBooksReadRow(entry, i){
       <div class="books-read-row-info">
         <div class="books-read-row-title">${escapeHtml(entry.title || "Untitled")}</div>
         <div class="books-read-row-date">${entry.author ? escapeHtml(entry.author) + " • " : ""}Finished ${formatDisplayDate(entry.date)}</div>
+        ${entry.rating ? `<div class="books-read-row-rating">${"★".repeat(Math.floor(entry.rating))}${entry.rating - Math.floor(entry.rating) === 0.5 ? "✩" : ""} ${entry.rating}</div>` : ""}
       </div>
     </div>
   `;
@@ -2869,6 +3013,10 @@ function sortBooksRead(list){
         if(!b.author) return -1;
         return collator.compare(b.author, a.author) || byDateDesc(a,b);
       });
+    case "rating_desc":
+      return list.sort((a,b) => (b.rating || 0) - (a.rating || 0) || byDateDesc(a,b));
+    case "rating_asc":
+      return list.sort((a,b) => (a.rating || 0) - (b.rating || 0) || byDateDesc(a,b));
     case "date_desc":
     default:
       return list.sort(byDateDesc);
@@ -2913,9 +3061,14 @@ function watchBooksReadShelves(){
 }
 
 function renderBooksRead(){
-  const list = sortBooksRead(
-    (s.finishedLog || []).filter(f => inStatsRange(f.date, booksReadRange))
-  );
+  let filtered = (s.finishedLog || []).filter(f => inStatsRange(f.date, booksReadRange));
+  if(booksReadRatingFilter === "unrated"){
+    filtered = filtered.filter(f => !f.rating);
+  } else if(booksReadRatingFilter !== "all"){
+    const wanted = parseFloat(booksReadRatingFilter);
+    filtered = filtered.filter(f => f.rating === wanted);
+  }
+  const list = sortBooksRead(filtered);
 
   document.getElementById("booksReadCount").textContent = list.length;
 
@@ -3015,6 +3168,17 @@ function populateBrdModal(entry){
   document.getElementById("brdTitleInput").value = entry.title || "";
   document.getElementById("brdAuthorInput").value = entry.author || "";
   document.getElementById("brdDateInput").value = entry.date || "";
+
+  const pickBrdRating = (v) => {
+    const target = (s.finishedLog || []).find(f => f.id === entry.id);
+    if(target){
+      target.rating = v;
+      save();
+      renderStarPicker("brdStarPicker", v, pickBrdRating, true);
+      renderBooksRead();
+    }
+  };
+  renderStarPicker("brdStarPicker", entry.rating || 0, pickBrdRating, true);
 }
 
 // Keeps the journal entry that recorded a finish in sync with Books Read —
@@ -3439,9 +3603,10 @@ function computeStats(range){
   }
 
   const booksFinished = (s.finishedLog || []).filter(f => inStatsRange(f.date, range)).length;
+  const dnfCount = (s.dnfLog || []).filter(f => inStatsRange(f.date, range)).length;
   const avg = activeDays ? Math.round(pages / activeDays) : 0;
 
-  return { pages, sessions, booksFinished, avg };
+  return { pages, sessions, booksFinished, dnfCount, avg };
 }
 
 /* ============================================================
@@ -3454,6 +3619,7 @@ function renderProgress(){
   const st = computeStats(statsRange);
   document.getElementById("statBooks").textContent = st.booksFinished;
   document.getElementById("statAvg").textContent = st.avg;
+  document.getElementById("statDnf").textContent = st.dnfCount;
 
   renderBooksRead();
 }
