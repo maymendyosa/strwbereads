@@ -464,12 +464,24 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 }
 .br-rating-popover input[type="range"]::-webkit-slider-thumb{
   -webkit-appearance:none;appearance:none;
-  width:18px;height:18px;border-radius:50%;background:var(--pink-dark);
-  margin-top:-7px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25);
+  width:24px;height:24px;
+  background:var(--pink-dark);
+  -webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 11.34 3.89 Q 12.00 2.00 12.66 3.89 L 13.69 6.87 Q 14.35 8.76 16.35 8.80 L 19.51 8.87 Q 21.51 8.91 19.92 10.12 L 17.40 12.03 Q 15.80 13.24 16.38 15.15 L 17.30 18.18 Q 17.88 20.09 16.24 18.95 L 13.64 17.14 Q 12.00 16.00 10.36 17.14 L 7.76 18.95 Q 6.12 20.09 6.70 18.18 L 7.62 15.15 Q 8.20 13.24 6.60 12.03 L 4.08 10.12 Q 2.49 8.91 4.49 8.87 L 7.65 8.80 Q 9.65 8.76 10.31 6.87 Z"/></svg>');
+  mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 11.34 3.89 Q 12.00 2.00 12.66 3.89 L 13.69 6.87 Q 14.35 8.76 16.35 8.80 L 19.51 8.87 Q 21.51 8.91 19.92 10.12 L 17.40 12.03 Q 15.80 13.24 16.38 15.15 L 17.30 18.18 Q 17.88 20.09 16.24 18.95 L 13.64 17.14 Q 12.00 16.00 10.36 17.14 L 7.76 18.95 Q 6.12 20.09 6.70 18.18 L 7.62 15.15 Q 8.20 13.24 6.60 12.03 L 4.08 10.12 Q 2.49 8.91 4.49 8.87 L 7.65 8.80 Q 9.65 8.76 10.31 6.87 Z"/></svg>');
+  -webkit-mask-size:contain;mask-size:contain;
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-position:center;mask-position:center;
+  border-radius:0;margin-top:-10px;cursor:pointer;
 }
 .br-rating-popover input[type="range"]::-moz-range-thumb{
-  width:18px;height:18px;border-radius:50%;background:var(--pink-dark);
-  border:none;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25);
+  width:24px;height:24px;border:none;
+  background:var(--pink-dark);
+  -webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 11.34 3.89 Q 12.00 2.00 12.66 3.89 L 13.69 6.87 Q 14.35 8.76 16.35 8.80 L 19.51 8.87 Q 21.51 8.91 19.92 10.12 L 17.40 12.03 Q 15.80 13.24 16.38 15.15 L 17.30 18.18 Q 17.88 20.09 16.24 18.95 L 13.64 17.14 Q 12.00 16.00 10.36 17.14 L 7.76 18.95 Q 6.12 20.09 6.70 18.18 L 7.62 15.15 Q 8.20 13.24 6.60 12.03 L 4.08 10.12 Q 2.49 8.91 4.49 8.87 L 7.65 8.80 Q 9.65 8.76 10.31 6.87 Z"/></svg>');
+  mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 11.34 3.89 Q 12.00 2.00 12.66 3.89 L 13.69 6.87 Q 14.35 8.76 16.35 8.80 L 19.51 8.87 Q 21.51 8.91 19.92 10.12 L 17.40 12.03 Q 15.80 13.24 16.38 15.15 L 17.30 18.18 Q 17.88 20.09 16.24 18.95 L 13.64 17.14 Q 12.00 16.00 10.36 17.14 L 7.76 18.95 Q 6.12 20.09 6.70 18.18 L 7.62 15.15 Q 8.20 13.24 6.60 12.03 L 4.08 10.12 Q 2.49 8.91 4.49 8.87 L 7.65 8.80 Q 9.65 8.76 10.31 6.87 Z"/></svg>');
+  -webkit-mask-size:contain;mask-size:contain;
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-position:center;mask-position:center;
+  cursor:pointer;
 }
 .br-rating-label{font-size:.82rem;font-weight:700;color:var(--text);text-align:center}
 .br-rating-btn-row{display:flex;gap:8px;justify-content:center;margin-top:2px}
