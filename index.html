@@ -16,11 +16,10 @@
 /* applied before first paint so returning users never see a flash of the wrong theme */
 (function(){
   try{
+    var t = localStorage.getItem("strwbereads_theme");
+    if(t === "dark" || t === "warm") document.documentElement.setAttribute("data-theme", t);
     if(localStorage.getItem("strwbereads_babyblue") === "1"){
-      document.documentElement.setAttribute("data-theme", "babyblue");
-    } else {
-      var t = localStorage.getItem("strwbereads_theme");
-      if(t === "dark" || t === "warm") document.documentElement.setAttribute("data-theme", t);
+      document.documentElement.setAttribute("data-babyblue", "1");
     }
   }catch(e){}
 })();
@@ -112,15 +111,17 @@ html[data-theme="warm"]{
   --shelf-wood-dark:#C0925A;
   --shelf-edge:#A97B45;
 }
-html[data-theme="babyblue"]{
+html[data-babyblue="1"]{
+  /* accent is yellow — --pink-dark is a deepened shade of the same yellow
+     (not the pale accent itself) so white button/badge text stays readable */
   --cream:#F3FAFF;
-  --pink:#7EC4EA;
-  --pink-dark:#4FA3D9;
-  --pink-pale:#E4F3FC;
+  --pink:#FFDD55;
+  --pink-dark:#2C7DA0;
+  --pink-pale:#FFF6D9;
   --green:#9FD6E0;
   --green-dark:#63AEC0;
   --green-pale:#E7F6F7;
-  --gold:#FFD873;
+  --gold:#FFDD55;
   --text:#3A4A5C;
   --muted:#7C93A8;
   --card:#FFFFFF;
@@ -136,9 +137,8 @@ html[data-theme="babyblue"]{
   --ghost-text:#5D7A91;
   --icon:#7C93A8;
   --icon-active:#5D7A91;
-  --shelf-wood:#BFE0F0;
-  --shelf-wood-dark:#9FCBE3;
-  --shelf-edge:#7FB4D6;
+  /* shelf-wood is intentionally NOT overridden here — the plank stays the
+     brown wood tone from the light/dark mode variables above */
 }
 @font-face{
   font-family:"Ticketing";
@@ -209,8 +209,9 @@ html[data-theme="dark"] .card{
 .greeting-icon{width:15px;height:18px;flex:0 0 auto;image-rendering:pixelated}
 .strawberry{width:48px;height:60px;flex:0 0 auto;position:absolute;right:0;top:-6px;image-rendering:pixelated}
 .star-deco{display:none}
-html[data-theme="babyblue"] .strawberry{display:none}
-html[data-theme="babyblue"] .star-deco{width:48px;height:60px;flex:0 0 auto;position:absolute;right:0;top:-6px;image-rendering:pixelated;display:block}
+html[data-babyblue="1"] .cal-cell.read{background:#FFDD55;color:#3A4A5C}
+html[data-babyblue="1"] .strawberry{display:none}
+html[data-babyblue="1"] .star-deco{width:48px;height:60px;flex:0 0 auto;position:absolute;right:0;top:-6px;image-rendering:pixelated;display:block}
 .header-controls{
   position:absolute;left:0;top:-6px;display:flex;gap:6px;
 }
@@ -514,12 +515,12 @@ html[data-theme="warm"] .hue-4{--hue-soft:#F0E8D2;--hue-a:#D8CFA0;--hue-b:#93894
 .brd-meta{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:10px;line-height:1.5}
 .brd-meta strong{color:var(--text)}
 
-.tbr-slideshow{position:relative;width:100%;height:150px;margin-bottom:10px;overflow:hidden}
+.tbr-slideshow{position:relative;width:100%;height:168px;margin-bottom:10px;overflow:hidden}
 .tbr-slideshow.empty{display:none}
-.tbr-slideshow-track{display:flex;align-items:center;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.tbr-slideshow-track{display:flex;align-items:center;height:100%;transition:transform 3s cubic-bezier(.65,0,.35,1)}
 .tbr-slideshow-slide{display:flex;align-items:center;justify-content:center;height:100%;box-sizing:border-box;padding:0 5px}
-.tbr-slideshow-img{width:100%;height:78%;object-fit:cover;border-radius:8px;opacity:.5;transform:scale(.82);transition:transform .5s cubic-bezier(.4,0,.2,1),opacity .5s,height .5s;box-shadow:0 4px 10px rgba(0,0,0,.15)}
-.tbr-slideshow-slide.active .tbr-slideshow-img{opacity:1;transform:scale(1);height:100%;box-shadow:0 8px 18px rgba(0,0,0,.28)}
+.tbr-slideshow-img{width:100%;height:78%;object-fit:contain;border-radius:8px;opacity:.5;transform:scale(.82);transition:transform 3s cubic-bezier(.65,0,.35,1),opacity 3s,height 3s;box-shadow:0 4px 10px rgba(0,0,0,.15)}
+.tbr-slideshow-slide.active .tbr-slideshow-img{opacity:1;transform:scale(1);height:88%;box-shadow:0 8px 18px rgba(0,0,0,.28)}
 .tbr-summary{color:var(--muted);font-size:.92rem;text-align:center}
 .tbr-summary-main{font-family:"Ticketing","Pixelify Sans";font-weight:600;color:var(--text);font-size:1rem}
 .tbr-summary-sub{font-size:.82rem;color:var(--muted);margin-top:4px}
@@ -713,7 +714,35 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
           <div id="greeting" class="greeting"></div>
         </div>
 <svg class="strawberry" viewBox="0 0 64 80" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="28" y="0" width="8" height="8" fill="#5C8A49"/><rect x="20" y="8" width="24" height="4" fill="#7FA66A"/><rect x="12" y="12" width="12" height="4" fill="#7FA66A"/><rect x="40" y="12" width="12" height="4" fill="#7FA66A"/><rect x="8" y="16" width="16" height="4" fill="#5C8A49"/><rect x="40" y="16" width="16" height="4" fill="#5C8A49"/><rect x="12" y="20" width="40" height="4" fill="#E0525F"/><rect x="8" y="24" width="48" height="4" fill="#E0525F"/><rect x="4" y="28" width="56" height="4" fill="#E0525F"/><rect x="4" y="32" width="56" height="4" fill="#E0525F"/><rect x="4" y="36" width="56" height="4" fill="#E0525F"/><rect x="8" y="40" width="48" height="4" fill="#E0525F"/><rect x="8" y="44" width="48" height="4" fill="#E0525F"/><rect x="12" y="48" width="40" height="4" fill="#E0525F"/><rect x="12" y="52" width="40" height="4" fill="#E0525F"/><rect x="16" y="56" width="32" height="4" fill="#E0525F"/><rect x="16" y="60" width="32" height="4" fill="#E0525F"/><rect x="20" y="64" width="24" height="4" fill="#E0525F"/><rect x="24" y="68" width="16" height="4" fill="#E0525F"/><rect x="28" y="72" width="8" height="4" fill="#E0525F"/><rect x="12" y="20" width="4" height="4" fill="#F4838C"/><rect x="8" y="24" width="4" height="4" fill="#F4838C"/><rect x="4" y="28" width="4" height="4" fill="#F4838C"/><rect x="4" y="32" width="4" height="4" fill="#F4838C"/><rect x="4" y="36" width="4" height="4" fill="#F4838C"/><rect x="8" y="40" width="4" height="4" fill="#F4838C"/><rect x="8" y="44" width="4" height="4" fill="#F4838C"/><rect x="12" y="48" width="4" height="4" fill="#F4838C"/><rect x="12" y="52" width="4" height="4" fill="#F4838C"/><rect x="16" y="56" width="4" height="4" fill="#F4838C"/><rect x="16" y="60" width="4" height="4" fill="#F4838C"/><rect x="20" y="64" width="4" height="4" fill="#F4838C"/><rect x="24" y="68" width="4" height="4" fill="#F4838C"/><rect x="28" y="72" width="4" height="4" fill="#F4838C"/><rect x="16" y="28" width="4" height="4" fill="#F0C05A"/><rect x="44" y="28" width="4" height="4" fill="#F0C05A"/><rect x="12" y="40" width="4" height="4" fill="#F0C05A"/><rect x="48" y="40" width="4" height="4" fill="#F0C05A"/><rect x="20" y="52" width="4" height="4" fill="#F0C05A"/><rect x="40" y="52" width="4" height="4" fill="#F0C05A"/><rect x="16" y="64" width="4" height="4" fill="#F0C05A"/><rect x="44" y="64" width="4" height="4" fill="#F0C05A"/><rect x="28" y="72" width="4" height="4" fill="#F0C05A"/></svg>
-<svg class="star-deco" viewBox="0 0 64 80" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="30" y="4" width="4" height="4" fill="#FFD873"/><rect x="28" y="8" width="8" height="64" fill="#7EC4EA"/><rect x="4" y="36" width="4" height="8" fill="#FFD873"/><rect x="8" y="36" width="48" height="8" fill="#7EC4EA"/><rect x="56" y="36" width="4" height="8" fill="#FFD873"/><rect x="30" y="72" width="4" height="4" fill="#FFD873"/><rect x="24" y="20" width="4" height="4" fill="#FBFEFF"/><rect x="20" y="24" width="4" height="4" fill="#FBFEFF"/><rect x="40" y="20" width="4" height="4" fill="#FBFEFF"/><rect x="44" y="24" width="4" height="4" fill="#FBFEFF"/><rect x="24" y="60" width="4" height="4" fill="#FBFEFF"/><rect x="20" y="56" width="4" height="4" fill="#FBFEFF"/><rect x="40" y="60" width="4" height="4" fill="#FBFEFF"/><rect x="44" y="56" width="4" height="4" fill="#FBFEFF"/><rect x="4" y="12" width="4" height="4" fill="#FFD873"/><rect x="56" y="16" width="4" height="4" fill="#FFD873"/><rect x="8" y="64" width="4" height="4" fill="#FFD873"/><rect x="52" y="60" width="4" height="4" fill="#FFD873"/></svg>
+<svg class="star-deco" viewBox="0 0 64 80" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true">
+  <!-- tapered 4-point pixel sparkle star, yellow accent -->
+  <rect x="30" y="8" width="4" height="8" fill="#E8B923"/>
+  <rect x="28" y="16" width="8" height="8" fill="#FFDD55"/>
+  <rect x="26" y="24" width="12" height="8" fill="#FFDD55"/>
+  <rect x="24" y="32" width="16" height="8" fill="#FFDD55"/>
+  <rect x="24" y="40" width="16" height="8" fill="#FFDD55"/>
+  <rect x="26" y="48" width="12" height="8" fill="#FFDD55"/>
+  <rect x="28" y="56" width="8" height="8" fill="#FFDD55"/>
+  <rect x="30" y="64" width="4" height="8" fill="#E8B923"/>
+  <rect x="8" y="38" width="8" height="4" fill="#E8B923"/>
+  <rect x="16" y="36" width="8" height="8" fill="#FFDD55"/>
+  <rect x="24" y="34" width="8" height="12" fill="#FFDD55"/>
+  <rect x="32" y="34" width="8" height="12" fill="#FFDD55"/>
+  <rect x="40" y="36" width="8" height="8" fill="#FFDD55"/>
+  <rect x="48" y="38" width="8" height="4" fill="#E8B923"/>
+  <rect x="30" y="8" width="4" height="4" fill="#FFF0B0"/>
+  <rect x="30" y="68" width="4" height="4" fill="#FFF0B0"/>
+  <rect x="8" y="38" width="4" height="4" fill="#FFF0B0"/>
+  <rect x="52" y="38" width="4" height="4" fill="#FFF0B0"/>
+  <rect x="24" y="20" width="4" height="4" fill="#FFFDF2"/>
+  <rect x="40" y="20" width="4" height="4" fill="#FFFDF2"/>
+  <rect x="24" y="56" width="4" height="4" fill="#FFFDF2"/>
+  <rect x="40" y="56" width="4" height="4" fill="#FFFDF2"/>
+  <rect x="4" y="12" width="4" height="4" fill="#FFFDF2"/>
+  <rect x="56" y="16" width="4" height="4" fill="#FFFDF2"/>
+  <rect x="8" y="64" width="4" height="4" fill="#FFFDF2"/>
+  <rect x="52" y="60" width="4" height="4" fill="#FFFDF2"/>
+</svg>
       </div>
 
       <div class="range-toggle" id="goalToggle" style="margin-top:14px">
@@ -726,8 +755,8 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
           <svg class="ring-svg" viewBox="0 0 120 120">
             <defs>
               <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#F4838C"/>
-                <stop offset="100%" stop-color="#A8C686"/>
+                <stop offset="0%" style="stop-color:var(--pink)"/>
+                <stop offset="100%" style="stop-color:var(--green)"/>
               </linearGradient>
             </defs>
             <circle class="ring-bg" cx="60" cy="60" r="50"/>
@@ -1182,15 +1211,28 @@ function getBabyBlue(){
   try{ return localStorage.getItem(BABYBLUE_KEY) === "1"; }catch(e){ return false; }
 }
 
+/* whether the baby blue theme is currently the active look — used to swap
+   strawberry artwork/emoji for star artwork/emoji throughout the app */
+function isBabyBlueTheme(){
+  return document.documentElement.getAttribute("data-babyblue") === "1";
+}
+
 function renderThemeState(){
   const mode = THEME_META[getTheme()] ? getTheme() : "light";
   const babyBlue = getBabyBlue();
-  const displayTheme = babyBlue ? "babyblue" : mode;
 
-  if(displayTheme === "light"){
+  // mode (light/dark/warm) and the baby blue accent overlay are applied as
+  // independent attributes so things like the wooden plank can keep
+  // following light/dark mode even while baby blue is turned on
+  if(mode === "light"){
     document.documentElement.removeAttribute("data-theme");
   } else {
-    document.documentElement.setAttribute("data-theme", displayTheme);
+    document.documentElement.setAttribute("data-theme", mode);
+  }
+  if(babyBlue){
+    document.documentElement.setAttribute("data-babyblue", "1");
+  } else {
+    document.documentElement.removeAttribute("data-babyblue");
   }
 
   const modeBtn = document.getElementById("themeToggle");
@@ -1225,6 +1267,10 @@ function toggleBabyBlue(){
   const on = !getBabyBlue();
   try{ localStorage.setItem(BABYBLUE_KEY, on ? "1" : "0"); }catch(e){}
   renderThemeState();
+  // refresh anything that swaps strawberry artwork/emoji for star artwork/emoji
+  if(document.getElementById("greeting")) renderHome();
+  if(document.getElementById("journalToday")) renderJournal();
+  if(document.getElementById("booksReadCount")) renderBooksRead();
   toast(on ? "✦ Baby blue theme" : "Baby blue theme off");
 }
 
@@ -1930,7 +1976,7 @@ function renderTbrSlideshow(){
   tbrSlideshowTimer = setInterval(() => {
     index++;
     layout(true);
-  }, 2200);
+  }, 4500);
 
   tbrSlideshowResizeHandler = () => layout(false);
   window.addEventListener("resize", tbrSlideshowResizeHandler);
@@ -1957,10 +2003,10 @@ function deleteTbrTitle(id){
 
 // used by the TBR pick reveal's <img onerror>: swaps a broken cover image
 // for the placeholder SVG. Kept as a real function (rather than inlining
-// the SVG string into the onerror="..." attribute) because PIXEL_BERRY_SVG
+// the SVG string into the onerror="..." attribute) because the SVG markup
 // contains double quotes that would otherwise terminate the attribute early.
 function tbrCoverImgError(imgEl){
-  imgEl.outerHTML = PIXEL_BERRY_SVG;
+  imgEl.outerHTML = pixelCoverSvg();
 }
 
 function shakeJar(){
@@ -1996,7 +2042,7 @@ function shakeJar(){
     const c = pick.cover && pick.cover.url;
     cover.innerHTML = c
       ? `<img src="${escapeHtml(pick.cover.url)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px;box-shadow:0 6px 16px rgba(75,58,51,.2);object-position:${pick.cover.posX ?? 50}% ${pick.cover.posY ?? 50}%;transform:scale(${pick.cover.zoom || 1})" onerror="tbrCoverImgError(this)">`
-      : PIXEL_BERRY_SVG;
+      : pixelCoverSvg();
     cover.classList.add("reveal");
     titleEl.textContent = pick.title;
     if(readBtn) readBtn.disabled = false;
@@ -2133,7 +2179,7 @@ function openFinishConfirmModal(book, opts){
   const cover = book.cover && book.cover.url;
   document.getElementById("finishConfirmCover").innerHTML = cover
     ? `<img src="${escapeHtml(book.cover.url)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;object-position:${book.cover.posX ?? 50}% ${book.cover.posY ?? 50}%;transform:scale(${book.cover.zoom || 1})" onerror="this.style.display='none'">`
-    : PIXEL_BERRY_SVG;
+    : pixelCoverSvg();
   document.getElementById("finishConfirmTitle").textContent = book.title || "This book";
   document.getElementById("finishConfirmSub").textContent = opts.source === "autoPrompt"
     ? "You're on the last page — mark it as finished?"
@@ -2467,7 +2513,7 @@ function importData(evt){
       toast("☁️ Backup imported");
       renderAll();
     }catch(e){
-      toast("Couldn't read that file 🍓");
+      toast(`Couldn't read that file ${berryEmoji()}`);
     }
   };
   reader.readAsText(file);
@@ -2665,7 +2711,7 @@ async function fetchDailyQuote(){
 function renderHome(){
   const h = new Date().getHours();
   const greetText = h < 12 ? "Good morning!" : h < 18 ? "Good afternoon!" : "Good evening!";
-  document.getElementById("greeting").innerHTML = `${PIXEL_SHAKE_SVG}<span>${greetText}</span>`;
+  document.getElementById("greeting").innerHTML = `${pixelGreetingSvg()}<span>${greetText}</span>`;
 
   fetchDailyQuote();
 
@@ -2771,7 +2817,7 @@ function renderBooksReadCell(entry, i){
   const cover = entry.cover && entry.cover.url;
   const coverInner = cover
     ? `<img src="${escapeHtml(entry.cover.url)}" alt="" style="object-position:${entry.cover.posX ?? 50}% ${entry.cover.posY ?? 50}%;transform:scale(${entry.cover.zoom || 1})" onerror="this.style.display='none'">`
-    : PIXEL_BERRY_SVG;
+    : pixelCoverSvg();
   return `
     <div class="books-read-cell" onclick="openBookReadDetail('${entry.id}')">
       <div class="books-read-cover hue-${i % 5}"><div class="books-read-cover-art">${coverInner}</div></div>
@@ -2785,7 +2831,7 @@ function renderBooksReadRow(entry, i){
   const cover = entry.cover && entry.cover.url;
   const coverInner = cover
     ? `<img src="${escapeHtml(entry.cover.url)}" alt="" style="object-position:${entry.cover.posX ?? 50}% ${entry.cover.posY ?? 50}%;transform:scale(${entry.cover.zoom || 1})" onerror="this.style.display='none'">`
-    : PIXEL_BERRY_SVG;
+    : pixelCoverSvg();
   return `
     <div class="books-read-row" onclick="openBookReadDetail('${entry.id}')">
       <div class="books-read-row-cover hue-${i % 5}">${coverInner}</div>
@@ -2944,7 +2990,7 @@ function openBookReadDetail(entryId){
 function populateBrdModal(entry){
   document.getElementById("brdTitle").textContent = `📖 ${entry.title || "Untitled"}`;
   const fallback = document.getElementById("brdCoverFallback");
-  fallback.innerHTML = PIXEL_BERRY_SVG;
+  fallback.innerHTML = pixelCoverSvg();
   const img = document.getElementById("brdCoverImg");
   if(entry.cover && entry.cover.url){
     img.src = entry.cover.url;
@@ -3054,8 +3100,29 @@ const PIXEL_HEART_SVG = `<svg viewBox='0 0 14 12' width='14' height='12' xmlns='
 /* small pixel strawberry used as the "cover" swatch icon for finished books */
 const PIXEL_BERRY_SVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="10" y="1" width="4" height="2" fill="#FFF3C9"/><rect x="6" y="3" width="12" height="2" fill="#FFF3C9"/><rect x="4" y="7" width="16" height="2" fill="#fff" opacity=".9"/><rect x="3" y="9" width="18" height="2" fill="#fff" opacity=".9"/><rect x="3" y="11" width="18" height="2" fill="#fff" opacity=".9"/><rect x="4" y="13" width="16" height="2" fill="#fff" opacity=".9"/><rect x="5" y="15" width="14" height="2" fill="#fff" opacity=".9"/><rect x="7" y="17" width="10" height="2" fill="#fff" opacity=".9"/><rect x="9" y="19" width="6" height="2" fill="#fff" opacity=".9"/><rect x="8" y="9" width="2" height="2" fill="#FFF3C9"/><rect x="15" y="9" width="2" height="2" fill="#FFF3C9"/><rect x="6" y="13" width="2" height="2" fill="#FFF3C9"/><rect x="17" y="13" width="2" height="2" fill="#FFF3C9"/><rect x="11" y="17" width="2" height="2" fill="#FFF3C9"/></svg>`;
 
+/* small pixel star used instead of the berry as the "cover" swatch icon when the baby blue theme is on */
+const PIXEL_STAR_SVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="11" y="0" width="2" height="2" fill="#E8B923"/><rect x="9" y="2" width="6" height="2" fill="#E8B923"/><rect x="7" y="4" width="10" height="2" fill="#F5CE6E"/><rect x="5" y="6" width="14" height="2" fill="#FFDD55"/><rect x="3" y="8" width="18" height="2" fill="#FFDD55"/><rect x="1" y="10" width="22" height="2" fill="#FFDD55"/><rect x="1" y="12" width="22" height="2" fill="#FFDD55"/><rect x="3" y="14" width="18" height="2" fill="#FFDD55"/><rect x="5" y="16" width="14" height="2" fill="#FFDD55"/><rect x="7" y="18" width="10" height="2" fill="#F5CE6E"/><rect x="9" y="20" width="6" height="2" fill="#E8B923"/><rect x="11" y="22" width="2" height="2" fill="#E8B923"/><rect x="8" y="8" width="4" height="2" fill="#FFF7DD"/></svg>`;
+
+/* returns the berry (or star, when baby blue is on) cover swatch icon */
+function pixelCoverSvg(){
+  return isBabyBlueTheme() ? PIXEL_STAR_SVG : PIXEL_BERRY_SVG;
+}
+
 /* cute pixel strawberry shake used on the home greeting instead of emoji */
 const PIXEL_SHAKE_SVG = `<svg class="greeting-icon" viewBox="0 0 22 26" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="10" y="0" width="2" height="2" fill="#7FA66A"/><rect x="8" y="2" width="6" height="2" fill="#E0525F"/><rect x="4" y="4" width="14" height="2" fill="#FFFDF9"/><rect x="14" y="4" width="2" height="2" fill="#F4838C"/><rect x="2" y="6" width="18" height="2" fill="#FFFDF9"/><rect x="14" y="6" width="2" height="2" fill="#F4838C"/><rect x="1" y="8" width="20" height="2" fill="#F0C05A"/><rect x="14" y="8" width="2" height="2" fill="#fff"/><rect x="1" y="10" width="20" height="2" fill="#FFC9CF"/><rect x="14" y="10" width="2" height="2" fill="#F4838C"/><rect x="2" y="12" width="18" height="2" fill="#F4838C"/><rect x="3" y="14" width="16" height="2" fill="#E0525F"/><rect x="9" y="14" width="2" height="2" fill="#FFF3C9"/><rect x="4" y="16" width="14" height="2" fill="#F4838C"/><rect x="5" y="18" width="12" height="2" fill="#FFC9CF"/><rect x="6" y="20" width="10" height="2" fill="#F0C05A"/><rect x="7" y="22" width="8" height="2" fill="#E0A83E"/><rect x="8" y="24" width="6" height="2" fill="#C97A2B"/></svg>`;
+
+/* cute pixel sparkle star used on the home greeting when the baby blue theme is on */
+const PIXEL_SPARK_SVG = `<svg class="greeting-icon" viewBox="0 0 22 26" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><rect x="10" y="0" width="2" height="2" fill="#E8B923"/><rect x="9" y="2" width="4" height="2" fill="#E8B923"/><rect x="7" y="4" width="8" height="2" fill="#F5CE6E"/><rect x="6" y="6" width="10" height="2" fill="#FFDD55"/><rect x="4" y="8" width="14" height="2" fill="#FFDD55"/><rect x="2" y="10" width="18" height="2" fill="#FFDD55"/><rect x="0" y="12" width="22" height="2" fill="#FFDD55"/><rect x="2" y="14" width="18" height="2" fill="#FFDD55"/><rect x="4" y="16" width="14" height="2" fill="#FFDD55"/><rect x="6" y="18" width="10" height="2" fill="#FFDD55"/><rect x="7" y="20" width="8" height="2" fill="#F5CE6E"/><rect x="9" y="22" width="4" height="2" fill="#E8B923"/><rect x="10" y="24" width="2" height="2" fill="#E8B923"/><rect x="8" y="7" width="4" height="2" fill="#FFF7DD"/><rect x="14" y="11" width="2" height="2" fill="#FFFFFF"/></svg>`;
+
+/* returns the shake (or sparkle star, when baby blue is on) greeting icon */
+function pixelGreetingSvg(){
+  return isBabyBlueTheme() ? PIXEL_SPARK_SVG : PIXEL_SHAKE_SVG;
+}
+
+/* returns the strawberry (or star, when baby blue is on) emoji used in a few toasts and labels */
+function berryEmoji(){
+  return isBabyBlueTheme() ? "⭐" : "🍓";
+}
 
 
 
@@ -3130,7 +3197,7 @@ function renderJournal(){
   renderTbrSummary();
 
   document.getElementById("journalToday").innerHTML = `
-    <div class="journal-day-title">🍓 Today</div>
+    <div class="journal-day-title">${berryEmoji()} Today</div>
     ${dayItemsHtml(s.today.log, notesForDate(s.today.date), journalEditing ? "today" : null)}
   `;
 
@@ -3138,7 +3205,7 @@ function renderJournal(){
   const yLog = s.journal[yKey];
   const yNotes = notesForDate(yKey);
   document.getElementById("journalYesterday").innerHTML = (yLog || yNotes.length || journalEditing) ? `
-    <div class="journal-day-title">🍓 Yesterday</div>
+    <div class="journal-day-title">${berryEmoji()} Yesterday</div>
     ${dayItemsHtml(yLog, yNotes, journalEditing ? yKey : null)}
   ` : "";
 
@@ -3325,7 +3392,7 @@ function renderCalendar(){
       ${dayItemsHtml(log, notesForDate(calSelected))}
     `;
   } else {
-    detail.innerHTML = `<div class="empty">Tap a day to see that journal 🍓</div>`;
+    detail.innerHTML = `<div class="empty">Tap a day to see that journal ${berryEmoji()}</div>`;
   }
 }
 
