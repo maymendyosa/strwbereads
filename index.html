@@ -330,6 +330,8 @@ button:active{transform:scale(.97)}
 .primary:disabled{opacity:.5;cursor:not-allowed}
 .secondary{background:var(--green-dark);color:#fff}
 .ghost{background:var(--ghost-bg);color:var(--ghost-text)}
+.dnf-btn{background:#E4E4E4;color:#6B6B6B}
+html[data-theme="dark"] .dnf-btn{background:#3A3A3A;color:#B8B8B8}
 .ghost:disabled{opacity:.5;cursor:not-allowed}
 .ghost.small,.secondary.small{padding:9px 12px;font-size:.85rem}
 .danger{background:#D96B6B;color:#fff;width:100%}
@@ -957,7 +959,10 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <input id="logAuthorInput" placeholder="e.g. James Clear">
     <label for="logPageInput">Current Page</label>
     <input id="logPageInput" type="number" inputmode="numeric" placeholder="e.g. 91">
-    <button class="ghost small" type="button" style="width:100%;margin-top:8px" onclick="markFinishedFromLog()">✓ Mark as Finished</button>
+    <div class="row-buttons" style="margin-top:8px">
+      <button class="ghost small" type="button" style="flex:1" onclick="markFinishedFromLog()">✓ Mark as Finished</button>
+      <button class="ghost small dnf-btn" type="button" style="flex:1" onclick="dnfFromLog()">DNF</button>
+    </div>
     <div class="row-buttons" style="margin-top:14px">
       <button class="ghost small" onclick="closeModal('logModal')">Cancel</button>
       <button class="primary" style="flex:1" onclick="submitLog()">Save</button>
@@ -1144,8 +1149,10 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <h3 id="removeBookTitle">Remove Book</h3>
     <div class="sub">What would you like to do with this book?</div>
     <div class="buttons">
-      <button class="secondary" onclick="finishBookConfirm()">Mark as Finished</button>
-      <button class="ghost" onclick="dnfBookConfirm()">DNF (no credit)</button>
+      <div class="row-buttons">
+        <button class="secondary" style="flex:1" onclick="finishBookConfirm()">Mark as Finished</button>
+        <button class="ghost dnf-btn" style="flex:1" onclick="dnfBookConfirm()">DNF</button>
+      </div>
       <button class="ghost" onclick="removeBookConfirm()">Remove (no credit)</button>
       <button class="ghost" onclick="closeModal('removeBookModal')">Cancel</button>
     </div>
@@ -2339,6 +2346,14 @@ function confirmFinishNo(){
 
 /* "Mark as Finished" inside the Log Reading modal — finish a book from
    the same place you update its page, not just via the × / remove flow. */
+function dnfFromLog(){
+  const book = s.books.find(b=>b.id===activeLogBookId);
+  if(!book){ toast("Pick a book first"); closeModal("logModal"); return; }
+  pendingRemoveId = book.id;
+  closeModal("logModal");
+  dnfBookConfirm();
+}
+
 function markFinishedFromLog(){
   const book = s.books.find(b=>b.id===activeLogBookId);
   if(!book){ toast("Pick a book first"); closeModal("logModal"); return; }
