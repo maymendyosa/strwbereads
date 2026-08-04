@@ -2349,19 +2349,8 @@ function dnfBookConfirm(){
   const bookId = pendingRemoveId;
   const book = s.books.find(b=>b.id===bookId);
 
-  // same "no credit" cleanup as Remove — strip any pages logged for this
-  // book today so the daily ring doesn't keep counting a dropped book
-  const entries = s.today.log || [];
-  const own = entries.filter(x => x.bookId === bookId);
-  if(own.length){
-    s.today.log = entries.filter(x => x.bookId !== bookId);
-
-    if(todayTotal() < s.goal && s.today.startSnapshot){
-      s.streak.current = s.today.startSnapshot.streakCurrent;
-      s.streak.lastActiveDate = s.today.startSnapshot.streakLastActiveDate;
-    }
-  }
-
+  // unlike Remove, DNF keeps whatever pages were already logged today —
+  // only the "finished" credit is withheld, so reading progress still counts
   s.dnfLog = s.dnfLog || [];
   s.dnfLog.push({ id: genId(), title: book ? book.title : "", date: todayStr() });
 
