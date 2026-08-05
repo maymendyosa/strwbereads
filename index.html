@@ -688,6 +688,25 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 .stat-tile.green .stat-num{color:var(--green-dark)}
 .stat-lbl{font-size:.8rem;color:var(--muted);margin-top:2px}
 
+/* ---------- readathon ---------- */
+.rth-timer-box{background:var(--pink-pale);border-radius:20px;padding:20px 16px;text-align:center}
+.rth-clock{font-family:"Ticketing","Pixelify Sans";font-weight:600;font-size:2.4rem;color:var(--pink-dark);letter-spacing:1px}
+.rth-clock-sub{font-size:.82rem;color:var(--muted);margin-top:2px}
+.rth-progress-track{background:var(--empty-cell);border-radius:99px;height:12px;margin-top:14px;overflow:hidden}
+.rth-progress-fill{background:linear-gradient(90deg,var(--pink),var(--green));height:100%;border-radius:99px;transition:width .3s ease}
+.rth-toggle-btn{width:100%;margin-top:16px;font-size:1rem;background:var(--green-dark);color:#fff}
+.rth-toggle-btn.on{background:var(--green-dark);filter:brightness(.9)}
+html[data-babyblue="1"] .rth-toggle-btn{background:var(--gold);color:var(--text)}
+html[data-babyblue="1"] .rth-toggle-btn.on{background:var(--gold);filter:brightness(.92)}
+.rth-status-pill{display:inline-block;margin-top:10px;padding:4px 12px;border-radius:99px;font-size:.78rem;font-weight:600;background:var(--card);color:var(--muted)}
+.rth-status-pill.active{background:var(--green);color:#fff}
+.rth-session-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:.88rem}
+.rth-session-row:last-child{border-bottom:none}
+.rth-session-book{font-weight:600;color:var(--text)}
+.rth-session-meta{color:var(--muted);font-size:.78rem}
+.rth-session-pages{color:var(--pink-dark);font-weight:600;white-space:nowrap;margin-left:8px}
+.rth-empty{color:var(--muted);font-size:.88rem;text-align:center;padding:14px 0}
+
 /* ---------- tabbar ---------- */
 .tabbar{
   position:fixed;left:0;right:0;bottom:0;background:var(--green-pale);
@@ -703,6 +722,12 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
 }
 .tab-btn.active{color:var(--pink-dark)}
 .tab-btn.active .ic{color:var(--icon-active)}
+.tab-btn-highlight{background:var(--green-pale);border-radius:14px;color:var(--green-dark)}
+.tab-btn-highlight.active{background:var(--green-dark);color:#fff}
+.tab-btn-highlight.active .ic{color:#fff}
+html[data-babyblue="1"] .tab-btn-highlight{background:var(--pink-pale);color:var(--muted)}
+html[data-babyblue="1"] .tab-btn-highlight.active{background:var(--gold);color:var(--text)}
+html[data-babyblue="1"] .tab-btn-highlight.active .ic{color:var(--text)}
 
 .view{display:none}
 .view.active{display:block;animation:fadein .25s ease}
@@ -907,6 +932,26 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     </div>
   </div>
 
+  <!-- ============ READATHON ============ -->
+  <div id="view-readathon" class="view">
+    <div class="card">
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>24-Hour Readathon</div>
+      <div class="rth-timer-box">
+        <div class="rth-clock" id="rthClock">00:00:00</div>
+        <div class="rth-clock-sub">of 24:00:00 reading time</div>
+        <div class="rth-progress-track"><div class="rth-progress-fill" id="rthProgressFill" style="width:0%"></div></div>
+        <div id="rthStatusPill" class="rth-status-pill">Timer off</div>
+        <button class="primary rth-toggle-btn" id="rthToggleBtn" onclick="toggleReadathonTimer()">Start Challenge</button>
+      </div>
+      <button class="ghost small" style="width:100%;margin-top:14px" onclick="resetReadathon()">Reset Readathon</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><svg class="ti" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Session Log</div>
+      <div id="rthSessionList"></div>
+    </div>
+  </div>
+
   <!-- ============ PROGRESS (streak / stats / books read / backup) ============ -->
   <div id="view-progress" class="view">
     <div class="card">
@@ -994,6 +1039,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
   <button class="tab-btn" data-view="journal" onclick="switchTab('journal')">Books</button>
   <button class="tab-btn" data-view="calendar" onclick="switchTab('calendar')">Calendar</button>
   <button class="tab-btn" data-view="progress" onclick="switchTab('progress')">Progress</button>
+  <button class="tab-btn tab-btn-highlight" data-view="readathon" onclick="switchTab('readathon')">Readathon</button>
 </div>
 
 <!-- ============ LOG READING MODAL ============ -->
@@ -1049,7 +1095,7 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     </div>
     <div class="cover-error" id="coverDraftError" style="display:none">Couldn't load that image — check that the link points straight to an image file (ends in .jpg, .png, etc.), not a webpage.</div>
     <div class="row-buttons" style="margin-top:14px">
-      <button class="ghost small" onclick="closeModal('bookModal')">Cancel</button>
+      <button class="ghost small" onclick="pendingReadathonStart=false;closeModal('bookModal')">Cancel</button>
       <button class="primary" style="flex:1" onclick="submitNewBook()">Next</button>
     </div>
   </div>
@@ -1188,6 +1234,29 @@ input:focus{outline:none;border-color:var(--pink-dark);box-shadow:0 0 0 4px rgba
     <div class="sub">Choose a book to log reading for</div>
     <div class="buttons" id="pickerList"></div>
     <button class="ghost small" style="width:100%;margin-top:10px" onclick="closeModal('pickerModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- ============ READATHON START CHOICE MODAL ============ -->
+<div class="modal-backdrop" id="readathonStartModal">
+  <div class="modal">
+    <h3>📖 Start Your Readathon</h3>
+    <div class="sub">Pick up where you left off, or dive into something new?</div>
+    <div class="row-buttons" style="margin-top:14px">
+      <button class="secondary" style="flex:1" onclick="chooseReadathonContinue()">Continue a Book</button>
+      <button class="secondary" style="flex:1" onclick="chooseReadathonNewBook()">Start a New Book</button>
+    </div>
+    <button class="ghost small" style="width:100%;margin-top:10px" onclick="closeModal('readathonStartModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- ============ READATHON CONTINUE: BOOK PICKER ============ -->
+<div class="modal-backdrop" id="readathonPickerModal">
+  <div class="modal">
+    <h3>Which Book?</h3>
+    <div class="sub">Choose which book you're continuing</div>
+    <div class="buttons" id="readathonPickerList"></div>
+    <button class="ghost small" style="width:100%;margin-top:10px" onclick="closeModal('readathonPickerModal')">Cancel</button>
   </div>
 </div>
 
@@ -1397,7 +1466,18 @@ function defaultState(){
     stats: { booksFinished:0 },
     finishedLog: [],                  // [{id,title,date}] — for time-scoped stats
     dnfLog: [],                       // [{id,title,date}] — did-not-finish, no credit but tracked for stats
+    readathon: defaultReadathon(),    // 24hr readathon timer + session log
     undo: null
+  };
+}
+
+function defaultReadathon(){
+  return {
+    active: false,       // is the timer currently running
+    started: false,       // has the readathon ever been started (for the one-time "started" log entry)
+    startedAt: null,      // timestamp the current "on" segment began
+    elapsedMs: 0,          // total accumulated reading time across all on/off toggles
+    sessions: []            // [{id,date,time,pages,durationMs,book}]
   };
 }
 
@@ -1440,6 +1520,7 @@ if(!s.tbr) s.tbr = [];
 if(!s.goalHistory) s.goalHistory = {};
 if(!s.bookGoal) s.bookGoal = 24;
 if(!s.dailyQuote) s.dailyQuote = null;
+if(!s.readathon) s.readathon = defaultReadathon();
 
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
 
@@ -1786,9 +1867,16 @@ async function submitNewBook(){
 
   s.books.push(newBook);
   logBookStarted(newBook);
+  activeLogBookId = newBook.id;
   save();
   toast("New book started!");
   renderAll();
+
+  if(pendingReadathonStart){
+    pendingReadathonStart = false;
+    startReadathonTimerSegment();
+    toast(`"${newBook.title}" — let the readathon begin! 📖`);
+  }
 }
 
 /* ============================================================
@@ -2763,7 +2851,12 @@ function toast(msg){
    MODALS
    ============================================================ */
 function openModal(id){ document.getElementById(id).classList.add("open"); }
-function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+function closeModal(id){
+  document.getElementById(id).classList.remove("open");
+  // if this log was opened by turning off the readathon timer, whatever
+  // pages ended up logged (if any) become that session's page count
+  if(id === "logModal" && readathonPending) finalizeReadathonSession();
+}
 
 /* ============================================================
    TABS
@@ -2774,6 +2867,7 @@ function switchTab(name){
   document.getElementById("view-"+name).classList.add("active");
   document.querySelector(`.tab-btn[data-view="${name}"]`).classList.add("active");
   if(name === "calendar") renderCalendar();
+  if(name === "readathon") renderReadathon();
 }
 
 /* ============================================================
@@ -3440,6 +3534,14 @@ function dayItemsHtml(log, notes, editKey){
         </div>
       `;
     }
+    if(x.type === "readathon"){
+      return `
+        <div class="history-item">
+          <div>${x.time} • ${escapeHtml(x.label)}</div>
+          ${editKey ? `<button class="history-del" onclick="deleteJournalLog('${editKey}', ${x.idx})" aria-label="Delete entry">×</button>` : ""}
+        </div>
+      `;
+    }
     return `
       <div class="history-item">
         <div>${x.time}${x.book ? " • " + escapeHtml(x.book) : ""} • ${x.type === "start" ? "Started reading" : `Page ${x.from} → ${x.to}`}${x.finished ? ' • <span class="badge-finished">Finished</span>' : ""}</div>
@@ -3719,6 +3821,198 @@ function renderProgress(){
 }
 
 /* ============================================================
+   RENDER: READATHON
+   ============================================================ */
+function fmtHMS(ms){
+  const totalSec = Math.max(0, Math.floor(ms/1000));
+  const h = Math.floor(totalSec/3600);
+  const m = Math.floor((totalSec%3600)/60);
+  const sec = totalSec%60;
+  return [h,m,sec].map(n=>String(n).padStart(2,"0")).join(":");
+}
+
+const RTH_CAP_MS = 24*60*60*1000;
+
+function readathonElapsedMs(){
+  const r = s.readathon;
+  return r.elapsedMs + (r.active && r.startedAt ? (Date.now() - r.startedAt) : 0);
+}
+
+let readathonPending = null; // {pagesBefore, durationMs} set when the timer is switched off, awaiting the log
+
+function logReadathonEvent(label){
+  ensureRollover();
+  const now = new Date();
+  s.today.log = s.today.log || [];
+  s.today.log.push({
+    time: now.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}),
+    ts: now.getTime(),
+    type: "readathon",
+    label,
+    from: 0, to: 0, read: 0
+  });
+}
+
+function toggleReadathonTimer(){
+  ensureRollover();
+  const r = s.readathon;
+  if(!r.active){
+    if(!r.started){
+      openReadathonStartChoice();
+      return;
+    }
+    startReadathonTimerSegment();
+    toast("Back at it — happy reading! 📖");
+  } else {
+    const sessionMs = Date.now() - r.startedAt;
+    const wasComplete = r.elapsedMs >= RTH_CAP_MS;
+    r.elapsedMs += sessionMs;
+    r.active = false;
+    r.startedAt = null;
+    const justCompleted = !wasComplete && r.elapsedMs >= RTH_CAP_MS;
+    if(justCompleted) logReadathonEvent("🎉 Finished 24-hour readathon!");
+    save();
+    renderAll();
+    renderReadathon();
+    if(justCompleted){
+      spawnConfetti(32, "pastel");
+      toast("🎉 24 hours of reading — readathon complete!");
+    }
+    if(!s.books.length){
+      toast("Timer stopped — add a book to log your pages");
+      switchTab("journal");
+      return;
+    }
+    readathonPending = { pagesBefore: todayTotal(), durationMs: sessionMs };
+    openLogModal();
+  }
+}
+
+// Kicks off (or resumes) a single on-segment of the timer. Only logs the
+// one-time "Started 24-hour readathon" journal entry the very first time.
+function startReadathonTimerSegment(){
+  const r = s.readathon;
+  r.active = true;
+  r.startedAt = Date.now();
+  if(!r.started){
+    r.started = true;
+    logReadathonEvent("📖 Started 24-hour readathon");
+  }
+  save();
+  renderAll();
+  renderReadathon();
+}
+
+/* ---- first-start choice: continue a current book, or start a new one ---- */
+function openReadathonStartChoice(){
+  openModal("readathonStartModal");
+}
+
+function chooseReadathonContinue(){
+  closeModal("readathonStartModal");
+  if(!s.books.length){
+    toast("You don't have a book in progress yet — let's start one");
+    chooseReadathonNewBook();
+    return;
+  }
+  if(s.books.length === 1){
+    activeLogBookId = s.books[0].id;
+    startReadathonTimerSegment();
+    toast(`Continuing "${s.books[0].title || "your book"}" — happy reading! 📖`);
+    return;
+  }
+  const list = document.getElementById("readathonPickerList");
+  list.innerHTML = s.books.map(b => `
+    <button class="secondary" onclick="closeModal('readathonPickerModal');pickReadathonContinueBook('${b.id}')">${escapeHtml(b.title || "Untitled")}</button>
+  `).join("");
+  openModal("readathonPickerModal");
+}
+
+function pickReadathonContinueBook(bookId){
+  const book = s.books.find(b => b.id === bookId);
+  activeLogBookId = bookId;
+  startReadathonTimerSegment();
+  toast(`Continuing "${book ? (book.title || "your book") : "your book"}" — happy reading! 📖`);
+}
+
+let pendingReadathonStart = false;
+
+function chooseReadathonNewBook(){
+  closeModal("readathonStartModal");
+  pendingReadathonStart = true;
+  openNewBookModal();
+}
+
+function finalizeReadathonSession(){
+  const pending = readathonPending;
+  readathonPending = null;
+  if(!pending) return;
+  const pages = Math.max(0, todayTotal() - pending.pagesBefore);
+  const book = s.books.find(b => b.id === activeLogBookId);
+  const finished = (s.finishedLog || []).slice(-1)[0];
+  const title = book ? book.title : (finished ? finished.title : "Reading session");
+  const now = new Date();
+  s.readathon.sessions.push({
+    id: genId(),
+    date: todayStr(),
+    time: now.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}),
+    pages, durationMs: pending.durationMs, book: title
+  });
+  save();
+  renderReadathon();
+  if(pages > 0) toast(`+${pages} page${pages===1?"":"s"} added to your readathon`);
+}
+
+function resetReadathon(){
+  if(!confirm("Reset the readathon timer and session log? Pages you've already logged toward your daily goal are not affected.")) return;
+  const r = s.readathon;
+  const incomplete = r.elapsedMs < RTH_CAP_MS;
+  const hasProgress = r.started || r.elapsedMs > 0 || (r.sessions||[]).length > 0;
+  if(incomplete && hasProgress){
+    logReadathonEvent("⏹ Ended readathon early");
+  }
+  s.readathon = defaultReadathon();
+  save();
+  renderAll();
+  renderReadathon();
+  toast("Readathon reset");
+}
+
+function renderReadathon(){
+  const view = document.getElementById("view-readathon");
+  if(!view) return;
+  const r = s.readathon;
+  const elapsed = readathonElapsedMs();
+
+  document.getElementById("rthClock").textContent = fmtHMS(Math.min(elapsed, RTH_CAP_MS));
+  document.getElementById("rthProgressFill").style.width = Math.min(100, (elapsed / RTH_CAP_MS) * 100) + "%";
+
+  const pill = document.getElementById("rthStatusPill");
+  pill.textContent = r.active ? "Timer running" : "Timer off";
+  pill.classList.toggle("active", r.active);
+
+  const btn = document.getElementById("rthToggleBtn");
+  btn.textContent = r.active ? "Take a Break" : (r.started ? "Resume Reading" : "Start Challenge");
+  btn.classList.toggle("on", r.active);
+
+  const sessions = r.sessions || [];
+  const list = document.getElementById("rthSessionList");
+  if(!sessions.length){
+    list.innerHTML = `<div class="rth-empty">No sessions yet — start the timer to begin your readathon!</div>`;
+  } else {
+    list.innerHTML = sessions.slice().reverse().map(sess => `
+      <div class="rth-session-row">
+        <div>
+          <div class="rth-session-book">${escapeHtml(sess.book || "Reading session")}</div>
+          <div class="rth-session-meta">${Math.round(sess.durationMs/60000)} min</div>
+        </div>
+        <div class="rth-session-pages">+${sess.pages}p</div>
+      </div>
+    `).join("");
+  }
+}
+
+/* ============================================================
    RENDER ALL
    ============================================================ */
 function renderAll(){
@@ -3729,9 +4023,21 @@ function renderAll(){
   if(document.getElementById("view-calendar").classList.contains("active")){
     renderCalendar();
   }
+  if(document.getElementById("view-readathon").classList.contains("active")){
+    renderReadathon();
+  }
 }
 
 renderAll();
+
+/* live-tick the readathon clock every second while its timer is running
+   and the tab is on screen, without waiting for the 60s renderAll cycle */
+setInterval(() => {
+  if(s.readathon && s.readathon.active && document.getElementById("view-readathon").classList.contains("active")){
+    document.getElementById("rthClock").textContent = fmtHMS(Math.min(readathonElapsedMs(), RTH_CAP_MS));
+    document.getElementById("rthProgressFill").style.width = Math.min(100, (readathonElapsedMs() / RTH_CAP_MS) * 100) + "%";
+  }
+}, 1000);
 
 /* ============================================================
    DATE-CHANGE WATCHER
